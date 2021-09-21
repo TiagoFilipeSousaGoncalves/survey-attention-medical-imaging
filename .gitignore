@@ -131,3 +131,6 @@ dmypy.json
 
 # Directories
 data/PH2Dataset/
+
+# macOS files
+*.DS_Store
