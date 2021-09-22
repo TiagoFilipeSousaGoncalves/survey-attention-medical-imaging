@@ -62,11 +62,11 @@ def map_images_and_labels(data_dir):
     txt_info_file = os.path.join(data_dir, "PH2_dataset.txt")
 
     # ... and a .XLSX file named "PH2_dataset.xlsx"
-    xlsx_info_file = os.path.join(data_dir, "PH2_dataset.xlsx")
+    # xlsx_info_file = os.path.join(data_dir, "PH2_dataset.xlsx")
 
 
     # We start by getting the directories (which will contain the images)
-    images_folders = [name for name in os.listdir(images_dir) if os.path.isdir(os.path.join(images_dir, name))]
+    # images_folders = [name for name in os.listdir(images_dir) if os.path.isdir(os.path.join(images_dir, name))]
     
     # Uncomment if you want to know the number of images in the directory
     # print(f"Number of images in this directory: {len(images_folders)}")
@@ -96,14 +96,13 @@ def map_images_and_labels(data_dir):
     # Uncomment to see these variables
     # print(f"PH2 Images: {ph2_imgs} and PH2 Labels: {ph2_labels}")
     # print(f"Length of these arrays: {len(ph2_imgs)}, {len(ph2_labels)}")
-    
 
 
     return ph2_imgs, ph2_labels
 
 
 
-    # Create a Dataset Class
+# Create a Dataset Class
 class PH2Dataset(Dataset):
     def __init__(self, ph2_imgs, ph2_labels, base_data_path, transform=None):
         """
@@ -158,17 +157,17 @@ class PH2Dataset(Dataset):
 
 # Uncomment these lines below if you want to test these classes
 # Get images and labels
-imgs, labels = map_images_and_labels(data_dir=data_dir)
+# imgs, labels = map_images_and_labels(data_dir=data_dir)
 
 # Create torchvision transforms for the Dataset class
-transforms = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
+# transforms = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
 
 # Create a PH2Dataset object
-dataset = PH2Dataset(ph2_imgs=imgs, ph2_labels=labels, base_data_path=data_dir, transform=transforms)
+# dataset = PH2Dataset(ph2_imgs=imgs, ph2_labels=labels, base_data_path=data_dir, transform=transforms)
 
 # Create a Dataloader object
-loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
+# loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
 
 # Go through loader and check if everything is OK
-for batch_idx, (images, labels) in enumerate(loader):
-    print(batch_idx, images, labels)
+# for batch_idx, (images, labels) in enumerate(loader):
+    # print(batch_idx, images, labels)
