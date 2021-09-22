@@ -131,6 +131,7 @@ dmypy.json
 
 # Directories
 data/PH2Dataset/
+data/CBISPreprocDataset/
 
 # macOS files
 *.DS_Store
