@@ -10,7 +10,8 @@ from torch.utils.data import Dataset
 
 
 # Data Directories
-data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
+# data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
+data_dir = "/Users/Galves/Documents/GitHub/survey-attention-medical-imaging/data/PH2Dataset"
 
 
 # Legend for Clinical Diagnosis
@@ -63,9 +64,9 @@ def map_images_and_labels(data_dir):
     xlsx_info_file = os.path.join(data_dir, "PH2_dataset.xlsx")
 
 
-
     # We start by getting the directories (which will contain the images)
     images_folders = [name for name in os.listdir(images_dir) if os.path.isdir(os.path.join(images_dir, name))]
+    
     # Uncomment if you want to know the number of images in the directory
     # print(f"Number of images in this directory: {len(images_folders)}")
 
@@ -73,9 +74,28 @@ def map_images_and_labels(data_dir):
     # Open the .TXT file with the data set information
     # ph2_dataset = np.genfromtxt(fname=txt_info_file, dtype=object, delimiter="|")
     ph2_dataset = pd.read_csv(txt_info_file, delimiter="|")
+    
     # Uncomment to see the output of this file
-    print(f"PH2Dataset: {ph2_dataset}")
+    # print(f"PH2Dataset: {ph2_dataset}")
 
+
+    # Get dataset columns (in case you need to adapt this function to other purposes)
+    # ph2_dataset_columns = ph2_dataset.columns
+    
+    # Uncomment to see the output of this file
+    # print(f"PH2Dataset: {ph2_dataset_columns}")
+
+    # Get separated variables with this information
+    # Names
+    ph2_imgs = ph2_dataset['   Name '].values
+    
+    # Labels (Clinical Diagnosis)
+    ph2_labels = ph2_dataset[' Clinical Diagnosis '].values
+    
+    # Uncomment to see these variables
+    print(f"PH2 Images: {ph2_imgs} and PH2 Labels: {ph2_labels}")
+    print(f"Length of these arrays: {len(ph2_imgs)}, {len(ph2_labels)}")
+    
 
 
     return
