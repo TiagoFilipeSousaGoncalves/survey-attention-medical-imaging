@@ -1,5 +1,6 @@
 # Imports
 import numpy as np
+import pandas as pd
 import os
 from PIL import Image
 
@@ -70,7 +71,8 @@ def map_images_and_labels(data_dir):
 
 
     # Open the .TXT file with the data set information
-    ph2_dataset = np.genfromtxt(fname=txt_info_file, dtype=object, delimiter="|")
+    # ph2_dataset = np.genfromtxt(fname=txt_info_file, dtype=object, delimiter="|")
+    ph2_dataset = pd.read_csv(txt_info_file, delimiter="|")
     # Uncomment to see the output of this file
     print(f"PH2Dataset: {ph2_dataset}")
 
