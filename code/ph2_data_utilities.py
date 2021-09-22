@@ -10,8 +10,8 @@ from torch.utils.data import Dataset
 
 
 # Data Directories
-# data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
-data_dir = "/Users/Galves/Documents/GitHub/survey-attention-medical-imaging/data/PH2Dataset"
+data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
+# data_dir = "/Users/Galves/Documents/GitHub/survey-attention-medical-imaging/data/PH2Dataset"
 
 
 # Legend for Clinical Diagnosis
@@ -98,7 +98,8 @@ def map_images_and_labels(data_dir):
     
 
 
-    return
+    return ph2_imgs, ph2_labels
 
 
-_ = map_images_and_labels(data_dir=data_dir)
+a, b = map_images_and_labels(data_dir=data_dir)
+print(a, b)
