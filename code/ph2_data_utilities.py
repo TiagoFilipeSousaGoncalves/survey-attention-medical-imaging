@@ -6,7 +6,8 @@ from PIL import Image
 
 # PyTorch Imports
 import torch
-from torch.utils.data import Dataset
+import torchvision
+from torch.utils.data import Dataset, DataLoader
 
 
 # Data Directories
@@ -93,13 +94,81 @@ def map_images_and_labels(data_dir):
     ph2_labels = ph2_dataset[' Clinical Diagnosis '].values
     
     # Uncomment to see these variables
-    print(f"PH2 Images: {ph2_imgs} and PH2 Labels: {ph2_labels}")
-    print(f"Length of these arrays: {len(ph2_imgs)}, {len(ph2_labels)}")
+    # print(f"PH2 Images: {ph2_imgs} and PH2 Labels: {ph2_labels}")
+    # print(f"Length of these arrays: {len(ph2_imgs)}, {len(ph2_labels)}")
     
 
 
     return ph2_imgs, ph2_labels
 
 
-a, b = map_images_and_labels(data_dir=data_dir)
-print(a, b)
+
+    # Create a Dataset Class
+class PH2Dataset(Dataset):
+    def __init__(self, ph2_imgs, ph2_labels, base_data_path, transform=None):
+        """
+        Args:
+            base_data_path (string): Data directory.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        
+        # Init variables
+        self.images_names, self.images_labels = ph2_imgs, ph2_labels
+        self.base_data_path = base_data_path
+        self.transform = transform
+
+
+        return 
+
+
+    # Method: __len__
+    def __len__(self):
+        return len(self.images_names)
+
+
+
+    # Method: __getitem__
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        
+
+        # Get images
+        img_name = self.images_names[idx]
+        
+        # Remove start and end spaces
+        img_name = img_name.strip()
+        # img_name.replace(" ", "")
+
+        # Open image with PIL
+        image = Image.open(os.path.join(self.base_data_path, "images", img_name, f"{img_name}_Dermoscopic_Image", f"{img_name}.bmp"))
+
+        # Get labels
+        label = self.images_labels[idx]
+
+        # Apply transformation
+        if self.transform:
+            image = self.transform(image)
+
+
+        return image, label
+
+
+
+# Uncomment these lines below if you want to test these classes
+# Get images and labels
+imgs, labels = map_images_and_labels(data_dir=data_dir)
+
+# Create torchvision transforms for the Dataset class
+transforms = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
+
+# Create a PH2Dataset object
+dataset = PH2Dataset(ph2_imgs=imgs, ph2_labels=labels, base_data_path=data_dir, transform=transforms)
+
+# Create a Dataloader object
+loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
+
+# Go through loader and check if everything is OK
+for batch_idx, (images, labels) in enumerate(loader):
+    print(batch_idx, images, labels)
