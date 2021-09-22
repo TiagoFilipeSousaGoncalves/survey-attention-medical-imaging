@@ -12,6 +12,42 @@ from torch.utils.data import Dataset
 data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
 
 
+# Legend for Clinical Diagnosis
+clinical_diagnosis_labels_dict = {
+    0:"Common Nevus",
+    1:"Atypical Nevus",
+    2:"Melanoma"
+}
+
+
+# Legends for Asymmetry
+asymmetry_labels_dict = {
+    0:"Fully Symmetric",
+    1:"Symetric in 1 axe",
+    2:"Fully Asymmetric"
+}
+
+
+# Legends for Pigment Network, Dots/Globules, Streaks, Regression Areas, and Blue-Whitish Veil
+pigment_labels_dict = {
+    "A":"Absent",
+    "AT":"Atypical",
+    "P":"Present",
+    "T":"Typical"
+}
+
+
+# Legends for Colours
+colours_labels_dict = {
+    1:"White",
+    2:"Red",
+    3:"Light-Brown",
+    4:"Dark-Brown",
+    5:"Blue-Gray",
+    6:"Black"
+}
+
+
 
 # Function: Get images and labels from directory files
 def map_images_and_labels(data_dir):
@@ -30,7 +66,13 @@ def map_images_and_labels(data_dir):
     # We start by getting the directories (which will contain the images)
     images_folders = [name for name in os.listdir(images_dir) if os.path.isdir(os.path.join(images_dir, name))]
     # Uncomment if you want to know the number of images in the directory
-    print(f"Number of images in the images' directory: {len(images_folders)}")
+    # print(f"Number of images in this directory: {len(images_folders)}")
+
+
+    # Open the .TXT file with the data set information
+    ph2_dataset = np.genfromtxt(fname=txt_info_file, dtype=object, delimiter="|")
+    # Uncomment to see the output of this file
+    print(f"PH2Dataset: {ph2_dataset}")
 
 
 

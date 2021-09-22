@@ -139,13 +139,13 @@ class CBISDataset(Dataset):
 # Uncomment the lines below if you want to check if this class is working
 # Load and count data samples
 # Train Dataset
-train_set = CBISDataset(base_data_path=train_dir)
-print(f"Number of Train Images: {len(train_set)} | Label Dict: {train_set.labels_dict}")
+# train_set = CBISDataset(base_data_path=train_dir)
+# print(f"Number of Train Images: {len(train_set)} | Label Dict: {train_set.labels_dict}")
 
 # Validation
-val_set = CBISDataset(base_data_path=val_dir)
-print(f"Number of Validation Images: {len(val_set)} | Label Dict: {val_set.labels_dict}")
+# val_set = CBISDataset(base_data_path=val_dir)
+# print(f"Number of Validation Images: {len(val_set)} | Label Dict: {val_set.labels_dict}")
 
 # Test
-test_set = CBISDataset(base_data_path=test_dir)
-print(f"Number of Test Images: {len(test_set)} | Label Dict: {test_set.labels_dict}")
+# test_set = CBISDataset(base_data_path=test_dir)
+# print(f"Number of Test Images: {len(test_set)} | Label Dict: {test_set.labels_dict}")
