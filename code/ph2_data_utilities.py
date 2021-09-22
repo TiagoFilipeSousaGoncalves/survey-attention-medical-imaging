@@ -34,4 +34,7 @@ def map_images_and_labels(data_dir):
 
 
 
-    return 
+    return
+
+
+_ = map_images_and_labels(data_dir=data_dir)
