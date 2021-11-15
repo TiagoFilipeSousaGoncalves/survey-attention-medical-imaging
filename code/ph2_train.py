@@ -192,9 +192,9 @@ for epoch in range(EPOCHS):
 
     # Compute Train Metrics
     train_acc = accuracy_score(y_true=y_train_true, y_pred=y_train_pred)
-    train_recall = recall_score(y_true=y_train_true, y_pred=y_train_pred, average=None)
-    train_precision = precision_score(y_true=y_train_true, y_pred=y_train_pred, average=None)
-    train_f1 = f1_score(y_true=y_train_true, y_pred=y_train_pred, average=None)
+    train_recall = recall_score(y_true=y_train_true, y_pred=y_train_pred, average="weighted")
+    train_precision = precision_score(y_true=y_train_true, y_pred=y_train_pred, average="weighted")
+    train_f1 = f1_score(y_true=y_train_true, y_pred=y_train_pred, average="weighted")
 
     # Print Statistics
     print(f"Train Loss: {avg_train_loss}\tTrain Accuracy: {train_acc}\tTrain Recall: {train_recall}\tTrain Precision: {train_precision}\tTrain F1-Score: {train_f1}")
@@ -281,9 +281,9 @@ for epoch in range(EPOCHS):
 
         # Compute Training Accuracy
         val_acc = accuracy_score(y_true=y_val_true, y_pred=y_val_pred)
-        val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred, average=None)
-        val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred, average=None)
-        val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred, average=None)
+        val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
+        val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
+        val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
 
         # Print Statistics
         print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
