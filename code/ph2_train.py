@@ -35,7 +35,7 @@ ph2_imgs, ph2_labels, nr_classes = map_images_and_labels(data_dir)
 # Train and Test
 ph2_imgs_train, ph2_imgs_test, ph2_labels_train, ph2_labels_test = train_test_split(ph2_imgs, ph2_labels, test_size=0.20, random_state=random_seed)
 # Train and Validation
-ph2_imgs_train, ph2_imgs_val, ph2_labels_train, ph2_labels_val = train_test_split(ph2_imgs_train, ph2_labels_train, test_size=0.20, random_state=random_seed)
+ph2_imgs_train, ph2_imgs_val, ph2_labels_train, ph2_labels_val = train_test_split(ph2_imgs_train, ph2_labels_train, test_size=0.10, random_state=random_seed)
 
 # Results and Weights
 weights_dir = os.path.join("results", "ph2", "weights")
@@ -192,12 +192,13 @@ for epoch in range(EPOCHS):
 
     # Compute Train Metrics
     train_acc = accuracy_score(y_true=y_train_true, y_pred=y_train_pred)
-    train_recall = recall_score(y_true=y_train_true, y_pred=y_train_pred, average="weighted")
-    train_precision = precision_score(y_true=y_train_true, y_pred=y_train_pred, average="weighted")
-    train_f1 = f1_score(y_true=y_train_true, y_pred=y_train_pred, average="weighted")
+    # train_recall = recall_score(y_true=y_train_true, y_pred=y_train_pred, average="weighted")
+    # train_precision = precision_score(y_true=y_train_true, y_pred=y_train_pred, average="weighted")
+    # train_f1 = f1_score(y_true=y_train_true, y_pred=y_train_pred, average="weighted")
 
     # Print Statistics
-    print(f"Train Loss: {avg_train_loss}\tTrain Accuracy: {train_acc}\tTrain Recall: {train_recall}\tTrain Precision: {train_precision}\tTrain F1-Score: {train_f1}")
+    print(f"Train Loss: {avg_train_loss}\tTrain Accuracy: {train_acc}")
+    # print(f"Train Loss: {avg_train_loss}\tTrain Accuracy: {train_acc}\tTrain Recall: {train_recall}\tTrain Precision: {train_precision}\tTrain F1-Score: {train_f1}")
 
 
     # Append values to the arrays
@@ -212,11 +213,11 @@ for epoch in range(EPOCHS):
     # Acc
     train_metrics[epoch, 0] = train_acc
     # Recall
-    train_metrics[epoch, 1] = train_recall
+    # train_metrics[epoch, 1] = train_recall
     # Precision
-    train_metrics[epoch, 2] = train_precision
+    # train_metrics[epoch, 2] = train_precision
     # F1-Score
-    train_metrics[epoch, 3] = train_f1
+    # train_metrics[epoch, 3] = train_f1
     # Save it to directory
     fname = os.path.join(history_dir, "vgg16_tr_metrics.npy")
     np.save(file=fname, arr=train_metrics, allow_pickle=True)
@@ -281,12 +282,13 @@ for epoch in range(EPOCHS):
 
         # Compute Training Accuracy
         val_acc = accuracy_score(y_true=y_val_true, y_pred=y_val_pred)
-        val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
-        val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
-        val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
+        # val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
+        # val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
+        # val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
 
         # Print Statistics
         print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
+        # print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
 
         # Append values to the arrays
         # Train Loss
@@ -300,11 +302,11 @@ for epoch in range(EPOCHS):
         # Acc
         val_metrics[epoch, 0] = val_acc
         # Recall
-        val_metrics[epoch, 1] = val_recall
+        # val_metrics[epoch, 1] = val_recall
         # Precision
-        val_metrics[epoch, 2] = val_precision
+        # val_metrics[epoch, 2] = val_precision
         # F1-Score
-        val_metrics[epoch, 3] = val_f1
+        # val_metrics[epoch, 3] = val_f1
         # Save it to directory
         fname = os.path.join(history_dir, "vgg16_val_metrics.npy")
         np.save(file=fname, arr=val_metrics, allow_pickle=True)
