@@ -287,7 +287,7 @@ for epoch in range(EPOCHS):
         # val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
 
         # Print Statistics
-        print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
+        print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}")
         # print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
 
         # Append values to the arrays
