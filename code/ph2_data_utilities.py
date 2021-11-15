@@ -6,13 +6,11 @@ from PIL import Image
 
 # PyTorch Imports
 import torch
-import torchvision
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 
 # Data Directories
 data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
-# data_dir = "/Users/Galves/Documents/GitHub/survey-attention-medical-imaging/data/PH2Dataset"
 
 
 # Legend for Clinical Diagnosis
@@ -56,7 +54,7 @@ colours_labels_dict = {
 def map_images_and_labels(data_dir):
 
     # The directory should have a directory named "images" inside...
-    images_dir = os.path.join(data_dir, "images")
+    # images_dir = os.path.join(data_dir, "images")
 
     # ... and a .TXT file named "PH2_dataset.txt"
     txt_info_file = os.path.join(data_dir, "PH2_dataset.txt")
@@ -97,8 +95,11 @@ def map_images_and_labels(data_dir):
     # print(f"PH2 Images: {ph2_imgs} and PH2 Labels: {ph2_labels}")
     # print(f"Length of these arrays: {len(ph2_imgs)}, {len(ph2_labels)}")
 
+    # Number of classes
+    nr_classes = len(np.unique(ph2_labels))
 
-    return ph2_imgs, ph2_labels
+
+    return ph2_imgs, ph2_labels, nr_classes
 
 
 
@@ -157,7 +158,8 @@ class PH2Dataset(Dataset):
 
 # Uncomment these lines below if you want to test these classes
 # Get images and labels
-# imgs, labels = map_images_and_labels(data_dir=data_dir)
+# imgs, labels, nr_classes = map_images_and_labels(data_dir=data_dir)
+# print(nr_classes)
 
 # Create torchvision transforms for the Dataset class
 # transforms = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
