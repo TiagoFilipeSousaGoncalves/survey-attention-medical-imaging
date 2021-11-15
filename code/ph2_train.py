@@ -30,6 +30,10 @@ data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
 # Get all the images, labels, and number of classes of PH2 Dataset
 ph2_imgs, ph2_labels, nr_classes = map_images_and_labels(data_dir)
 
+# Remove class 1
+ph2_imgs = ph2_imgs[ph2_labels!=1]
+ph2_labels = ph2_labels[ph2_labels!=1]
+
 
 # Split into train, validation and test
 # Train and Test
