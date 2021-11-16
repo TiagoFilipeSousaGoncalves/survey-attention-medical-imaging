@@ -29,9 +29,6 @@ class DenseNet121(torch.nn.Module):
         # Create FC1 Layer for classification
         self.fc1 = torch.nn.Linear(in_features=_in_features, out_features=self.nr_classes)
 
-        # Sigmoid Activation Layer
-        self.fc_sigmoid = torch.nn.Sigmoid()
-
 
         return
     
@@ -45,9 +42,6 @@ class DenseNet121(torch.nn.Module):
 
         # FC1-Layer
         outputs = self.fc1(features)
-
-        # Activation layer
-        outputs = self.fc_sigmoid(outputs)
 
 
         return outputs
@@ -81,10 +75,6 @@ class ResNet50(torch.nn.Module):
         # Create FC1 Layer for classification
         self.fc1 = torch.nn.Linear(in_features=_in_features, out_features=self.nr_classes)
 
-        # Sigmoid Activation Layer
-        self.fc_sigmoid = torch.nn.Sigmoid()
-
-
 
         return
     
@@ -98,9 +88,6 @@ class ResNet50(torch.nn.Module):
 
         # FC1-Layer
         outputs = self.fc1(features)
-
-        # Activation layer
-        outputs = self.fc_sigmoid(outputs)
 
 
         return outputs
@@ -132,10 +119,6 @@ class VGG16(torch.nn.Module):
         # Create FC1 Layer for classification
         self.fc1 = torch.nn.Linear(in_features=_in_features, out_features=self.nr_classes)
 
-        # Sigmoid Activation Layer
-        self.fc_sigmoid = torch.nn.Sigmoid()
-
-
 
         return
     
@@ -149,9 +132,6 @@ class VGG16(torch.nn.Module):
 
         # FC1-Layer
         outputs = self.fc1(features)
-
-        # Activation layer
-        outputs = self.fc_sigmoid(outputs)
 
 
         return outputs
