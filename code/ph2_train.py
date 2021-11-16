@@ -19,7 +19,7 @@ np.random.seed(random_seed)
 
 
 # Project Imports
-from ph2_model_utilities import VGG16
+from ph2_model_utilities import VGG16, DenseNet121
 from ph2_data_utilities import map_images_and_labels, PH2Dataset
 
 
@@ -72,8 +72,10 @@ _, _, nr_classes = map_images_and_labels(data_dir=data_dir)
 
 
 # VGG-16
-model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
+# DenseNet-121
+model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
 # Hyper-parameters
 EPOCHS = 300
@@ -209,7 +211,7 @@ for epoch in range(EPOCHS):
     # Train Loss
     train_losses[epoch] = avg_train_loss
     # Save it to directory
-    fname = os.path.join(history_dir, "vgg16_tr_losses.npy")
+    fname = os.path.join(history_dir, "densenet121_tr_losses.npy")
     np.save(file=fname, arr=train_losses, allow_pickle=True)
 
 
@@ -223,7 +225,7 @@ for epoch in range(EPOCHS):
     # F1-Score
     # train_metrics[epoch, 3] = train_f1
     # Save it to directory
-    fname = os.path.join(history_dir, "vgg16_tr_metrics.npy")
+    fname = os.path.join(history_dir, "densenet121_tr_metrics.npy")
     np.save(file=fname, arr=train_metrics, allow_pickle=True)
 
 
@@ -298,7 +300,7 @@ for epoch in range(EPOCHS):
         # Train Loss
         val_losses[epoch] = avg_val_loss
         # Save it to directory
-        fname = os.path.join(history_dir, "vgg16_val_losses.npy")
+        fname = os.path.join(history_dir, "densenet121_val_losses.npy")
         np.save(file=fname, arr=val_losses, allow_pickle=True)
 
 
@@ -312,7 +314,7 @@ for epoch in range(EPOCHS):
         # F1-Score
         # val_metrics[epoch, 3] = val_f1
         # Save it to directory
-        fname = os.path.join(history_dir, "vgg16_val_metrics.npy")
+        fname = os.path.join(history_dir, "densenet121_val_metrics.npy")
         np.save(file=fname, arr=val_metrics, allow_pickle=True)
 
         # Update Variables
@@ -324,7 +326,7 @@ for epoch in range(EPOCHS):
             print("Saving best model on validation...")
 
             # Save checkpoint
-            model_path = os.path.join(weights_dir, "vgg16_ph2.pt")
+            model_path = os.path.join(weights_dir, "densenet121_ph2.pt")
             torch.save(model.state_dict(), model_path)
 
             print(f"Successfully saved at: {model_path}")
