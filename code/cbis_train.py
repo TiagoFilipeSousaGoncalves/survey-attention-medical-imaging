@@ -12,8 +12,6 @@ import torch
 from torch.utils.data import DataLoader
 import torchvision
 
-from code.cbis_model_utilities import DenseNet121
-
 
 # Fix Random Seeds
 random_seed = 42
