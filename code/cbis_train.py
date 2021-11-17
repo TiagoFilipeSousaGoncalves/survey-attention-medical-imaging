@@ -61,10 +61,13 @@ imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=train_dir)
 
 
 # VGG-16
-# model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "vgg16"
 
 # DenseNet-121
-model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "densenet121"
+
 
 # Hyper-parameters
 EPOCHS = 300
@@ -200,7 +203,7 @@ for epoch in range(EPOCHS):
     # Train Loss
     train_losses[epoch] = avg_train_loss
     # Save it to directory
-    fname = os.path.join(history_dir, "densenet121_tr_losses.npy")
+    fname = os.path.join(history_dir, f"{model_name}_tr_losses.npy")
     np.save(file=fname, arr=train_losses, allow_pickle=True)
 
 
@@ -214,7 +217,7 @@ for epoch in range(EPOCHS):
     # F1-Score
     # train_metrics[epoch, 3] = train_f1
     # Save it to directory
-    fname = os.path.join(history_dir, "densenet121_tr_metrics.npy")
+    fname = os.path.join(history_dir, f"{model_name}_tr_metrics.npy")
     np.save(file=fname, arr=train_metrics, allow_pickle=True)
 
 
@@ -289,7 +292,7 @@ for epoch in range(EPOCHS):
         # Train Loss
         val_losses[epoch] = avg_val_loss
         # Save it to directory
-        fname = os.path.join(history_dir, "densenet121_val_losses.npy")
+        fname = os.path.join(history_dir, f"{model_name}_val_losses.npy")
         np.save(file=fname, arr=val_losses, allow_pickle=True)
 
 
@@ -315,7 +318,7 @@ for epoch in range(EPOCHS):
             print("Saving best model on validation...")
 
             # Save checkpoint
-            model_path = os.path.join(weights_dir, "densenet121_cbis.pt")
+            model_path = os.path.join(weights_dir, f"{model_name}_cbis.pt")
             torch.save(model.state_dict(), model_path)
 
             print(f"Successfully saved at: {model_path}")
