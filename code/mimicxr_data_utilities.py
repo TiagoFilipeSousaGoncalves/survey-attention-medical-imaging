@@ -49,7 +49,7 @@ class MIMICXRDataset(Dataset):
         """
         
         # Init variables
-        self.images_paths, self.images_labels = map_images_and_labels(base_data_path, pickle_path)
+        self.images_paths, self.images_labels, _ = map_images_and_labels(base_data_path, pickle_path)
         self.transform = transform
 
 
