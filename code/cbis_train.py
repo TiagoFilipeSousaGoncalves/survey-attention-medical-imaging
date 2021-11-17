@@ -61,12 +61,12 @@ imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=train_dir)
 
 
 # VGG-16
-model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "vgg16"
+# model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "vgg16"
 
 # DenseNet-121
-# model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "densenet121"
+model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "densenet121"
 
 
 # Hyper-parameters
