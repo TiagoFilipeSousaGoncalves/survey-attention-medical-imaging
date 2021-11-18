@@ -20,7 +20,7 @@ np.random.seed(random_seed)
 
 
 # Project Imports
-from cbis_model_utilities import VGG16, DenseNet121
+from cbis_model_utilities import VGG16, DenseNet121, ResNet50
 from cbis_data_utilities import map_images_and_labels, CBISDataset
 
 
@@ -65,8 +65,12 @@ imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=train_dir)
 # model_name = "vgg16"
 
 # DenseNet-121
-model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "densenet121"
+# model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "densenet121"
+
+# ResNet50
+model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "resnet50"
 
 
 # Hyper-parameters
@@ -74,7 +78,7 @@ EPOCHS = 300
 LOSS = torch.nn.CrossEntropyLoss()
 LEARNING_RATE = 1e-4
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-BATCH_SIZE = 2
+BATCH_SIZE = 8
 
 
 # Load data
