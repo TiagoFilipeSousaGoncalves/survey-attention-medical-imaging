@@ -19,7 +19,7 @@ np.random.seed(random_seed)
 
 
 # Project Imports
-from mimicxr_model_utilities import VGG16, DenseNet121
+from mimicxr_model_utilities import VGG16, DenseNet121, ResNet50
 from mimicxr_data_utilities import map_images_and_labels, MIMICXRDataset
 
 
@@ -72,8 +72,13 @@ _, _, nr_classes = map_images_and_labels(base_data_path=train_dir, pickle_path=o
 # model_name = "vgg16"
 
 # DenseNet-121
-model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "densenet121"
+# model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "densenet121"
+
+# ResNet50
+model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "resnet50"
+
 
 # Hyper-parameters
 EPOCHS = 300
