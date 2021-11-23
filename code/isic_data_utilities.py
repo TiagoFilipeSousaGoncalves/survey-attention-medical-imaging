@@ -48,7 +48,8 @@ class ISIC2020Dataset(Dataset):
         # Now, we get the data
         if split == "train":
             # Get the right sampled dataframe
-            self.dataframe = csv_df.copy()[csv_df.copy()["patient_id"]==train_ids]
+            tr_pids_mask = csv_df.copy().patient_id.isin(train_ids)
+            self.dataframe = csv_df.copy()[tr_pids_mask]
             
             # Get the image names
             self.image_names = self.dataframe.copy()["image_name"].values
@@ -59,7 +60,8 @@ class ISIC2020Dataset(Dataset):
 
         elif split == "val":
             # Get the right sampled dataframe
-            self.dataframe = csv_df.copy()[csv_df.copy()["patient_id"]==val_ids]
+            val_pids_mask = csv_df.copy().patient_id.isin(val_ids)
+            self.dataframe = csv_df.copy()[val_pids_mask]
             
             # Get the image names
             self.image_names = self.dataframe.copy()["image_name"].values
@@ -70,7 +72,8 @@ class ISIC2020Dataset(Dataset):
 
         else:
             # Get the right sampled dataframe
-            self.dataframe = csv_df.copy()[csv_df.copy()["patient_id"]==test_ids]
+            test_pids_mask = csv_df.copy().patient_id.isin(test_ids)
+            self.dataframe = csv_df.copy()[test_pids_mask]
             
             # Get the image names
             self.image_names = self.dataframe.copy()["image_name"].values
