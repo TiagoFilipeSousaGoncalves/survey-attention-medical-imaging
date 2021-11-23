@@ -30,6 +30,7 @@ class ISIC2020Dataset(Dataset):
         # Aux variables to obtain the correct data splits
         # Read CSV file with label information       
         csv_df = pd.read_csv(csv_path)
+        print(f"The dataframe has: {len(csv_df)} records.")
         
         # Get the IDs of the Patients
         patient_ids = csv_df.copy()["patient_id"]
@@ -80,6 +81,10 @@ class ISIC2020Dataset(Dataset):
 
         # Init variables
         self.base_data_path = base_data_path
+        imgs_in_folder = os.listdir(self.base_data_path)
+        imgs_in_folder = [i for i in imgs_in_folder if not i.startswith(".")]
+        print(f"The folder has: {len(imgs_in_folder)} files.")
+
         self.transform = transform
 
 
