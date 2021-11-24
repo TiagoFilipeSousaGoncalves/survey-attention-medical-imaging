@@ -19,7 +19,7 @@ np.random.seed(random_seed)
 
 
 # Project Imports
-from ph2_model_utilities import VGG16, DenseNet121
+from model_utilities import VGG16, DenseNet121
 from ph2_data_utilities import map_images_and_labels, PH2Dataset
 
 
