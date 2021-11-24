@@ -20,7 +20,7 @@ np.random.seed(random_seed)
 
 
 # Project Imports
-from model_utilities import VGG16, DenseNet121, ResNet50
+from baseline_model_utilities import VGG16, DenseNet121, ResNet50
 from cbis_data_utilities import map_images_and_labels, CBISDataset
 
 
