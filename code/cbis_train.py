@@ -20,7 +20,8 @@ np.random.seed(random_seed)
 
 
 # Project Imports
-from baseline_model_utilities import VGG16, DenseNet121, ResNet50
+from model_utilities_baseline import VGG16, DenseNet121, ResNet50
+from model_utilities_se import SEResNet50
 from cbis_data_utilities import map_images_and_labels, CBISDataset
 
 
@@ -60,9 +61,10 @@ img_width = 224
 imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=train_dir)
 
 
+# Baseline Models
 # VGG-16
-model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "vgg16"
+# model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "vgg16"
 
 # DenseNet-121
 # model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
@@ -71,6 +73,12 @@ model_name = "vgg16"
 # ResNet50
 # model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 # model_name = "resnet50"
+
+
+# Squeeze-Excitation Models
+# SEResNet50
+model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "seresnet50"
 
 
 # Hyper-parameters
