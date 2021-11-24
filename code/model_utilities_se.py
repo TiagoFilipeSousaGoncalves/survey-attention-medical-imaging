@@ -57,11 +57,15 @@ class SELayer(torch.nn.Module):
 
 # SE Bottleneck Layer for ResNet-50 (from: https://github.com/moskomule/senet.pytorch)
 class SEBottleneck(torch.nn.Module):
+    
+    # Object attribute
+    expansion = 4
+    
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1, base_width=64, dilation=1, norm_layer=None, *, reduction=16):
         super(SEBottleneck, self).__init__()
         
         # Init variables
-        self.expansion = 4
+        # self.expansion = 4
 
         # Conv + BN 1
         self.conv1 = torch.nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
