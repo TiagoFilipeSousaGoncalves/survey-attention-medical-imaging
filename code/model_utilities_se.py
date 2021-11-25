@@ -183,21 +183,24 @@ def make_layers_se(cfg: List[Union[str, int]], batch_norm: bool = False) -> torc
     
     for v in cfg:
         if v == 'M':
-            layers += [torch.nn.MaxPool2d(kernel_size=2, stride=2)]
+            # layers += [torch.nn.MaxPool2d(kernel_size=2, stride=2)]
+
+            # Replace a MaxPool2d with an Attention Layer
+            layers += [SELayer(channel=v)]
         
         else:
             v = cast(int, v)
             conv2d = torch.nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
 
             # Create an SE Layer
-            se_layer = SELayer(channel=v)
+            # se_layer = SELayer(channel=v)
             
             if batch_norm:
                 layers += [conv2d, torch.nn.BatchNorm2d(v), torch.nn.ReLU(inplace=True)]
             
             else:
-                # layers += [conv2d, torch.nn.ReLU(inplace=True)]
-                layers += [conv2d, se_layer]
+                layers += [conv2d, torch.nn.ReLU(inplace=True)]
+                # layers += [conv2d, se_layer]
             
             in_channels = v
 
