@@ -1,13 +1,14 @@
 # Imports
-from typing import Type, Any, Callable, Union, List, Optional
+from typing import Type, Any, Callable, Union, List, Optional, Dict, cast
 
 # PyTorch Imports
 import torch
 from torch.hub import load_state_dict_from_url
-from torchvision.models import ResNet
+from torchvision.models import ResNet, VGG
 
 
 
+# ResNet-50 Functions and Classes
 # Helper Function (from: https://pytorch.org/vision/stable/_modules/torchvision/models/resnet.html#resnet18)
 def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1) -> torch.nn.Conv2d:
     
@@ -57,7 +58,7 @@ class SELayer(torch.nn.Module):
 
 # SE Bottleneck Layer for ResNet-50 (from: https://github.com/moskomule/senet.pytorch)
 class SEBottleneck(torch.nn.Module):
-    
+
     # Object attribute
     expansion = 4
     
@@ -168,5 +169,106 @@ class SEResNet50(torch.nn.Module):
 
         # FC1-Layer
         outputs = self.fc1(features)
+
+        return outputs
+
+
+
+
+# VGG-16 Functions and Classes
+# Helper Function: Create VGG layers with SE Layer Blocks (adapted from: https://pytorch.org/vision/stable/_modules/torchvision/models/vgg.html#vgg16)
+def make_layers_se(cfg: List[Union[str, int]], batch_norm: bool = False) -> torch.nn.Sequential:
+    layers: List[torch.nn.Module] = []
+    in_channels = 3
+    
+    for v in cfg:
+        if v == 'M':
+            layers += [torch.nn.MaxPool2d(kernel_size=2, stride=2)]
+        
+        else:
+            v = cast(int, v)
+            conv2d = torch.nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
+
+            # Create an SE Layer
+            se_layer = SELayer(channel=v)
+            
+            if batch_norm:
+                layers += [conv2d, torch.nn.BatchNorm2d(v), torch.nn.ReLU(inplace=True)]
+            
+            else:
+                # layers += [conv2d, torch.nn.ReLU(inplace=True)]
+                layers += [conv2d, se_layer]
+            
+            in_channels = v
+
+    
+    return torch.nn.Sequential(*layers)
+
+
+
+# Model: SEVGG-16 (adapted from: https://pytorch.org/vision/stable/_modules/torchvision/models/vgg.html#vgg16)
+class SEVGG16(torch.nn.Module):
+    def __init__(self, channels, height, width, nr_classes, pretrained=True):
+        super(SEVGG16, self).__init__()
+
+        # Init variables
+        self.channels = channels
+        self.height = height
+        self.width = width
+        self.nr_classes = nr_classes
+        self.weights_url = 'https://download.pytorch.org/models/vgg16-397923af.pth'
+        self.cfgs: Dict[str, List[Union[str, int]]] = {
+            'A': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+            'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+            'D': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
+            'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
+            }
+
+
+        # Init modules
+        # Build SEVGG16 to extract features
+        if pretrained:
+            kwargs = dict()
+            kwargs['init_weights'] = False
+
+            model = VGG(make_layers_se(self.cfgs['D'], batch_norm=False), **kwargs)
+
+            state_dict = load_state_dict_from_url(self.weights_url, progress=True)
+            model.load_state_dict(state_dict)
+        
+
+        else:
+            kwargs = dict()
+            kwargs['init_weights'] = True
+            model = VGG(make_layers_se(self.cfgs['D'], batch_norm=False), **kwargs)
+
+
+        # Get the features of the model with the SE Layer
+        self.se_vgg16 = model.features
+
+
+        # FC-Layers
+        # Compute in_features
+        _in_features = torch.rand(1, self.channels, self.height, self.width)
+        _in_features = self.se_vgg16(_in_features)
+        _in_features = _in_features.size(0) * _in_features.size(1) * _in_features.size(2) * _in_features.size(3)
+
+        # Create FC1 Layer for classification
+        self.fc1 = torch.nn.Linear(in_features=_in_features, out_features=self.nr_classes)
+
+
+        return
+    
+
+    def forward(self, inputs):
+        # Compute Backbone features
+        features = self.se_vgg16(inputs)
+
+        # Reshape features
+        features = torch.reshape(features, (features.size(0), -1))
+
+        # FC1-Layer
+        outputs = self.fc1(features)
+
 
         return outputs
