@@ -186,7 +186,7 @@ def make_layers_se(cfg: List[Union[str, int]], batch_norm: bool = False) -> torc
             # layers += [torch.nn.MaxPool2d(kernel_size=2, stride=2)]
 
             # Replace a MaxPool2d with an Attention Layer
-            layers += [SELayer(channel=v)]
+            layers += [SELayer(channel=in_channels)]
         
         else:
             v = cast(int, v)
