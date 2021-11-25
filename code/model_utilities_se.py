@@ -240,7 +240,7 @@ class SEVGG16(torch.nn.Module):
         
 
         else:
-            model = VGG(make_layers_se(self.cfgs['D'], batch_norm=False))
+            model = VGG(make_layers_se(self.cfgs['D'], batch_norm=False), init_weights=False)
 
 
         # Get the features of the model with the SE Layer
