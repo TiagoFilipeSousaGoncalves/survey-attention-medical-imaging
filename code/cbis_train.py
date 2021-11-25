@@ -44,7 +44,7 @@ if not os.path.isdir(history_dir):
 
 
 # Choose GPU
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda:1" if torch.cuda.is_available() else "cpu"
 
 
 # Mean and STD to Normalize the inputs into pretrained models
@@ -89,7 +89,7 @@ EPOCHS = 300
 LOSS = torch.nn.CrossEntropyLoss()
 LEARNING_RATE = 1e-4
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-BATCH_SIZE = 2
+BATCH_SIZE = 8
 
 
 # Load data
