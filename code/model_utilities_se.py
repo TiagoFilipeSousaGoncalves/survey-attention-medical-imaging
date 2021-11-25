@@ -208,7 +208,7 @@ def make_layers_se(cfg: List[Union[str, int]], batch_norm: bool = False) -> torc
 
 # Model: SEVGG-16 (adapted from: https://pytorch.org/vision/stable/_modules/torchvision/models/vgg.html#vgg16)
 class SEVGG16(torch.nn.Module):
-    def __init__(self, channels, height, width, nr_classes, pretrained=True):
+    def __init__(self, channels, height, width, nr_classes, pretrained=False):
         super(SEVGG16, self).__init__()
 
         # Init variables
