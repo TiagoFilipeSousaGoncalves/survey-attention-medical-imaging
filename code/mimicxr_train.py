@@ -19,8 +19,9 @@ np.random.seed(random_seed)
 
 
 # Project Imports
-from mimicxr_model_utilities import VGG16, DenseNet121, ResNet50
-from mimicxr_data_utilities import map_images_and_labels, MIMICXRDataset
+from model_utilities_baseline import VGG16, DenseNet121, ResNet50
+from model_utilities_se import SEResNet50, SEVGG16
+from mimicxr_data_utilities import MIMICXRDataset
 
 
 # Directories
@@ -67,9 +68,10 @@ img_width = 224
 _, _, nr_classes = map_images_and_labels(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"))
 
 
+# Baseline Models
 # VGG-16
-model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "vgg16"
+# model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "vgg16"
 
 # DenseNet-121
 # model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
@@ -78,6 +80,16 @@ model_name = "vgg16"
 # ResNet50
 # model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 # model_name = "resnet50"
+
+
+# Squeeze-Excitation Models
+# SEResNet50
+model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "seresnet50"
+
+# SEVGG16
+# model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "sevgg16"
 
 
 # Hyper-parameters
