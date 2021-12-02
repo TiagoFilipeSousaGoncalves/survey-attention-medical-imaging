@@ -21,7 +21,7 @@ np.random.seed(random_seed)
 # Project Imports
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16
-from mimicxr_data_utilities import MIMICXRDataset
+from mimicxr_data_utilities import MIMICXRDataset, map_images_and_labels
 
 
 # Directories
