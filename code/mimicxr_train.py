@@ -51,7 +51,7 @@ if not os.path.isdir(history_dir):
 
 
 # Choose GPU
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda:1" if torch.cuda.is_available() else "cpu"
 
 
 # Mean and STD to Normalize the inputs into pretrained models
@@ -84,12 +84,12 @@ _, _, nr_classes = map_images_and_labels(base_data_path=train_dir, pickle_path=o
 
 # Squeeze-Excitation Models
 # SEResNet50
-model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "seresnet50"
+# model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "seresnet50"
 
 # SEVGG16
-# model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "sevgg16"
+model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "sevgg16"
 
 
 # Hyper-parameters
@@ -97,7 +97,7 @@ EPOCHS = 300
 LOSS = torch.nn.CrossEntropyLoss()
 LEARNING_RATE = 1e-4
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-BATCH_SIZE = 8
+BATCH_SIZE = 32
 
 
 # Load data
