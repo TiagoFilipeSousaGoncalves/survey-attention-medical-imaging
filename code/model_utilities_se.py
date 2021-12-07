@@ -489,7 +489,10 @@ class SEDenseNet(torch.nn.Module):
                     torch.nn.init.constant_(m.weight, 1)
                     torch.nn.init.constant_(m.bias, 0)
                 elif isinstance(m, torch.nn.Linear):
-                    torch.nn.init.constant_(m.bias, 0)
+                    try:
+                        torch.nn.init.constant_(m.bias, 0)
+                    except:
+                        pass
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
