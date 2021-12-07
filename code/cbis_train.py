@@ -21,7 +21,7 @@ np.random.seed(random_seed)
 
 # Project Imports
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
-from model_utilities_se import SEResNet50, SEVGG16
+from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from cbis_data_utilities import map_images_and_labels, CBISDataset
 
 
@@ -81,8 +81,14 @@ imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=train_dir)
 # model_name = "seresnet50"
 
 # SEVGG16
-model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "sevgg16"
+# model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "sevgg16"
+
+# SEDenseNet121
+model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "sedensenet121"
+
+
 
 # Hyper-parameters
 EPOCHS = 300
