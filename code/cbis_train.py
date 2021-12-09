@@ -327,7 +327,7 @@ for epoch in range(EPOCHS):
         # F1-Score
         # val_metrics[epoch, 3] = val_f1
         # Save it to directory
-        fname = os.path.join(history_dir, "densenet121_val_metrics.npy")
+        fname = os.path.join(history_dir, f"{model_name}_val_metrics.npy")
         np.save(file=fname, arr=val_metrics, allow_pickle=True)
 
         # Update Variables
