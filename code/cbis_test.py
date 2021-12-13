@@ -82,7 +82,7 @@ model_name = "sevgg16"
 
 
 # Hyper-parameters
-BATCH_SIZE = 4
+BATCH_SIZE = 2
 LOSS = torch.nn.CrossEntropyLoss()
 
 
