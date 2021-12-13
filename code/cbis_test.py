@@ -88,7 +88,7 @@ LOSS = torch.nn.CrossEntropyLoss()
 
 
 # Load model weights
-model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=device))
+model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE))
 model.eval()
 
 # Load data
