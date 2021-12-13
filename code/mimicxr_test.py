@@ -38,7 +38,7 @@ weights_dir = os.path.join("results", "mimicxr", "weights")
 
 
 # Choose GPU
-DEVICE = "cuda:1" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 
 # Mean and STD to Normalize the inputs into pretrained models
@@ -86,7 +86,7 @@ BATCH_SIZE = 4
 
 
 # Load model weights
-model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_mimicxr.pt")))
+model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_mimicxr.pt"), map_location=DEVICE))
 model.eval()
 
 
