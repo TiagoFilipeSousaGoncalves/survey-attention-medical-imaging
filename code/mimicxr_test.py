@@ -71,12 +71,12 @@ _, _, nr_classes = map_images_and_labels(base_data_path=test_dir, pickle_path=os
 
 # Squeeze-Excitation Models
 # SEResNet50
-# model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "seresnet50"
+model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "seresnet50"
 
 # SEVGG16
-model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "sevgg16"
+# model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "sevgg16"
 
 
 
@@ -162,7 +162,7 @@ with torch.no_grad():
     # val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred, average="weighted")
 
     # Print Statistics
-    print(f"{model_name}\tValidation Loss: {avg_test_loss}\tValidation Accuracy: {test_acc}")
+    print(f"{model_name}\tTest Loss: {avg_test_loss}\tTest Accuracy: {test_acc}")
     # print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
 
 
