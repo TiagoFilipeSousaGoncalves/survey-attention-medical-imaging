@@ -9,6 +9,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 
 # PyTorch Imports
 import torch
+from torch._C import device
 from torch.utils.data import DataLoader
 import torchvision
 
@@ -87,7 +88,7 @@ LOSS = torch.nn.CrossEntropyLoss()
 
 
 # Load model weights
-model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt")))
+model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=device))
 model.eval()
 
 # Load data
