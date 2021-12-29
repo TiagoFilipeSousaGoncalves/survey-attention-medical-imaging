@@ -51,7 +51,8 @@ if not os.path.isdir(history_dir):
 
 
 # Choose GPU
-DEVICE = "cuda:1" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print(f"Device is: {DEVICE}")
 
 
 # Mean and STD to Normalize the inputs into pretrained models
