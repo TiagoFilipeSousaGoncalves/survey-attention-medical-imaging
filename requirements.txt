@@ -40,10 +40,10 @@ sympy==1.8
 threadpoolctl==2.1.0
 tifffile==2021.4.8
 tomli==1.2.1
-torch==1.7.1+cu101
-torchaudio==0.7.2
-torchsummary==1.5.1
-torchvision==0.8.2+cu101
+# torch==1.7.1+cu101
+# torchaudio==0.7.2
+# torchsummary==1.5.1
+# torchvision==0.8.2+cu101
 tqdm==4.62.3
 typing==3.7.4.3
 typing-extensions==3.10.0.0
