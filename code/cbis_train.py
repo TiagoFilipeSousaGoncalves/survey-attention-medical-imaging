@@ -22,7 +22,7 @@ np.random.seed(random_seed)
 # Project Imports
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
-from model_utilities_cbam import CBAMResNet50
+from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from cbis_data_utilities import map_images_and_labels, CBISDataset
 
 
@@ -91,9 +91,18 @@ imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=train_dir)
 
 
 # CBAM Models
-# CBAM ResNet50
-model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "cbamresnet50"
+# CBAMResNet50
+# model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "cbamresnet50"
+
+# CBAMVGG16
+model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "cbamvgg16"
+
+# CBAMDenseNet121
+# model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "cbamdensenet121"
+
 
 
 # Hyper-parameters
