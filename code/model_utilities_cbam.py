@@ -2,7 +2,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import init
 
 
 
@@ -12,7 +11,7 @@ class BasicConv(nn.Module):
         super(BasicConv, self).__init__()
         self.out_channels = out_planes
         self.conv = nn.Conv2d(in_planes, out_planes, kernel_size=kernel_size, stride=stride, padding=padding, dilation=dilation, groups=groups, bias=bias)
-        self.bn = nn.BatchNorm2d(out_planes,eps=1e-5, momentum=0.01, affine=True) if bn else None
+        self.bn = nn.BatchNorm2d(out_planes, eps=1e-5, momentum=0.01, affine=True) if bn else None
         self.relu = nn.ReLU() if relu else None
 
 
@@ -76,7 +75,7 @@ class ChannelGate(nn.Module):
                 channel_att_sum = channel_att_sum + channel_att_raw
 
 
-        scale = F.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).expand_as(x)
+        scale = torch.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).expand_as(x)
 
 
         return x * scale
@@ -113,7 +112,7 @@ class SpatialGate(nn.Module):
     def forward(self, x):
         x_compress = self.compress(x)
         x_out = self.spatial(x_compress)
-        scale = F.sigmoid(x_out) # broadcasting
+        scale = torch.sigmoid(x_out) # broadcasting
         
         
         return x * scale
@@ -199,7 +198,7 @@ class CBAMBasicBlock(nn.Module):
         # Refactored code
         if self.use_cbam:
             out = self.cbam(out)
-            print("Using CBAM!")
+            # print("Using CBAM!")
 
         out += residual
         out = self.relu(out)
@@ -262,7 +261,7 @@ class CBAMBottleneck(nn.Module):
         # Refactored code
         if self.use_cbam:
             out = self.cbam(out)
-            print("Using CBAM!")
+            # print("Using CBAM!")
 
         out += residual
         out = self.relu(out)
@@ -303,12 +302,12 @@ class ResNet(nn.Module):
 
         self.fc = nn.Linear(512 * block.expansion, num_classes)
 
-        init.kaiming_normal(self.fc.weight)
+        nn.init.kaiming_normal_(self.fc.weight)
         
         for key in self.state_dict():
             if key.split('.')[-1]=="weight":
                 if "conv" in key:
-                    init.kaiming_normal(self.state_dict()[key], mode='fan_out')
+                    nn.init.kaiming_normal_(self.state_dict()[key], mode='fan_out')
                 if "bn" in key:
                     if "SpatialGate" in key:
                         self.state_dict()[key][...] = 0
@@ -406,7 +405,7 @@ class CBAMResNet50(torch.nn.Module):
 
         # Init modules
         # Get model
-        model = ResNet(CBAMBottleneck, [3, 4, 6, 3])
+        model = ResNet(CBAMBottleneck, [3, 4, 6, 3], 1000)
 
 
         # Create our new models
@@ -416,7 +415,9 @@ class CBAMResNet50(torch.nn.Module):
         # FC-Layers
         # Compute in_features
         _in_features = torch.rand(1, self.channels, self.height, self.width)
-        _in_features = self.cbam_resnet50(_in_features)
+        aux_model = torch.nn.Sequential(*(list(model.children())[:-1]))
+        aux_model.eval()
+        _in_features = aux_model(_in_features)
         # print(_in_features.shape)
         _in_features = _in_features.size(0) * _in_features.size(1) * _in_features.size(2) * _in_features.size(3)
 
@@ -443,9 +444,9 @@ class CBAMResNet50(torch.nn.Module):
 
 
 # Uncomment to test models
-cbam_resnet = CBAMResNet50(3, 224, 224, 2)
-print(f"Model:\n{cbam_resnet}")
-aux_tensor = torch.rand(1, 3, 224, 224)
-print(f"Input shape: {aux_tensor.shape}")
-output_tensor = cbam_resnet(aux_tensor)
-print(f"Output shape: {output_tensor.shape}")
+# cbam_resnet = CBAMResNet50(3, 224, 224, 2)
+# print(f"Model:\n{cbam_resnet}")
+# aux_tensor = torch.rand(1, 3, 224, 224)
+# print(f"Input shape: {aux_tensor.shape}")
+# output_tensor = cbam_resnet(aux_tensor)
+# print(f"Output shape: {output_tensor.shape}")
