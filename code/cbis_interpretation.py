@@ -33,7 +33,7 @@ weights_dir = os.path.join("results", "cbis", "weights")
 # Post-hoc explanations
 xai_maps_dir = os.path.join("results", "cbis", "xai_maps")
 if not(os.path.isdir(xai_maps_dir)):
-    os.mkdir(xai_maps_dir)
+    os.makedirs(xai_maps_dir)
 
 
 
