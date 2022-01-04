@@ -40,7 +40,7 @@ class SELayer(torch.nn.Module):
         # FC Layer
         self.fc = torch.nn.Sequential(
             torch.nn.Linear(channel, channel // reduction, bias=False),
-            torch.nn.ReLU(inplace=True),
+            torch.nn.ReLU(inplace=False),
             torch.nn.Linear(channel // reduction, channel, bias=False),
             torch.nn.Sigmoid()
         )
@@ -84,7 +84,9 @@ class SEBottleneck(torch.nn.Module):
         self.bn3 = torch.nn.BatchNorm2d(planes * 4)
         
         # ReLU
-        self.relu = torch.nn.ReLU(inplace=True)
+        self.relu1 = torch.nn.ReLU(inplace=False)
+        self.relu2 = torch.nn.ReLU(inplace=False)
+        self.relu3 = torch.nn.ReLU(inplace=False)
         
         # Squeeze-Excitation Block
         self.se = SELayer(planes * 4, reduction)
@@ -102,11 +104,11 @@ class SEBottleneck(torch.nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self.relu1(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.relu(out)
+        out = self.relu2(out)
 
         out = self.conv3(out)
         out = self.bn3(out)
@@ -116,7 +118,7 @@ class SEBottleneck(torch.nn.Module):
             residual = self.downsample(x)
 
         out += residual
-        out = self.relu(out)
+        out = self.relu3(out)
 
         return out
 
@@ -199,10 +201,10 @@ def make_layers_se(cfg: List[Union[str, int]], batch_norm: bool = False) -> torc
             # se_layer = SELayer(channel=v)
             
             if batch_norm:
-                layers += [conv2d, torch.nn.BatchNorm2d(v), torch.nn.ReLU(inplace=True)]
+                layers += [conv2d, torch.nn.BatchNorm2d(v), torch.nn.ReLU(inplace=False)]
             
             else:
-                layers += [conv2d, torch.nn.ReLU(inplace=True)]
+                layers += [conv2d, torch.nn.ReLU(inplace=False)]
                 # layers += [conv2d, se_layer]
             
             in_channels = v
@@ -296,7 +298,7 @@ class _DenseLayer(torch.nn.Module):
         self.norm1: torch.nn.BatchNorm2d
         self.add_module('norm1', torch.nn.BatchNorm2d(num_input_features))
         self.relu1: torch.nn.ReLU
-        self.add_module('relu1', torch.nn.ReLU(inplace=True))
+        self.add_module('relu1', torch.nn.ReLU(inplace=False))
         self.conv1: torch.nn.Conv2d
         self.add_module('conv1', torch.nn.Conv2d(num_input_features, bn_size *
                                            growth_rate, kernel_size=1, stride=1,
@@ -304,7 +306,7 @@ class _DenseLayer(torch.nn.Module):
         self.norm2: torch.nn.BatchNorm2d
         self.add_module('norm2', torch.nn.BatchNorm2d(bn_size * growth_rate))
         self.relu2: torch.nn.ReLU
-        self.add_module('relu2', torch.nn.ReLU(inplace=True))
+        self.add_module('relu2', torch.nn.ReLU(inplace=False))
         self.conv2: torch.nn.Conv2d
         self.add_module('conv2', torch.nn.Conv2d(bn_size * growth_rate, growth_rate,
                                            kernel_size=3, stride=1, padding=1,
@@ -401,7 +403,7 @@ class _Transition(torch.nn.Sequential):
     def __init__(self, num_input_features: int, num_output_features: int) -> None:
         super(_Transition, self).__init__()
         self.add_module('norm', torch.nn.BatchNorm2d(num_input_features))
-        self.add_module('relu', torch.nn.ReLU(inplace=True))
+        self.add_module('relu', torch.nn.ReLU(inplace=False))
         self.add_module('conv', torch.nn.Conv2d(num_input_features, num_output_features, kernel_size=1, stride=1, bias=False))
         self.add_module('pool', torch.nn.AvgPool2d(kernel_size=2, stride=2))
 
@@ -441,7 +443,7 @@ class SEDenseNet(torch.nn.Module):
         self.features = torch.nn.Sequential(OrderedDict([
             ('conv0', torch.nn.Conv2d(3, num_init_features, kernel_size=7, stride=2, padding=3, bias=False)),
             ('norm0', torch.nn.BatchNorm2d(num_init_features)),
-            ('relu0', torch.nn.ReLU(inplace=True)),
+            ('relu0', torch.nn.ReLU(inplace=False)),
             ('pool0', torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)),
         ]))
 
@@ -497,7 +499,7 @@ class SEDenseNet(torch.nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         features = self.features(x)
-        out = torch.nn.functional.relu(features, inplace=True)
+        out = torch.nn.functional.relu(features, inplace=False)
         out = torch.nn.functional.adaptive_avg_pool2d(out, (1, 1))
         out = torch.flatten(out, 1)
         out = self.classifier(out)
