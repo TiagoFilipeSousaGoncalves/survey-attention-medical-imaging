@@ -66,8 +66,8 @@ imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=test_dir)
 # model_name = "densenet121"
 
 # ResNet50
-model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "resnet50"
+# model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "resnet50"
 
 
 # Squeeze-Excitation Models
@@ -76,8 +76,8 @@ model_name = "resnet50"
 # model_name = "seresnet50"
 
 # SEVGG16
-# model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "sevgg16"
+model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "sevgg16"
 
 # SEDenseNet121
 # model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
