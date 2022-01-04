@@ -24,7 +24,8 @@ from cbis_data_utilities import map_images_and_labels, CBISDataset
 
 
 # Directories
-data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+# data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+data_dir = "data/CBISPreprocDataset"
 test_dir = os.path.join(data_dir, "test")
 
 # Results and Weights
