@@ -9,7 +9,7 @@ import torch.nn as nn
 # Captum Imports
 from captum.attr import DeepLift, LRP
 from captum.attr._utils.custom_modules import Addition_Module
-from captum.attr._utils.lrp_rules import EpsilonRule
+from captum.attr._utils.lrp_rules import EpsilonRule, PropagationRule
 
 
 # Fix Random Seeds
@@ -56,6 +56,57 @@ class CustomLRP(LRP):
                         "for this type of layer."
                     )
                 )
+    
+
+    def _check_rules(self) -> None:
+        for module in self.model.modules():
+            if hasattr(module, "rule"):
+                if (
+                    not isinstance(module.rule, PropagationRule)
+                    and module.rule is not None
+                ):
+                    raise TypeError(
+                        (
+                            f"Please select propagation rules inherited from class "
+                            f"PropagationRule for module: {module}"
+                        )
+                    )
+
+
+    def _register_forward_hooks(self) -> None:
+        SUPPORTED_NON_LINEAR_LAYERS = [nn.ReLU, nn.Dropout, nn.Tanh, nn.Sigmoid]
+
+        for layer in self.layers:
+            if type(layer) in SUPPORTED_NON_LINEAR_LAYERS:
+                backward_handle = layer.register_backward_hook(
+                    PropagationRule.backward_hook_activation
+                )
+                self.backward_handles.append(backward_handle)
+            else:
+                forward_handle = layer.register_forward_hook(
+                    layer.rule.forward_hook  # type: ignore
+                )
+                self.forward_handles.append(forward_handle)
+                if self.verbose:
+                    print(f"Applied {layer.rule} on layer {layer}")
+
+
+    def _register_weight_hooks(self) -> None:
+        for layer in self.layers:
+            if layer.rule is not None:
+                forward_handle = layer.register_forward_hook(
+                    layer.rule.forward_hook_weights  # type: ignore
+                )
+                self.forward_handles.append(forward_handle)
+
+
+    def _register_pre_hooks(self) -> None:
+        for layer in self.layers:
+            if layer.rule is not None:
+                forward_handle = layer.register_forward_pre_hook(
+                    layer.rule.forward_pre_hook_activations  # type: ignore
+                )
+                self.forward_handles.append(forward_handle)
 
 
 
