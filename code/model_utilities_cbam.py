@@ -169,9 +169,10 @@ class CBAMBasicBlock(nn.Module):
         
         self.conv1 = conv3x3(in_planes=inplanes, out_planes=planes, stride=stride)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=False)
+        self.relu1 = nn.ReLU(inplace=False)
         self.conv2 = conv3x3(in_planes=planes, out_planes=planes)
         self.bn2 = nn.BatchNorm2d(planes)
+        self.relu2 = nn.ReLU(inplace=False)
         self.downsample = downsample
         self.stride = stride
 
@@ -191,7 +192,7 @@ class CBAMBasicBlock(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self.relu1(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
@@ -209,7 +210,7 @@ class CBAMBasicBlock(nn.Module):
             # print("Using CBAM!")
 
         out += residual
-        out = self.relu(out)
+        out = self.relu2(out)
 
 
         return out
@@ -232,7 +233,9 @@ class CBAMBottleneck(nn.Module):
         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
         self.bn3 = nn.BatchNorm2d(planes * 4)
         
-        self.relu = nn.ReLU(inplace=False)
+        self.relu1 = nn.ReLU(inplace=False)
+        self.relu2 = nn.ReLU(inplace=False)
+        self.relu3 = nn.ReLU(inplace=False)
         self.downsample = downsample
         self.stride = stride
 
@@ -250,11 +253,11 @@ class CBAMBottleneck(nn.Module):
 
         out = self.conv1(x)
         out = self.bn1(out)
-        out = self.relu(out)
+        out = self.relu1(out)
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.relu(out)
+        out = self.relu2(out)
 
         out = self.conv3(out)
         out = self.bn3(out)
@@ -272,7 +275,7 @@ class CBAMBottleneck(nn.Module):
             # print("Using CBAM!")
 
         out += residual
-        out = self.relu(out)
+        out = self.relu3(out)
 
 
         return out
