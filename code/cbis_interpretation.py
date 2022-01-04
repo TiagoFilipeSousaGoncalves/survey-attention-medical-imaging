@@ -1,15 +1,9 @@
 # Imports
 import numpy as np
-import _pickle as cPickle
 import os
-from PIL import Image
-
-# Sklearn Import
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 # PyTorch Imports
 import torch
-from torch._C import device
 from torch.utils.data import DataLoader
 import torchvision
 
@@ -24,7 +18,9 @@ np.random.seed(random_seed)
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
+from model_utilities_xai import generate_post_hoc_xmap
 from cbis_data_utilities import map_images_and_labels, CBISDataset
+
 
 
 # Directories
@@ -33,6 +29,11 @@ test_dir = os.path.join(data_dir, "test")
 
 # Results and Weights
 weights_dir = os.path.join("results", "cbis", "weights")
+
+# Post-hoc explanations
+xai_maps_dir = os.path.join("results", "cbis", "xai_maps")
+if not(os.path.isdir(xai_maps_dir)):
+    os.mkdir(xai_maps_dir)
 
 
 
@@ -56,8 +57,8 @@ imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=test_dir)
 
 # Baseline Models
 # VGG-16
-# model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "vgg16"
+model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "vgg16"
 
 # DenseNet-121
 # model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
@@ -88,8 +89,8 @@ imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=test_dir)
 # model_name = "cbamresnet50"
 
 # CBAMVGG16
-model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "cbamvgg16"
+# model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "cbamvgg16"
 
 # CBAMDenseNet121
 # model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
@@ -98,13 +99,13 @@ model_name = "cbamvgg16"
 
 
 # Hyper-parameters
-BATCH_SIZE = 32
-LOSS = torch.nn.CrossEntropyLoss()
+BATCH_SIZE = 1
 
 
 # Load model weights
 model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE))
 model.eval()
+
 
 # Load data
 # Test
@@ -123,62 +124,56 @@ test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
 
 
-# Test model
-print("Testing Phase...")
+# Generate post-hoc explanation
+print("Generating post-hoc explanation...")
 
 
-# Initialise lists to compute scores
-y_test_true = list()
-y_test_pred = list()
+# Iterate through dataloader
+for batch_idx, (images, labels) in enumerate(test_loader):
 
+    # Move data data anda model to GPU (or not)
+    images, labels = images.to(DEVICE), labels.to(DEVICE)
+    model = model.to(DEVICE)
 
-# Running train loss
-run_test_loss = 0.0
-
-
-# Deactivate gradients
-with torch.no_grad():
-
-    # Iterate through dataloader
-    for batch_idx, (images, labels) in enumerate(test_loader):
-
-        # Move data data anda model to GPU (or not)
-        images, labels = images.to(DEVICE), labels.to(DEVICE)
-        model = model.to(DEVICE)
-
-        # Forward pass: compute predicted outputs by passing inputs to the model
-        logits = model(images)
-        
-        # Compute the batch loss
-        # Using CrossEntropy w/ Softmax
-        loss = LOSS(logits, labels)
-        
-        # Update batch losses
-        run_test_loss += (loss.item() * images.size(0))
-
-        # Concatenate lists
-        y_test_true += list(labels.cpu().detach().numpy())
-        
-        # Using Softmax Activation
-        # Apply Softmax on Logits and get the argmax to get the predicted labels
-        s_logits = torch.nn.Softmax(dim=1)(logits)
-        s_logits = torch.argmax(s_logits, dim=1)
-        y_test_pred += list(s_logits.cpu().detach().numpy())
+    # Forward pass: compute predicted outputs by passing inputs to the model
+    logits = model(images)
 
     
+    # Using Softmax Activation
+    # Apply Softmax on Logits and get the argmax to get the predicted labels
+    s_logits = torch.nn.Softmax(dim=1)(logits)
+    s_logits = torch.argmax(s_logits, dim=1)
 
-    # Compute Average Train Loss
-    avg_test_loss = run_test_loss/len(test_loader.dataset)
+    # Get prediction
+    prediction = s_logits[0].cpu().item()
+    prediction = int(prediction)
 
-    # Compute Training Accuracy
-    test_acc = accuracy_score(y_true=y_test_true, y_pred=y_test_pred)
-    # val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred)
-    # val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred)
-    # val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred)
 
-    # Print Statistics
-    print(f"{model_name}\tTest Loss: {avg_test_loss}\tTest Accuracy: {test_acc}")
-    # print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
+    # Generate post-hoc explanation
+    for post_hoc_method in ["deeplift", "lrp"]:
+
+        # Get original image and post-hoc explanation
+        original_image, original_label, xai_map = generate_post_hoc_xmap(image=images[0], ground_truth_label=labels[0], model=model, post_hoc_method=post_hoc_method, device=DEVICE, mean_array=MEAN, std_array=STD)
+
+
+        # Original images saving directory
+        ori_img_save_dir = os.path.join(xai_maps_dir, f"{model_name.lower()}", "original-imgs")
+        if not(os.path.isdir(ori_img_save_dir)):
+            os.makedirs(ori_img_save_dir)
+
+        # Save image
+        np.save(file=os.path.join(ori_img_save_dir, f"idx{batch_idx}_gt{original_label}_pred{prediction}.npy"), arr=original_image, allow_pickle=True)
+
+
+        # xAI maps saving directory
+        xai_map_save_dir = os.path.join(xai_maps_dir, f"{model_name.lower()}", post_hoc_method)
+        if not(os.path.isdir(xai_map_save_dir)):
+            os.makedirs(xai_map_save_dir)
+        
+        # Save image
+        np.save(file=os.path.join(xai_map_save_dir, f"idx{batch_idx}_gt{original_label}_pred{prediction}.npy"), arr=xai_map, allow_pickle=True)
+
+
 
 
 # Finish statement
