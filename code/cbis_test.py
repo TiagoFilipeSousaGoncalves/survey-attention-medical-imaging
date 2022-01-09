@@ -98,7 +98,7 @@ model_name = "cbamvgg16"
 
 
 # Hyper-parameters
-BATCH_SIZE = 32
+BATCH_SIZE = 2
 LOSS = torch.nn.CrossEntropyLoss()
 
 
