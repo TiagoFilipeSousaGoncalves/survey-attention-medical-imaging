@@ -90,12 +90,12 @@ imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=test_dir)
 # model_name = "cbamresnet50"
 
 # CBAMVGG16
-model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "cbamvgg16"
+# model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "cbamvgg16"
 
 # CBAMDenseNet121
-# model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamdensenet121"
+model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "cbamdensenet121"
 
 
 
