@@ -130,8 +130,7 @@ dmypy.json
 
 
 # Directories
-data/PH2Dataset/
-data/CBISPreprocDataset/
+data/
 results/
 
 # macOS files
