@@ -21,6 +21,7 @@ np.random.seed(random_seed)
 # Project Imports
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
+from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from mimicxr_data_utilities import MIMICXRDataset, map_images_and_labels
 
 
@@ -97,13 +98,27 @@ model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_wid
 model_name = "sedensenet121"
 
 
+# CBAM Models
+# CBAMResNet50
+# model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "cbamresnet50"
+
+# CBAMVGG16
+# model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "cbamvgg16"
+
+# CBAMDenseNet121
+# model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "cbamdensenet121"
+
+
 
 # Hyper-parameters
 EPOCHS = 300
 LOSS = torch.nn.CrossEntropyLoss()
 LEARNING_RATE = 1e-4
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-BATCH_SIZE = 8
+BATCH_SIZE = 16
 
 
 # Load data
