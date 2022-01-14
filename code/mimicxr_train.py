@@ -94,14 +94,14 @@ _, _, nr_classes = map_images_and_labels(base_data_path=train_dir, pickle_path=o
 # model_name = "sevgg16"
 
 # SEDenseNet121
-model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "sedensenet121"
+# model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "sedensenet121"
 
 
 # CBAM Models
 # CBAMResNet50
-# model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamresnet50"
+model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "cbamresnet50"
 
 # CBAMVGG16
 # model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
