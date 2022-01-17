@@ -104,12 +104,12 @@ _, _, nr_classes = map_images_and_labels(base_data_path=train_dir, pickle_path=o
 # model_name = "cbamresnet50"
 
 # CBAMVGG16
-model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "cbamvgg16"
+# model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "cbamvgg16"
 
 # CBAMDenseNet121
-# model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamdensenet121"
+model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "cbamdensenet121"
 
 
 
@@ -118,7 +118,7 @@ EPOCHS = 300
 LOSS = torch.nn.CrossEntropyLoss()
 LEARNING_RATE = 1e-4
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-BATCH_SIZE = 4
+BATCH_SIZE = 16
 
 
 # Load data
