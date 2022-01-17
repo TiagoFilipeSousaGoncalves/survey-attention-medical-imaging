@@ -86,12 +86,12 @@ _, _, nr_classes = map_images_and_labels(base_data_path=test_dir, pickle_path=os
 
 # CBAM Models
 # CBAMResNet50
-model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "cbamresnet50"
+# model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "cbamresnet50"
 
 # CBAMVGG16
-# model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamvgg16"
+model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "cbamvgg16"
 
 # CBAMDenseNet121
 # model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
