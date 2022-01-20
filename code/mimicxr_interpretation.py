@@ -69,8 +69,8 @@ _, _, nr_classes = map_images_and_labels(base_data_path=test_dir, pickle_path=os
 # model_name = "vgg16"
 
 # DenseNet-121
-model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "densenet121"
+# model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# model_name = "densenet121"
 
 # ResNet50
 # model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
@@ -87,8 +87,8 @@ model_name = "densenet121"
 # model_name = "sevgg16"
 
 # SEDenseNet121
-# model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "sedensenet121"
+model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+model_name = "sedensenet121"
 
 
 # CBAM Models
