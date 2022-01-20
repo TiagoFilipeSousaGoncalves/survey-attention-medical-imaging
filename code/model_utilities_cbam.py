@@ -53,7 +53,7 @@ class ChannelGate(nn.Module):
         
         self.flatten = nn.Flatten()
         self.linear1 = nn.Linear(gate_channels, gate_channels // reduction_ratio)
-        self.linear2 = (gate_channels // reduction_ratio, gate_channels)
+        self.linear2 = nn.Linear(gate_channels // reduction_ratio, gate_channels)
 
         relus = dict()
         for idx, _ in enumerate(pool_types):
