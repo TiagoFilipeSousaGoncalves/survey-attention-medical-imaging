@@ -156,8 +156,11 @@ except:
         state_dict = torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE)
         new_state_dict = OrderedDict()
 
-        for new_key, key in zip(missing, unexpected):
-            new_state_dict[new_key] = state_dict[key]
+        for key, value in state_dict.items():
+            if key in unexpected:
+                new_state_dict[missing[unexpected.index(key)]] = value
+            else:
+                new_state_dict[key] = value
     
 
     # Now we try to load the new state_dict
@@ -168,7 +171,8 @@ except:
 # Put model in evaluation mode
 model.eval()
 
-
+print("Success!")
+quit()
 
 # Load data
 # Test
