@@ -140,7 +140,7 @@ BATCH_SIZE = 1
 # Load model weights
 missing, unexpected = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=False)
 print(len(missing), len(unexpected))
-print(missing)
+print(unexpected)
 model.eval()
 
 
@@ -162,7 +162,7 @@ test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
 
 # Generate post-hoc explanation
-print("Generating post-hoc explanation...")
+print(f"Generating post-hoc explanation for model: {model_name}")
 
 
 # Iterate through dataloader
