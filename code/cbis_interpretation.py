@@ -1,4 +1,5 @@
 # Imports
+from msilib.schema import Error
 import numpy as np
 import os
 import argparse
@@ -137,8 +138,16 @@ BATCH_SIZE = 1
 
 
 # Load model weights
-model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE))
-model.eval()
+try:
+    model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE))
+    model.eval()
+
+except:
+    missing_keys, unexpected_keys = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE))
+    print(len(missing_keys), len(unexpected_keys))
+
+finally:
+    raise ValueError("Model state_dict not found.")
 
 
 # Load data
