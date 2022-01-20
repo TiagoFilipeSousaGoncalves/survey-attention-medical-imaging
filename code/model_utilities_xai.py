@@ -11,6 +11,9 @@ from captum.attr import DeepLift, LRP
 from captum.attr._utils.custom_modules import Addition_Module
 from captum.attr._utils.lrp_rules import EpsilonRule, PropagationRule
 
+# Project Imports
+from model_utilities_cbam import ChannelPool
+
 
 # Fix Random Seeds
 random_seed = 42
@@ -32,6 +35,7 @@ class CustomLRP(LRP):
             nn.Linear: EpsilonRule,
             nn.BatchNorm2d: EpsilonRule,
             Addition_Module: EpsilonRule,
+            ChannelPool: EpsilonRule,
             }
 
         for layer in self.layers:
