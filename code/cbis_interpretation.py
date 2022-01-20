@@ -140,6 +140,7 @@ BATCH_SIZE = 1
 # Load model weights
 missing, unexpected = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=False)
 print(len(missing), len(unexpected))
+print(missing)
 model.eval()
 
 
