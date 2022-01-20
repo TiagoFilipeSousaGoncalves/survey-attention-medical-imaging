@@ -220,7 +220,7 @@ class ResNet(nn.Module):
         
         self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = norm_layer(self.inplanes)
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = nn.ReLU(inplace=False)
         
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         
