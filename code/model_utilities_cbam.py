@@ -44,13 +44,24 @@ class ChannelGate(nn.Module):
         
         self.gate_channels = gate_channels
         
-        self.mlp = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(gate_channels, gate_channels // reduction_ratio),
-            nn.ReLU(inplace=False),
-            nn.Linear(gate_channels // reduction_ratio, gate_channels)
-            )
+        # self.mlp = nn.Sequential(
+        #     nn.Flatten(),
+        #     nn.Linear(gate_channels, gate_channels // reduction_ratio),
+        #     nn.ReLU(inplace=False),
+        #     nn.Linear(gate_channels // reduction_ratio, gate_channels)
+        #     )
         
+        self.flatten = nn.Flatten()
+        self.linear1 = nn.Linear(gate_channels, gate_channels // reduction_ratio)
+        self.linear2 = (gate_channels // reduction_ratio, gate_channels)
+
+        relus = dict()
+        for idx, _ in enumerate(pool_types):
+            relus[idx] = nn.ReLU(inplace=False)
+        
+        self.relus = relus
+
+
         self.pool_types = pool_types
     
     
@@ -58,23 +69,34 @@ class ChannelGate(nn.Module):
         
         channel_att_sum = None
         
-        for pool_type in self.pool_types:
+        for idx, pool_type in enumerate(self.pool_types):
             if pool_type=='avg':
                 avg_pool = F.avg_pool2d(x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
-                channel_att_raw = self.mlp(avg_pool)
+                # channel_att_raw = self.mlp(avg_pool)
+                channel_att_raw = self.flatten(avg_pool)
+                channel_att_raw = self.linear1(channel_att_raw)
+                channel_att_raw = self.relus[idx](channel_att_raw)
+                channel_att_raw = self.linear2(channel_att_raw)
             
             elif pool_type=='max':
                 max_pool = F.max_pool2d(x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
-                channel_att_raw = self.mlp(max_pool)
+                # channel_att_raw = self.mlp(max_pool)
+                channel_att_raw = self.flatten(max_pool)
+                channel_att_raw = self.linear1(channel_att_raw)
+                channel_att_raw = self.relus[idx](channel_att_raw)
+                channel_att_raw = self.linear2(channel_att_raw)
+
             
             elif pool_type=='lp':
                 lp_pool = F.lp_pool2d(x, 2, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
-                channel_att_raw = self.mlp(lp_pool)
+                # channel_att_raw = self.mlp(lp_pool)
+                pass
             
             elif pool_type=='lse':
                 # LSE pool only
                 lse_pool = logsumexp_2d(x)
-                channel_att_raw = self.mlp(lse_pool)
+                # channel_att_raw = self.mlp(lse_pool)
+                pass
 
 
             if channel_att_sum is None:
