@@ -51,7 +51,7 @@ class ChannelGate(nn.Module):
         #     nn.Linear(gate_channels // reduction_ratio, gate_channels)
         #     )
         
-        self.flatten = nn.Flatten()
+        # self.flatten = nn.Flatten()
         self.linear1 = nn.Linear(gate_channels, gate_channels // reduction_ratio)
         self.linear2 = nn.Linear(gate_channels // reduction_ratio, gate_channels)
 
@@ -73,7 +73,8 @@ class ChannelGate(nn.Module):
             if pool_type=='avg':
                 avg_pool = F.avg_pool2d(x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
                 # channel_att_raw = self.mlp(avg_pool)
-                channel_att_raw = self.flatten(avg_pool)
+                # channel_att_raw = self.flatten(avg_pool)
+                channel_att_raw = torch.reshape(avg_pool, (avg_pool.size(0), -1))
                 channel_att_raw = self.linear1(channel_att_raw)
                 channel_att_raw = self.relus[idx](channel_att_raw)
                 channel_att_raw = self.linear2(channel_att_raw)
@@ -81,7 +82,8 @@ class ChannelGate(nn.Module):
             elif pool_type=='max':
                 max_pool = F.max_pool2d(x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
                 # channel_att_raw = self.mlp(max_pool)
-                channel_att_raw = self.flatten(max_pool)
+                # channel_att_raw = self.flatten(max_pool)
+                channel_att_raw = torch.reshape(max_pool, (max_pool.size(0), -1))
                 channel_att_raw = self.linear1(channel_att_raw)
                 channel_att_raw = self.relus[idx](channel_att_raw)
                 channel_att_raw = self.linear2(channel_att_raw)

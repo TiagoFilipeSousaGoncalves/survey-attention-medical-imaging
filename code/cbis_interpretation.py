@@ -165,14 +165,13 @@ except:
 
     # Now we try to load the new state_dict
     model.load_state_dict(new_state_dict, strict=True)
-    
+    print("Success!")
+
 
 
 # Put model in evaluation mode
 model.eval()
 
-print("Success!")
-quit()
 
 # Load data
 # Test
