@@ -1,6 +1,8 @@
 # Imports
+from ast import Raise
 import numpy as np
 import os
+import argparse
 
 # PyTorch Imports
 import torch
@@ -20,6 +22,19 @@ from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from model_utilities_xai import generate_post_hoc_xmap
 from mimicxr_data_utilities import MIMICXRDataset, map_images_and_labels
+
+
+
+# Command Line Interface
+# Create the parser
+parser = argparse.ArgumentParser()
+
+# Add the argument
+parser.add_argument('--model', type=str, required=True, help='Model Name: VGG16, DenseNet121, ResNet50, SEResNet50, SEVGG16, SEDenseNet121, CBAMResNet50, CBAMVGG16, CBAMDenseNet121')
+
+# Parse the argument
+args = parser.parse_args()
+
 
 
 # Directories
@@ -63,46 +78,66 @@ img_width = 224
 _, _, nr_classes = map_images_and_labels(base_data_path=test_dir, pickle_path=os.path.join(test_dir, "Annotations.pickle"))
 
 
-# Baseline Models
+# Get the right model from the CLI
+model = args.model 
+
+
 # VGG-16
-# model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "vgg16"
+if model == "VGG16":
+    model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "vgg16"
+
 
 # DenseNet-121
-# model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "densenet121"
+elif model == "DenseNet121":
+    model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "densenet121"
+
 
 # ResNet50
-# model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "resnet50"
+elif model == "ResNet50":
+    model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "resnet50"
 
 
-# Squeeze-Excitation Models
 # SEResNet50
-# model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "seresnet50"
+elif model == "SEResNet50":
+    model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "seresnet50"
+
 
 # SEVGG16
-# model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "sevgg16"
+elif model == "SEVGG16":
+    model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "sevgg16"
+
 
 # SEDenseNet121
-model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "sedensenet121"
+elif model == "SEDenseNet121":
+    model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "sedensenet121"
 
 
-# CBAM Models
 # CBAMResNet50
-# model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamresnet50"
+elif model == "CBAMResNet50":
+    model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "cbamresnet50"
+
 
 # CBAMVGG16
-# model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamvgg16"
+elif model == "CBAMVGG16":
+    model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "cbamvgg16"
+
 
 # CBAMDenseNet121
-# model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamdensenet121"
+elif model == "CBAMDenseNet121":
+    model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "cbamdensenet121"
+
+
+else:
+    raise ValueError(f"{model} is not a valida model name argument. Please provide a valid model name.")
 
 
 
@@ -133,7 +168,7 @@ test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
 
 # Generate post-hoc explanation
-print("Generating post-hoc explanation...")
+print(f"Generating post-hoc explanation for model: {model_name}...")
 
 
 # Iterate through dataloader
