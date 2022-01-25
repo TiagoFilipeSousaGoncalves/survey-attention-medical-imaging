@@ -1,5 +1,5 @@
 # Imports
-from ast import Raise
+from collections import OrderedDict
 import numpy as np
 import os
 import argparse
@@ -149,18 +149,18 @@ BATCH_SIZE = 1
 # We need to add an exception to prevent some errors from the attention mechanisms that were already trained
 # Case without any error
 try:
-    model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=True)
+    model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_mimicxr.pt"), map_location=DEVICE), strict=True)
 
 
 # Case related to CBAM blocks
 except:
     print("Fixing key values with old trained CBAM models")
-    missing, unexpected = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=False)
+    missing, unexpected = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_mimicxr.pt"), map_location=DEVICE), strict=False)
     
     if len(missing) == len(unexpected):
         
         # Method to remap the new state_dict keys (https://gist.github.com/the-bass/0bf8aaa302f9ba0d26798b11e4dd73e3)
-        state_dict = torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE)
+        state_dict = torch.load(os.path.join(weights_dir, f"{model_name}_mimicxr.pt"), map_location=DEVICE)
         new_state_dict = OrderedDict()
 
         for key, value in state_dict.items():
