@@ -1,5 +1,6 @@
 # Imports
 import numpy as np
+import matplotlib.pyplot as plt
 from collections import defaultdict
 
 # PyTorch Imports
@@ -185,3 +186,15 @@ def generate_post_hoc_xmap(image, ground_truth_label, model, post_hoc_method, **
 
 
     return original_image, label, xai_map
+
+
+
+# Helper funtion to get figures to be shown after Captum VIZ
+# https://stackoverflow.com/questions/49503869/attributeerror-while-trying-to-load-the-pickled-matplotlib-figure
+def convert_figure(fig):
+
+    # create a dummy figure and use its manager to display "fig"  
+    dummy = plt.figure(figsize=(6,6))
+    new_manager = dummy.canvas.manager
+    new_manager.canvas.figure = fig
+    fig.set_canvas(new_manager.canvas)
