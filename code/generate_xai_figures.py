@@ -177,7 +177,7 @@ for fname in attribute_flist:
     deeplift_map = np.load(deeplift_fname, allow_pickle=True)
 
     # Get figure
-    figure, axis = viz.visualize_image_attr(deeplift_map, original_img, method="heat_map", sign="all", show_colorbar=False, use_pyplot=False)
+    figure, axis = viz.visualize_image_attr(deeplift_map, original_img, method="blended_heat_map", sign="all", show_colorbar=False, use_pyplot=False)
     
     # Get the figure from memory
     convert_figure(figure)
@@ -196,7 +196,7 @@ for fname in attribute_flist:
     lrp_map = np.load(lrp_fname, allow_pickle=True)
 
     # Get figure
-    figure, axis = viz.visualize_image_attr(lrp_map, original_img, method="heat_map", sign="all", show_colorbar=False, use_pyplot=False)
+    figure, axis = viz.visualize_image_attr(lrp_map, original_img, method="blended_heat_map", sign="all", show_colorbar=False, use_pyplot=False)
     
     # Get the figure from memory
     convert_figure(figure)
