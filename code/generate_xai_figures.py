@@ -141,11 +141,14 @@ attribute_flist.sort()
 
 # .PNG sub-dirs
 for sub_dir_name in sub_dirs:
-    png_sub_dir = os.path.join(png_figs_dir, sub_dir_name)
+    png_sub_dir = os.path.join(png_figs_dir, model_name, sub_dir_name)
     if not(os.path.isdir(png_sub_dir)):
         os.makedirs(png_sub_dir)
 
 
+
+# Debug print
+print("Creating figures...")
 
 # Loop through files
 for fname in attribute_flist:
@@ -162,7 +165,7 @@ for fname in attribute_flist:
     
     # Save figure
     plt.axis('off')
-    plt.savefig(os.path.join(png_figs_dir, sub_dirs[0], original_fname.split('.')[0]+'.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(png_figs_dir, model_name, sub_dirs[0], fname.split('.')[0]+'.png'), bbox_inches='tight')
     plt.clf()
     # plt.show()
     plt.close()
@@ -181,7 +184,7 @@ for fname in attribute_flist:
 
     # Save figure
     plt.axis('off')
-    plt.savefig(os.path.join(png_sub_dir, sub_dirs[1], deeplift_fname.split('.')[0]+'.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(png_figs_dir, model_name, sub_dirs[1], fname.split('.')[0]+'.png'), bbox_inches='tight')
     plt.clf()
     # plt.show()
     plt.close()
@@ -200,7 +203,7 @@ for fname in attribute_flist:
 
     # Save figure
     plt.axis('off')
-    plt.savefig(os.path.join(png_sub_dir, sub_dirs[2], lrp_fname.split('.')[0]+'.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(png_figs_dir, model_name, sub_dirs[2], fname.split('.')[0]+'.png'), bbox_inches='tight')
     plt.clf()
     # plt.show()
     plt.close()
