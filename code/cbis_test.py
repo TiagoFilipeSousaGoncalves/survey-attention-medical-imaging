@@ -190,7 +190,7 @@ test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
 
 # Test model
-print(f"Testing Phase | Data Set: {args.dataset} | Data Split:{data_split}")
+print(f"Testing Step | Data Set: {args.dataset} | Data Split: {data_split}")
 
 
 # Initialise lists to compute scores
@@ -243,7 +243,7 @@ with torch.no_grad():
     # val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred)
 
     # Print Statistics
-    print(f"{model_name}\tTest Loss: {avg_test_loss}\tTest Accuracy: {test_acc}")
+    print(f"Model Name: {model_name}\t{split} Loss: {avg_test_loss}\t{data_split} Accuracy: {test_acc}")
     # print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
 
 
