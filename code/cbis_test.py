@@ -49,7 +49,8 @@ args = parser.parse_args()
 
 
 # Directories
-data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+# data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+data_dir = "data/CBISPreprocDataset"
 train_dir = os.path.join(data_dir, "train")
 val_dir = os.path.join(data_dir, "val")
 test_dir = os.path.join(data_dir, "test")
@@ -99,9 +100,9 @@ else:
 imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=curr_dir)
 
 
+
 # Get the right model from the CLI
 model = args.model 
-
 
 # VGG-16
 if model == "VGG16":
