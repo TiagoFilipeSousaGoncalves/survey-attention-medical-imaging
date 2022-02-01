@@ -3,6 +3,7 @@ import numpy as np
 import _pickle as cPickle
 import os
 from PIL import Image
+import argparse
 
 # Sklearn Import
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
@@ -27,9 +28,32 @@ from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from cbis_data_utilities import map_images_and_labels, CBISDataset
 
 
+
+# Command Line Interface
+# Create the parser
+parser = argparse.ArgumentParser()
+
+# Add the arguments
+# Data set
+parser.add_argument('--dataset', type=str, required=True, help="Data set: CBISDDSM, ISIC2020, MIMICXR")
+
+# Model
+parser.add_argument('--model', type=str, required=True, help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16')
+
+# Data split
+parser.add_argument('--split', type=str, required=True, help='Data split: Train, Validation, Test')
+
+# Parse the argument
+args = parser.parse_args()
+
+
+
 # Directories
 data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+train_dir = os.path.join(data_dir, "train")
+val_dir = os.path.join(data_dir, "val")
 test_dir = os.path.join(data_dir, "test")
+
 
 # Results and Weights
 weights_dir = os.path.join("results", "cbis", "weights")
@@ -50,50 +74,91 @@ img_nr_channels = 3
 img_height = 224
 img_width = 224
 
+
+# Get the data split
+data_split = args.split
+
+if data_split == "Train":
+    curr_dir = train_dir
+
+
+elif data_split == "Validation":
+    curr_dir = val_dir
+
+
+elif data_split == "Test":
+    curr_dir = test_dir
+
+
+else:
+    raise ValueError(f"{data_split} is not a valid split name argument. Please provide a valid split name.")
+
+
+
 # Output Data Dimensions
-imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=test_dir)
+imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=curr_dir)
 
 
-# Baseline Models
+# Get the right model from the CLI
+model = args.model 
+
+
 # VGG-16
-# model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "vgg16"
+if model == "VGG16":
+    model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "vgg16"
+
 
 # DenseNet-121
-# model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "densenet121"
+elif model == "DenseNet121":
+    model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "densenet121"
+
 
 # ResNet50
-# model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "resnet50"
+elif model == "ResNet50":
+    model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "resnet50"
 
 
-# Squeeze-Excitation Models
 # SEResNet50
-# model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "seresnet50"
+elif model == "SEResNet50":
+    model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "seresnet50"
+
 
 # SEVGG16
-# model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "sevgg16"
+elif model == "SEVGG16":
+    model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "sevgg16"
+
 
 # SEDenseNet121
-# model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "sedensenet121"
+elif model == "SEDenseNet121":
+    model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "sedensenet121"
 
 
-# CBAM Models
 # CBAMResNet50
-# model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamresnet50"
+elif model == "CBAMResNet50":
+    model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "cbamresnet50"
+
 
 # CBAMVGG16
-# model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamvgg16"
+elif model == "CBAMVGG16":
+    model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "cbamvgg16"
+
 
 # CBAMDenseNet121
-model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "cbamdensenet121"
+elif model == "CBAMDenseNet121":
+    model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "cbamdensenet121"
+
+
+else:
+    raise ValueError(f"{model} is not a valid model name argument. Please provide a valid model name.")
 
 
 
@@ -116,7 +181,7 @@ test_transforms = torchvision.transforms.Compose([
 ])
 
 # Test Dataset
-test_set = CBISDataset(base_data_path=test_dir, transform=test_transforms)
+test_set = CBISDataset(base_data_path=curr_dir, transform=test_transforms)
 
 # Test Dataloader
 test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
@@ -124,7 +189,7 @@ test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
 
 # Test model
-print("Testing Phase...")
+print(f"Testing Phase | Data Set: {args.dataset} | Data Split:{data_split}")
 
 
 # Initialise lists to compute scores
