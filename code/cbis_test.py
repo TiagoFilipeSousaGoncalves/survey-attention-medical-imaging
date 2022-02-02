@@ -1,6 +1,6 @@
 # Imports
 import numpy as np
-import _pickle as cPickle
+from collections import OrderedDict
 import os
 from PIL import Image
 import argparse
@@ -169,7 +169,37 @@ LOSS = torch.nn.CrossEntropyLoss()
 
 
 # Load model weights
-model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE))
+# We need to add an exception to prevent some errors from the attention mechanisms that were already trained
+# Case without any error
+try:
+    model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=True)
+
+
+# Case related to CBAM blocks
+except:
+    print("Fixing key values with old trained CBAM models")
+    missing, unexpected = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=False)
+    
+    if len(missing) == len(unexpected):
+        
+        # Method to remap the new state_dict keys (https://gist.github.com/the-bass/0bf8aaa302f9ba0d26798b11e4dd73e3)
+        state_dict = torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE)
+        new_state_dict = OrderedDict()
+
+        for key, value in state_dict.items():
+            if key in unexpected:
+                new_state_dict[missing[unexpected.index(key)]] = value
+            else:
+                new_state_dict[key] = value
+    
+
+    # Now we try to load the new state_dict
+    model.load_state_dict(new_state_dict, strict=True)
+    print("Success!")
+
+
+
+# Put model in evaluation mode
 model.eval()
 
 # Load data
