@@ -2,7 +2,6 @@
 import numpy as np
 from collections import OrderedDict
 import os
-from PIL import Image
 import argparse
 
 # Sklearn Import
@@ -10,7 +9,6 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 
 # PyTorch Imports
 import torch
-from torch._C import device
 from torch.utils.data import DataLoader
 import torchvision
 
@@ -25,8 +23,10 @@ np.random.seed(random_seed)
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from cbis_data_utilities import map_images_and_labels, CBISDataset
-
+from cbis_data_utilities import map_images_and_labels as cbis_map_images_and_labels
+from cbis_data_utilities import CBISDataset
+from mimicxr_data_utilities import map_images_and_labels as mimic_map_images_and_labels
+from mimicxr_data_utilities import MIMICXRDataset
 
 
 # Command Line Interface
@@ -48,16 +48,35 @@ args = parser.parse_args()
 
 
 
-# Directories
-# data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-data_dir = "data/CBISPreprocDataset"
-train_dir = os.path.join(data_dir, "train")
-val_dir = os.path.join(data_dir, "val")
-test_dir = os.path.join(data_dir, "test")
+# Datasets
+dataset = args.dataset
+
+# CBISDDSM
+if dataset == "CBISDDSM":
+    # Directories
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+    data_dir = "data/CBISPreprocDataset"
+    train_dir = os.path.join(data_dir, "train")
+    val_dir = os.path.join(data_dir, "val")
+    test_dir = os.path.join(data_dir, "test")
 
 
-# Results and Weights
-weights_dir = os.path.join("results", "cbis", "weights")
+    # Results and Weights
+    weights_dir = os.path.join("results", "cbis", "weights")
+
+
+# MIMICXR
+elif dataset == "MIMICXR":
+    # Directories
+    # data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
+    data_dir = "data/MedIA"
+    train_dir = os.path.join(data_dir, "Train_images_AP_resized")
+    val_dir = os.path.join(data_dir, "Val_images_AP_resized")
+    test_dir = os.path.join(data_dir, "Test_images_AP_resized")
+
+
+    # Results and Weights
+    weights_dir = os.path.join("results", "mimicxr", "weights")
 
 
 
@@ -97,12 +116,18 @@ else:
 
 
 # Output Data Dimensions
-imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=curr_dir)
+# CBISDDSM
+if dataset == "CBISDDSM":
+    imgs_labels, labels_dict, nr_classes = cbis_map_images_and_labels(dir=curr_dir)
 
+
+# MIMICXR
+elif dataset == "MIMICXR":
+    _, _, nr_classes = mimic_map_images_and_labels(base_data_path=test_dir, pickle_path=os.path.join(test_dir, "Annotations.pickle"))
 
 
 # Get the right model from the CLI
-model = args.model 
+model = args.model
 
 # VGG-16
 if model == "VGG16":
@@ -172,18 +197,39 @@ LOSS = torch.nn.CrossEntropyLoss()
 # We need to add an exception to prevent some errors from the attention mechanisms that were already trained
 # Case without any error
 try:
-    model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=True)
+    if dataset == "CBISDDSM":
+        model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=True)
+    
+    elif dataset == "MIMICXR":
+        model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_mimicxr.pt"), map_location=DEVICE))
 
 
 # Case related to CBAM blocks
 except:
     print("Fixing key values with old trained CBAM models")
-    missing, unexpected = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=False)
+    
+    # CBISDDSM
+    if dataset == "CBISDDSM":
+        missing, unexpected = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE), strict=False)
+    
+    # MIMICXR
+    elif dataset == "MIMICXR":
+        missing, unexpected = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_mimicxr.pt"), map_location=DEVICE), strict=False)
+
     
     if len(missing) == len(unexpected):
         
         # Method to remap the new state_dict keys (https://gist.github.com/the-bass/0bf8aaa302f9ba0d26798b11e4dd73e3)
-        state_dict = torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE)
+
+        # CBISDDSM
+        if dataset == "CBISDDSM":
+            state_dict = torch.load(os.path.join(weights_dir, f"{model_name}_cbis.pt"), map_location=DEVICE)
+        
+        # MIMICXR
+        elif dataset == "MIMICXR":
+            state_dict = torch.load(os.path.join(weights_dir, f"{model_name}_mimicxr.pt"), map_location=DEVICE)
+        
+
         new_state_dict = OrderedDict()
 
         for key, value in state_dict.items():
@@ -212,7 +258,16 @@ test_transforms = torchvision.transforms.Compose([
 ])
 
 # Test Dataset
-test_set = CBISDataset(base_data_path=curr_dir, transform=test_transforms)
+# CBISDDSM
+if dataset == "CBISDDSM":
+    test_set = CBISDataset(base_data_path=curr_dir, transform=test_transforms)
+
+
+# MIMCXR
+elif dataset == "MIMICXR":
+    test_set = MIMICXRDataset(base_data_path=curr_dir, pickle_path=os.path.join(curr_dir, "Annotations.pickle"), transform=test_transforms)
+
+
 
 # Test Dataloader
 test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
@@ -220,7 +275,7 @@ test_loader = DataLoader(dataset=test_set, batch_size=BATCH_SIZE, shuffle=False)
 
 
 # Test model
-print(f"Testing Step | Data Set: {args.dataset} | Data Split: {data_split}")
+print(f"Testing Step | Data Set: {dataset} | Data Split: {data_split}")
 
 
 # Initialise lists to compute scores
@@ -261,7 +316,6 @@ with torch.no_grad():
         s_logits = torch.argmax(s_logits, dim=1)
         y_test_pred += list(s_logits.cpu().detach().numpy())
 
-    
 
     # Compute Average Train Loss
     avg_test_loss = run_test_loss/len(test_loader.dataset)
