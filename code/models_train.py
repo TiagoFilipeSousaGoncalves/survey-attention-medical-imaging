@@ -92,6 +92,7 @@ elif dataset == "MIMICXR":
 
 # Choose GPU
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {DEVICE}")
 
 
 # Mean and STD to Normalize the inputs into pretrained models
