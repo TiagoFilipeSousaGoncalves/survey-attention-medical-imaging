@@ -228,7 +228,7 @@ if dataset == "CBISDDSM":
 
 # MIMCXR
 elif dataset == "MIMICXR":
-    train_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
+    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
 
 # Validation Dataloader
 val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True)
