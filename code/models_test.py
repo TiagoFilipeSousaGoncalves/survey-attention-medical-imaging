@@ -1,8 +1,8 @@
 # Imports
-import numpy as np
-from collections import OrderedDict
 import os
 import argparse
+import numpy as np
+from collections import OrderedDict
 
 # Sklearn Import
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
@@ -23,10 +23,8 @@ np.random.seed(random_seed)
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from cbis_data_utilities import map_images_and_labels as cbis_map_images_and_labels
-from cbis_data_utilities import CBISDataset
-from mimicxr_data_utilities import map_images_and_labels as mimic_map_images_and_labels
-from mimicxr_data_utilities import MIMICXRDataset
+from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, CBISDataset, MIMICXRDataset
+
 
 
 # Command Line Interface

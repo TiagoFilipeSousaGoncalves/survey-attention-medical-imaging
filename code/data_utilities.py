@@ -1,6 +1,7 @@
 # Imports
-import numpy as np
 import os
+import _pickle as cPickle
+import numpy as np
 from PIL import Image
 
 # PyTorch Imports
@@ -8,16 +9,10 @@ import torch
 from torch.utils.data import Dataset
 
 
-# Data Directories
-data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-train_dir = os.path.join(data_dir, "train")
-val_dir = os.path.join(data_dir, "val")
-test_dir = os.path.join(data_dir, "test")
 
 
-
-# Function: Get images and labels from directory files
-def map_images_and_labels(dir):
+# CBIS-DDSM: Get images and labels from directory files
+def cbis_map_images_and_labels(dir):
     # Images
     dir_files = os.listdir(dir)
     dir_imgs = [i for i in dir_files if i.split('.')[1]=='png']
@@ -77,7 +72,7 @@ def map_images_and_labels(dir):
 
 
 
-# Create a Dataset Class
+# CBIS-DDSM: Dataset Class
 class CBISDataset(Dataset):
     def __init__(self, base_data_path, transform=None):
         """
@@ -90,7 +85,7 @@ class CBISDataset(Dataset):
         
         # Init variables
         self.base_data_path = base_data_path
-        imgs_labels, self.labels_dict, self.nr_classes = map_images_and_labels(dir=base_data_path)
+        imgs_labels, self.labels_dict, self.nr_classes = cbis_map_images_and_labels(dir=base_data_path)
         self.images_paths, self.images_labels = imgs_labels[:, 0], imgs_labels[:, 1]
         self.transform = transform
 
@@ -136,16 +131,75 @@ class CBISDataset(Dataset):
 
 
 
-# Uncomment the lines below if you want to check if this class is working
-# Load and count data samples
-# Train Dataset
-# train_set = CBISDataset(base_data_path=train_dir)
-# print(f"Number of Train Images: {len(train_set)} | Label Dict: {train_set.labels_dict}")
+# MIMIC-CXR: Get labels and paths from pickle
+def mimic_map_images_and_labels(base_data_path, pickle_path):
+    # Open pickle file
+    with open(pickle_path, "rb") as fp:
+        pickle_data = cPickle.load(fp)
 
-# Validation
-# val_set = CBISDataset(base_data_path=val_dir)
-# print(f"Number of Validation Images: {len(val_set)} | Label Dict: {val_set.labels_dict}")
+    # Split Images and Labels
+    images_path = list()
+    labels = list()
 
-# Test
-# test_set = CBISDataset(base_data_path=test_dir)
-# print(f"Number of Test Images: {len(test_set)} | Label Dict: {test_set.labels_dict}")
+    # Go through pickle file
+    for path, clf in zip(pickle_data[:, 0], pickle_data[:, 1]):
+        images_path.append(os.path.join(base_data_path, path+".jpg"))
+        labels.append(int(clf))
+    
+
+    # Assign variables to class variables
+    images_paths = images_path
+    images_labels = labels
+	
+	# Nr of Classes
+    nr_classes = len(np.unique(images_labels))
+
+
+    return images_paths, images_labels, nr_classes
+
+
+
+# MIMIC-CXR: Dataset Class
+class MIMICXRDataset(Dataset):
+    def __init__(self, base_data_path, pickle_path, transform=None):
+        """
+        Args:
+            base_data_path (string): Data directory.
+            pickle_path (string): Path for pickle with annotations.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        
+        # Init variables
+        self.images_paths, self.images_labels, _ = mimic_map_images_and_labels(base_data_path, pickle_path)
+        self.transform = transform
+
+
+        return 
+
+
+    # Method: __len__
+    def __len__(self):
+        return len(self.images_paths)
+
+
+
+    # Method: __getitem__
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        
+
+        # Get images
+        img_name = self.images_paths[idx]
+        image = Image.open(img_name)
+
+        # Get labels
+        label = self.images_labels[idx]
+
+        # Apply transformation
+        if self.transform:
+            image = self.transform(image)
+
+
+        return image, label

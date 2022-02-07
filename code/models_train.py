@@ -1,11 +1,10 @@
 # Imports
-import numpy as np
-import _pickle as cPickle
 import os
-from PIL import Image
+import argparse
+import numpy as np
 
 # Sklearn Import
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score #, f1_score, precision_score, recall_score
 
 # PyTorch Imports
 import torch
@@ -23,25 +22,72 @@ np.random.seed(random_seed)
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from cbis_data_utilities import map_images_and_labels, CBISDataset
+from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, CBISDataset, MIMICXRDataset
 
 
-# Directories
-data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-train_dir = os.path.join(data_dir, "train")
-val_dir = os.path.join(data_dir, "val")
-test_dir = os.path.join(data_dir, "test")
 
-# Results and Weights
-weights_dir = os.path.join("results", "cbis", "weights")
-if not os.path.isdir(weights_dir):
-    os.makedirs(weights_dir)
+# Command Line Interface
+# Create the parser
+parser = argparse.ArgumentParser()
+
+# Add the arguments
+# Data set
+parser.add_argument('--dataset', type=str, required=True, help="Data set: CBISDDSM, ISIC2020, MIMICXR")
+
+# Model
+parser.add_argument('--model', type=str, required=True, help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16')
+
+# Batch size
+parser.add_argument('--batchsize', type=int, required=True, help="Batch-size for training and validation")
+
+# Parse the argument
+args = parser.parse_args()
 
 
-# History Files
-history_dir = os.path.join("results", "cbis", "history")
-if not os.path.isdir(history_dir):
-    os.makedirs(history_dir)
+
+# Datasets
+dataset = args.dataset
+
+# CBISDDSM
+if dataset == "CBISDDSM":
+    # Directories
+    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+    # data_dir = "data/CBISPreprocDataset"
+    train_dir = os.path.join(data_dir, "train")
+    val_dir = os.path.join(data_dir, "val")
+    test_dir = os.path.join(data_dir, "test")
+
+    # Results and Weights
+    weights_dir = os.path.join("results", "cbis", "weights")
+    if not os.path.isdir(weights_dir):
+        os.makedirs(weights_dir)
+    
+    # History Files
+    history_dir = os.path.join("results", "cbis", "history")
+    if not os.path.isdir(history_dir):
+        os.makedirs(history_dir)
+
+
+# MIMICXR
+elif dataset == "MIMICXR":
+    # Directories
+    data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
+    # data_dir = "data/MedIA"
+    train_dir = os.path.join(data_dir, "Train_images_AP_resized")
+    val_dir = os.path.join(data_dir, "Val_images_AP_resized")
+    test_dir = os.path.join(data_dir, "Test_images_AP_resized")
+
+    # Results and Weights
+    weights_dir = os.path.join("results", "mimicxr", "weights")
+    if not os.path.isdir(weights_dir):
+        os.makedirs(weights_dir)
+
+    # History Files
+    history_dir = os.path.join("results", "mimicxr", "history")
+    if not os.path.isdir(history_dir):
+        os.makedirs(history_dir)
+
+
 
 
 # Choose GPU
@@ -59,49 +105,75 @@ img_height = 224
 img_width = 224
 
 # Output Data Dimensions
-imgs_labels, labels_dict, nr_classes = map_images_and_labels(dir=train_dir)
+# CBISDDSM
+if dataset == "CBISDDSM":
+    imgs_labels, labels_dict, nr_classes = cbis_map_images_and_labels(dir=train_dir)
 
 
-# Baseline Models
+# MIMICXR
+elif dataset == "MIMICXR":
+    _, _, nr_classes = mimic_map_images_and_labels(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"))
+
+
+# Get the right model from the CLI
+model = args.model
+
 # VGG-16
-# model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "vgg16"
+if model == "VGG16":
+    model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "vgg16"
+
 
 # DenseNet-121
-# model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "densenet121"
+elif model == "DenseNet121":
+    model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "densenet121"
+
 
 # ResNet50
-# model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "resnet50"
+elif model == "ResNet50":
+    model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "resnet50"
 
 
-# Squeeze-Excitation Models
 # SEResNet50
-# model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "seresnet50"
+elif model == "SEResNet50":
+    model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "seresnet50"
+
 
 # SEVGG16
-# model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "sevgg16"
+elif model == "SEVGG16":
+    model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "sevgg16"
+
 
 # SEDenseNet121
-# model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "sedensenet121"
+elif model == "SEDenseNet121":
+    model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "sedensenet121"
 
 
-# CBAM Models
 # CBAMResNet50
-# model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamresnet50"
+elif model == "CBAMResNet50":
+    model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "cbamresnet50"
+
 
 # CBAMVGG16
-# model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-# model_name = "cbamvgg16"
+elif model == "CBAMVGG16":
+    model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "cbamvgg16"
+
 
 # CBAMDenseNet121
-model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-model_name = "cbamdensenet121"
+elif model == "CBAMDenseNet121":
+    model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+    model_name = "cbamdensenet121"
+
+
+else:
+    raise ValueError(f"{model} is not a valid model name argument. Please provide a valid model name.")
 
 
 
@@ -110,7 +182,7 @@ EPOCHS = 300
 LOSS = torch.nn.CrossEntropyLoss()
 LEARNING_RATE = 1e-4
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-BATCH_SIZE = 32
+BATCH_SIZE = args.batchsize
 
 
 # Load data
@@ -125,10 +197,18 @@ train_transforms = torchvision.transforms.Compose([
 ])
 
 # Train Dataset
-train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms)
+# CBISDDSM
+if dataset == "CBISDDSM":
+    train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms)
+
+
+# MIMCXR
+elif dataset == "MIMICXR":
+    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms)
 
 # Train Dataloader
 train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
+
 
 
 # Validation
@@ -140,7 +220,14 @@ val_transforms = torchvision.transforms.Compose([
 ])
 
 # Validation Dataset
-val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms)
+# CBISDDSM
+if dataset == "CBISDDSM":
+    val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms)
+
+
+# MIMCXR
+elif dataset == "MIMICXR":
+    train_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
 
 # Validation Dataloader
 val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True)
@@ -213,13 +300,13 @@ for epoch in range(EPOCHS):
 
         # Concatenate lists
         y_train_true += list(labels.cpu().detach().numpy())
-        
+
         # Using Softmax
         # Apply Softmax on Logits and get the argmax to get the predicted labels
         s_logits = torch.nn.Softmax(dim=1)(logits)
         s_logits = torch.argmax(s_logits, dim=1)
         y_train_pred += list(s_logits.cpu().detach().numpy())
-    
+
 
     # Compute Average Train Loss
     avg_train_loss = run_train_loss/len(train_loader.dataset)
@@ -265,7 +352,7 @@ for epoch in range(EPOCHS):
 
 
     # Validation Loop
-    print(f"Validation Phase")
+    print("Validation Phase")
 
 
     # Initialise lists to compute scores
@@ -311,10 +398,10 @@ for epoch in range(EPOCHS):
 
         
 
-        # Compute Average Train Loss
+        # Compute Average Validation Loss
         avg_val_loss = run_val_loss/len(val_loader.dataset)
 
-        # Compute Training Accuracy
+        # Compute Validation Accuracy
         val_acc = accuracy_score(y_true=y_val_true, y_pred=y_val_pred)
         # val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred)
         # val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred)
@@ -325,7 +412,7 @@ for epoch in range(EPOCHS):
         # print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
 
         # Append values to the arrays
-        # Train Loss
+        # Validation Loss
         val_losses[epoch] = avg_val_loss
         # Save it to directory
         fname = os.path.join(history_dir, f"{model_name}_val_losses.npy")
@@ -354,10 +441,17 @@ for epoch in range(EPOCHS):
             print("Saving best model on validation...")
 
             # Save checkpoint
-            model_path = os.path.join(weights_dir, f"{model_name}_cbis.pt")
+            if dataset == "CBISDDSM":
+                model_path = os.path.join(weights_dir, f"{model_name}_cbis.pt")
+            
+            elif dataset == "MIMICXR":
+                model_path = os.path.join(weights_dir, f"{model_name}_mimicxr.pt")
+            
+            
             torch.save(model.state_dict(), model_path)
 
             print(f"Successfully saved at: {model_path}")
+
 
 
 # Finish statement

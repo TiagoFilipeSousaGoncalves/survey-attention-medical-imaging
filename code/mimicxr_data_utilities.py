@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 
 
 # Function: Get labels and paths from pickle
-def map_images_and_labels(base_data_path, pickle_path):
+def mimic_map_images_and_labels(base_data_path, pickle_path):
     # Open pickle file
     with open(pickle_path, "rb") as fp:
         pickle_data = cPickle.load(fp)
