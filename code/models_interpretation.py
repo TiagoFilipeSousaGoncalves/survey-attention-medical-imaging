@@ -47,8 +47,8 @@ dataset = args.dataset
 # CBISDDSM
 if dataset == "CBISDDSM":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-    # data_dir = "data/CBISPreprocDataset"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+    data_dir = "data/CBISPreprocDataset"
     train_dir = os.path.join(data_dir, "train")
     val_dir = os.path.join(data_dir, "val")
     test_dir = os.path.join(data_dir, "test")
@@ -65,8 +65,8 @@ if dataset == "CBISDDSM":
 # MIMICXR
 elif dataset == "MIMICXR":
     # Directories
-    data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
-    # data_dir = "data/MedIA"
+    # data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
+    data_dir = "data/MedIA"
     train_dir = os.path.join(data_dir, "Train_images_AP_resized")
     val_dir = os.path.join(data_dir, "Val_images_AP_resized")
     test_dir = os.path.join(data_dir, "Test_images_AP_resized")
