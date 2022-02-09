@@ -187,7 +187,7 @@ else:
 
 
 # Hyper-parameters
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 LOSS = torch.nn.CrossEntropyLoss()
 
 
