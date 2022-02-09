@@ -121,7 +121,7 @@ if dataset == "CBISDDSM":
 
 # MIMICXR
 elif dataset == "MIMICXR":
-    _, _, nr_classes = mimic_map_images_and_labels(base_data_path=test_dir, pickle_path=os.path.join(test_dir, "Annotations.pickle"))
+    _, _, nr_classes = mimic_map_images_and_labels(base_data_path=curr_dir, pickle_path=os.path.join(curr_dir, "Annotations.pickle"))
 
 
 # Get the right model from the CLI
