@@ -4,9 +4,11 @@ import argparse
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
+import datetime
+from torchinfo import summary
 
 # Sklearn Import
-from sklearn.metrics import accuracy_score #, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 # PyTorch Imports
 import torch
@@ -26,7 +28,7 @@ from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, CBISDataset, MIMICXRDataset
-
+from transformers import ViTFeatureExtractor, ViTForImageClassification
 
 
 # Command Line Interface
@@ -35,65 +37,93 @@ parser = argparse.ArgumentParser()
 
 # Add the arguments
 # Data set
-parser.add_argument('--dataset', type=str, required=True, help="Data set: CBISDDSM, ISIC2020, MIMICXR")
+parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR")
 
 # Model
-parser.add_argument('--model', type=str, required=True, help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16')
+parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT')
 
 # Batch size
-parser.add_argument('--batchsize', type=int, required=True, help="Batch-size for training and validation")
+parser.add_argument('--batchsize', type=int, default=4, help="Batch-size for training and validation")
 
-# Parse the argument
+# Number of epochs
+parser.add_argument('--epochs', type=int, default=300, help="Number of training epochs")
+
+# Learning rate
+parser.add_argument('--lr', type=float, default=1e-4, help="Learning rate")
+
+# Output directory
+parser.add_argument("--outdir", type=str, default="results", help="Output directory")
+
+# Number of workers
+parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for dataloader")
+
+# Save frequency
+parser.add_argument("--save_freq", type=int, default=10, help="Frequency (in number of epochs) to save the model")
+
+# Resume training
+parser.add_argument("--resume", action="store_true", help="Resume training")
+parser.add_argument("--ckpt", type=str, default=None, help="Checkpoint from which to resume training")
+
+
+# Parse the arguments
 args = parser.parse_args()
 
+if args.resume:
+    assert args.ckpt is not None, "Please specify the model checkpoint when resume is True"
 
+resume = args.resume
+ckpt = args.ckpt
 
-# Datasets
 dataset = args.dataset
+outdir = args.outdir
+workers = args.num_workers
+EPOCHS = args.epochs
+LEARNING_RATE = args.lr
+BATCH_SIZE = args.batchsize
+save_freq = args.save_freq
+
+timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+outdir = os.path.join(outdir, dataset.lower(), timestamp)
+if not os.path.isdir(outdir):
+    os.makedirs(outdir)
+
+with open(os.path.join(outdir, "train_params.txt"), "w") as f:
+    f.write(str(args))
 
 # CBISDDSM
 if dataset == "CBISDDSM":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-    # data_dir = "data/CBISPreprocDataset"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+    data_dir = "/BARRACUDA8T/DATASETS/CBIS_DDSM/"
     train_dir = os.path.join(data_dir, "train")
     val_dir = os.path.join(data_dir, "val")
     test_dir = os.path.join(data_dir, "test")
-
-    # Results and Weights
-    weights_dir = os.path.join("results", "cbis", "weights")
-    if not os.path.isdir(weights_dir):
-        os.makedirs(weights_dir)
-    
-    # History Files
-    history_dir = os.path.join("results", "cbis", "history")
-    if not os.path.isdir(history_dir):
-        os.makedirs(history_dir)
-
+ 
+    imgs_labels, labels_dict, nr_classes = cbis_map_images_and_labels(dir=train_dir)
 
 # MIMICXR
-elif dataset == "MIMICXR":
+elif dataset == "MIMICCXR":
     # Directories
-    data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
-    # data_dir = "data/MedIA"
+    # data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
+    data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
     train_dir = os.path.join(data_dir, "Train_images_AP_resized")
     val_dir = os.path.join(data_dir, "Val_images_AP_resized")
     test_dir = os.path.join(data_dir, "Test_images_AP_resized")
 
-    # Results and Weights
-    weights_dir = os.path.join("results", "mimicxr", "weights")
-    if not os.path.isdir(weights_dir):
-        os.makedirs(weights_dir)
+    _, _, nr_classes = mimic_map_images_and_labels(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"))
 
-    # History Files
-    history_dir = os.path.join("results", "mimicxr", "history")
-    if not os.path.isdir(history_dir):
-        os.makedirs(history_dir)
+# Results and Weights
+weights_dir = os.path.join(outdir, "weights")
+if not os.path.isdir(weights_dir):
+    os.makedirs(weights_dir)
 
-
+# History Files
+history_dir = os.path.join(outdir, "history")
+if not os.path.isdir(history_dir):
+    os.makedirs(history_dir)
 
 # Tensorboard
-tbwritter = SummaryWriter(log_dir=os.path.join("results", dataset, "tensorboard"))
+tbwritter = SummaryWriter(log_dir=os.path.join(outdir, "tensorboard"))
 
 # Choose GPU
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -109,16 +139,6 @@ STD = [0.229, 0.224, 0.225]
 img_nr_channels = 3
 img_height = 224
 img_width = 224
-
-# Output Data Dimensions
-# CBISDDSM
-if dataset == "CBISDDSM":
-    imgs_labels, labels_dict, nr_classes = cbis_map_images_and_labels(dir=train_dir)
-
-
-# MIMICXR
-elif dataset == "MIMICXR":
-    _, _, nr_classes = mimic_map_images_and_labels(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"))
 
 
 # Get the right model from the CLI
@@ -142,11 +162,6 @@ elif model == "ResNet50":
     model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
     model_name = "resnet50"
 
-# ViT
-elif model == "ViT":
-    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
-    model_name = "vit"
-    feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
 
 # SEResNet50
 elif model == "SEResNet50":
@@ -183,19 +198,30 @@ elif model == "CBAMDenseNet121":
     model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
     model_name = "cbamdensenet121"
 
+# ViT
+elif model == "ViT":
+    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
+    model_name = "vit"
+    feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
 
-else:
-    raise ValueError(f"{model} is not a valid model name argument. Please provide a valid model name.")
+model = model.to(DEVICE)
 
-
+model_summary = summary(model, (1, 3, 224, 224), device=DEVICE)
+with open(os.path.join(outdir, "model_summary.txt"), 'w') as f:
+    f.write(str(model_summary))
 
 # Hyper-parameters
-EPOCHS = 30
-LOSS = torch.nn.CrossEntropyLoss()
-LEARNING_RATE = 1e-4
+LOSS = torch.nn.CrossEntropyLoss(reduction="sum")
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-BATCH_SIZE = 32
 
+init_epoch = 0
+# Resume training from given checkpoint
+if resume:
+    checkpoint = torch.load(ckpt)
+    model.load_state_dict(checkpoint['model_state_dict'], strict=True)
+    OPTIMISER.load_state_dict(checkpoint['optimizer_state_dict'])
+    epoch = checkpoint['epoch']
+    print(f"Resuming from {ckpt} at epoch {epoch}")
 
 # Load data
 # Train
@@ -208,21 +234,6 @@ train_transforms = torchvision.transforms.Compose([
     torchvision.transforms.Normalize(mean=MEAN, std=STD)
 ])
 
-# Train Dataset
-# CBISDDSM
-if dataset == "CBISDDSM":
-    train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms, feature_extractor=feature_extractor)
-
-
-# MIMCXR
-elif dataset == "MIMICXR":
-    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms, feature_extractor=feature_extractor)
-
-# Train Dataloader
-train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
-
-
-
 # Validation
 # Transforms
 val_transforms = torchvision.transforms.Compose([
@@ -231,19 +242,20 @@ val_transforms = torchvision.transforms.Compose([
     torchvision.transforms.Normalize(mean=MEAN, std=STD)
 ])
 
-# Validation Dataset
+# Datasets
 # CBISDDSM
 if dataset == "CBISDDSM":
+    train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms, feature_extractor=feature_extractor)
     val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms, feature_extractor=feature_extractor)
 
-
 # MIMCXR
-elif dataset == "MIMICXR":
+elif dataset == "MIMICCXR":
+    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms, feature_extractor=feature_extractor)
     val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms, feature_extractor=feature_extractor)
 
-# Validation Dataloader
-val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True)
-
+# Dataloaders
+train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
+val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
 
 
 # Train model and save best weights on validation set
@@ -269,29 +281,28 @@ for epoch in range(EPOCHS):
     print("Training Phase")
     
     # Initialise lists to compute scores
-    y_train_true = list()
-    y_train_pred = list()
+    y_train_true = np.empty((0), int)
+    y_train_pred = torch.empty(0, dtype=torch.int32, device=DEVICE)
 
 
     # Running train loss
-    run_train_loss = 0.0
+    run_train_loss = torch.tensor(0, dtype=torch.float64, device=DEVICE)
 
 
     # Put model in training mode
     model.train()
 
-
     # Iterate through dataloader
     for images, labels in tqdm(train_loader):
+        # Concatenate lists
+        y_train_true = np.append(y_train_true, labels.numpy(), axis=0)
 
         # Move data and model to GPU (or not)
-        images, labels = images.to(DEVICE), labels.to(DEVICE)
-        model = model.to(DEVICE)
-
+        images, labels = images.to(DEVICE, non_blocking=True), labels.to(DEVICE, non_blocking=True)
 
         # Find the loss and update the model parameters accordingly
         # Clear the gradients of all optimized variables
-        OPTIMISER.zero_grad()
+        OPTIMISER.zero_grad(set_to_none=True)
 
 
         # Forward pass: compute predicted outputs by passing inputs to the model
@@ -305,7 +316,7 @@ for epoch in range(EPOCHS):
         # Compute the batch loss
         # Using CrossEntropy w/ Softmax
         loss = LOSS(logits, labels)
-        
+
         # Backward pass: compute gradient of the loss with respect to model parameters
         loss.backward()
         
@@ -313,22 +324,21 @@ for epoch in range(EPOCHS):
         OPTIMISER.step()
         
         # Update batch losses
-        run_train_loss += (loss.item() * images.size(0))
-
-        # Concatenate lists
-        y_train_true += list(labels.cpu().detach().numpy())
+        run_train_loss += loss
 
         # Using Softmax
         # Apply Softmax on Logits and get the argmax to get the predicted labels
         s_logits = torch.nn.Softmax(dim=1)(logits)
         s_logits = torch.argmax(s_logits, dim=1)
-        y_train_pred += list(s_logits.cpu().detach().numpy())
+        y_train_pred = torch.cat((y_train_pred, s_logits))
 
 
     # Compute Average Train Loss
     avg_train_loss = run_train_loss/len(train_loader.dataset)
+    
 
     # Compute Train Metrics
+    y_train_pred = y_train_pred.cpu().detach().numpy()
     train_acc = accuracy_score(y_true=y_train_true, y_pred=y_train_pred)
     train_recall = recall_score(y_true=y_train_true, y_pred=y_train_pred, average='micro')
     train_precision = precision_score(y_true=y_train_true, y_pred=y_train_pred, average='micro')
@@ -379,13 +389,11 @@ for epoch in range(EPOCHS):
 
 
     # Initialise lists to compute scores
-    y_val_true = list()
-    y_val_pred = list()
-
+    y_val_true = np.empty((0), int)
+    y_val_pred = torch.empty(0, dtype=torch.int32, device=DEVICE)
 
     # Running train loss
     run_val_loss = 0.0
-
 
     # Put model in evaluation mode
     model.eval()
@@ -395,10 +403,10 @@ for epoch in range(EPOCHS):
 
         # Iterate through dataloader
         for images, labels in tqdm(val_loader):
+            y_val_true = np.append(y_val_true, labels.numpy(), axis=0)
 
             # Move data data anda model to GPU (or not)
-            images, labels = images.to(DEVICE), labels.to(DEVICE)
-            model = model.to(DEVICE)
+            images, labels = images.to(DEVICE, non_blocking=True), labels.to(DEVICE, non_blocking=True)
 
             # Forward pass: compute predicted outputs by passing inputs to the model
             if(isinstance(model, ViTForImageClassification)):
@@ -412,16 +420,15 @@ for epoch in range(EPOCHS):
             loss = LOSS(logits, labels)
             
             # Update batch losses
-            run_val_loss += (loss.item() * images.size(0))
+            run_val_loss += loss
 
             # Concatenate lists
-            y_val_true += list(labels.cpu().detach().numpy())
             
             # Using Softmax Activation
             # Apply Softmax on Logits and get the argmax to get the predicted labels
             s_logits = torch.nn.Softmax(dim=1)(logits)
             s_logits = torch.argmax(s_logits, dim=1)
-            y_val_pred += list(s_logits.cpu().detach().numpy())
+            y_val_pred = torch.cat((y_val_pred, s_logits))
 
         
 
@@ -429,6 +436,7 @@ for epoch in range(EPOCHS):
         avg_val_loss = run_val_loss/len(val_loader.dataset)
 
         # Compute Validation Accuracy
+        y_val_pred = y_val_pred.cpu().detach().numpy()
         val_acc = accuracy_score(y_true=y_val_true, y_pred=y_val_pred)
         val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred, average='micro')
         val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred, average='micro')
@@ -475,17 +483,31 @@ for epoch in range(EPOCHS):
             print("Saving best model on validation...")
 
             # Save checkpoint
-            if dataset == "CBISDDSM":
-                model_path = os.path.join(weights_dir, f"{model_name}_cbis.pt")
+            model_path = os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_best.pt")
             
-            elif dataset == "MIMICXR":
-                model_path = os.path.join(weights_dir, f"{model_name}_mimicxr.pt")
-            
-            
-            torch.save(model.state_dict(), model_path)
+            save_dict = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': OPTIMISER.state_dict(),
+                'loss': avg_train_loss,
+            }
+            torch.save(save_dict, model_path)
 
             print(f"Successfully saved at: {model_path}")
+        
 
+        if epoch % save_freq == 0 and epoch > 0:
+
+            # Save checkpoint
+            model_path = os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_{epoch:04}.pt")
+            
+            save_dict = {
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': OPTIMISER.state_dict(),
+                'loss': avg_train_loss,
+            }
+            torch.save(save_dict, model_path)
 
 
 # Finish statement
