@@ -2,6 +2,8 @@
 import os
 import argparse
 import numpy as np
+from PIL import Image
+from tqdm import tqdm
 
 # Sklearn Import
 from sklearn.metrics import accuracy_score #, f1_score, precision_score, recall_score
@@ -10,6 +12,7 @@ from sklearn.metrics import accuracy_score #, f1_score, precision_score, recall_
 import torch
 from torch.utils.data import DataLoader
 import torchvision
+from torch.utils.tensorboard import SummaryWriter
 
 
 # Fix Random Seeds
@@ -89,6 +92,8 @@ elif dataset == "MIMICXR":
 
 
 
+# Tensorboard
+tbwritter = SummaryWriter(log_dir=os.path.join("results", dataset, "tensorboard"))
 
 # Choose GPU
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -118,6 +123,7 @@ elif dataset == "MIMICXR":
 
 # Get the right model from the CLI
 model = args.model
+feature_extractor = None
 
 # VGG-16
 if model == "VGG16":
@@ -136,6 +142,11 @@ elif model == "ResNet50":
     model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
     model_name = "resnet50"
 
+# ViT
+elif model == "ViT":
+    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
+    model_name = "vit"
+    feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
 
 # SEResNet50
 elif model == "SEResNet50":
@@ -179,11 +190,11 @@ else:
 
 
 # Hyper-parameters
-EPOCHS = 300
+EPOCHS = 30
 LOSS = torch.nn.CrossEntropyLoss()
 LEARNING_RATE = 1e-4
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-BATCH_SIZE = args.batchsize
+BATCH_SIZE = 32
 
 
 # Load data
@@ -200,12 +211,12 @@ train_transforms = torchvision.transforms.Compose([
 # Train Dataset
 # CBISDDSM
 if dataset == "CBISDDSM":
-    train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms)
+    train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms, feature_extractor=feature_extractor)
 
 
 # MIMCXR
 elif dataset == "MIMICXR":
-    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms)
+    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms, feature_extractor=feature_extractor)
 
 # Train Dataloader
 train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True)
@@ -223,12 +234,12 @@ val_transforms = torchvision.transforms.Compose([
 # Validation Dataset
 # CBISDDSM
 if dataset == "CBISDDSM":
-    val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms)
+    val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms, feature_extractor=feature_extractor)
 
 
 # MIMCXR
 elif dataset == "MIMICXR":
-    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
+    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms, feature_extractor=feature_extractor)
 
 # Validation Dataloader
 val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True)
@@ -271,9 +282,9 @@ for epoch in range(EPOCHS):
 
 
     # Iterate through dataloader
-    for batch_idx, (images, labels) in enumerate(train_loader):
+    for images, labels in tqdm(train_loader):
 
-        # Move data data anda model to GPU (or not)
+        # Move data and model to GPU (or not)
         images, labels = images.to(DEVICE), labels.to(DEVICE)
         model = model.to(DEVICE)
 
@@ -284,7 +295,12 @@ for epoch in range(EPOCHS):
 
 
         # Forward pass: compute predicted outputs by passing inputs to the model
-        logits = model(images)
+        if(isinstance(model, ViTForImageClassification)):
+            out = model(pixel_values=images)
+            logits = out.logits
+        else:
+            logits = model(images)
+
         
         # Compute the batch loss
         # Using CrossEntropy w/ Softmax
@@ -314,9 +330,9 @@ for epoch in range(EPOCHS):
 
     # Compute Train Metrics
     train_acc = accuracy_score(y_true=y_train_true, y_pred=y_train_pred)
-    # train_recall = recall_score(y_true=y_train_true, y_pred=y_train_pred)
-    # train_precision = precision_score(y_true=y_train_true, y_pred=y_train_pred)
-    # train_f1 = f1_score(y_true=y_train_true, y_pred=y_train_pred)
+    train_recall = recall_score(y_true=y_train_true, y_pred=y_train_pred, average='micro')
+    train_precision = precision_score(y_true=y_train_true, y_pred=y_train_pred, average='micro')
+    train_f1 = f1_score(y_true=y_train_true, y_pred=y_train_pred, average='micro')
 
     # Print Statistics
     print(f"Train Loss: {avg_train_loss}\tTrain Accuracy: {train_acc}")
@@ -335,15 +351,21 @@ for epoch in range(EPOCHS):
     # Acc
     train_metrics[epoch, 0] = train_acc
     # Recall
-    # train_metrics[epoch, 1] = train_recall
+    train_metrics[epoch, 1] = train_recall
     # Precision
-    # train_metrics[epoch, 2] = train_precision
+    train_metrics[epoch, 2] = train_precision
     # F1-Score
-    # train_metrics[epoch, 3] = train_f1
+    train_metrics[epoch, 3] = train_f1
     # Save it to directory
     fname = os.path.join(history_dir, f"{model_name}_tr_metrics.npy")
     np.save(file=fname, arr=train_metrics, allow_pickle=True)
 
+    # Plot to Tensorboard
+    tbwritter.add_scalar("loss/train", avg_train_loss, global_step=epoch)
+    tbwritter.add_scalar("acc/train", train_acc, global_step=epoch)
+    tbwritter.add_scalar("rec/train", train_recall, global_step=epoch)
+    tbwritter.add_scalar("prec/train", train_precision, global_step=epoch)
+    tbwritter.add_scalar("f1/train", train_f1, global_step=epoch)
 
     # Update Variables
     # Min Training Loss
@@ -372,14 +394,18 @@ for epoch in range(EPOCHS):
     with torch.no_grad():
 
         # Iterate through dataloader
-        for batch_idx, (images, labels) in enumerate(val_loader):
+        for images, labels in tqdm(val_loader):
 
             # Move data data anda model to GPU (or not)
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             model = model.to(DEVICE)
 
             # Forward pass: compute predicted outputs by passing inputs to the model
-            logits = model(images)
+            if(isinstance(model, ViTForImageClassification)):
+                out = model(pixel_values=images)
+                logits = out.logits
+            else:
+                logits = model(images)
             
             # Compute the batch loss
             # Using CrossEntropy w/ Softmax
@@ -404,9 +430,9 @@ for epoch in range(EPOCHS):
 
         # Compute Validation Accuracy
         val_acc = accuracy_score(y_true=y_val_true, y_pred=y_val_pred)
-        # val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred)
-        # val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred)
-        # val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred)
+        val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred, average='micro')
+        val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred, average='micro')
+        val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred, average='micro')
 
         # Print Statistics
         print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}")
@@ -424,14 +450,21 @@ for epoch in range(EPOCHS):
         # Acc
         val_metrics[epoch, 0] = val_acc
         # Recall
-        # val_metrics[epoch, 1] = val_recall
+        val_metrics[epoch, 1] = val_recall
         # Precision
-        # val_metrics[epoch, 2] = val_precision
+        val_metrics[epoch, 2] = val_precision
         # F1-Score
-        # val_metrics[epoch, 3] = val_f1
+        val_metrics[epoch, 3] = val_f1
         # Save it to directory
         fname = os.path.join(history_dir, f"{model_name}_val_metrics.npy")
         np.save(file=fname, arr=val_metrics, allow_pickle=True)
+
+        # Plot to Tensorboard
+        tbwritter.add_scalar("loss/val", avg_val_loss, global_step=epoch)
+        tbwritter.add_scalar("acc/val", val_acc, global_step=epoch)
+        tbwritter.add_scalar("rec/val", val_recall, global_step=epoch)
+        tbwritter.add_scalar("prec/val", val_precision, global_step=epoch)
+        tbwritter.add_scalar("f1/val", val_f1, global_step=epoch)
 
         # Update Variables
         # Min validation loss and save if validation loss decreases
