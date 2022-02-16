@@ -74,13 +74,14 @@ def cbis_map_images_and_labels(dir):
 
 # CBIS-DDSM: Dataset Class
 class CBISDataset(Dataset):
-    def __init__(self, base_data_path, transform=None):
+    def __init__(self, base_data_path, transform=None, feature_extractor=None):
         """
         Args:
             base_data_path (string): Data directory.
             pickle_path (string): Path for pickle with annotations.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
+            feature_extractor (callable, optional): feature extractor for ViT
         """
         
         # Init variables
@@ -88,7 +89,7 @@ class CBISDataset(Dataset):
         imgs_labels, self.labels_dict, self.nr_classes = cbis_map_images_and_labels(dir=base_data_path)
         self.images_paths, self.images_labels = imgs_labels[:, 0], imgs_labels[:, 1]
         self.transform = transform
-
+        self.feature_extractor = feature_extractor
 
         return 
 
@@ -126,6 +127,8 @@ class CBISDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
+        if(self.feature_extractor):
+            image = self.feature_extractor(images=image, return_tensors="pt")["pixel_values"].squeeze(0)
 
         return image, label
 
