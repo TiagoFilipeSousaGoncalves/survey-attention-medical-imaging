@@ -45,6 +45,12 @@ parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", 
 # Batch size
 parser.add_argument('--batchsize', type=int, default=4, help="Batch-size for training and validation")
 
+# Image size
+parser.add_argument('--imgsize', type=int, default=224, help="Size of the image after transforms")
+
+# Resize
+parser.add_argument('--resize', type=str, choices=["direct_resize", "resizeshortest_randomcrop"], default="direct_resize", help="Resize data transformation")
+
 # Number of epochs
 parser.add_argument('--epochs', type=int, default=300, help="Number of training epochs")
 
@@ -64,6 +70,9 @@ parser.add_argument("--save_freq", type=int, default=10, help="Frequency (in num
 parser.add_argument("--resume", action="store_true", help="Resume training")
 parser.add_argument("--ckpt", type=str, default=None, help="Checkpoint from which to resume training")
 
+# Number of layers (ViT)
+parser.add_argument("--nr_layers", type=int, default=12, help="Number of hidden layers (only for ViT)")
+
 
 # Parse the arguments
 args = parser.parse_args()
@@ -80,7 +89,10 @@ workers = args.num_workers
 EPOCHS = args.epochs
 LEARNING_RATE = args.lr
 BATCH_SIZE = args.batchsize
+IMG_SIZE = args.imgsize
 save_freq = args.save_freq
+nr_layers = args.nr_layers
+resize_opt = args.resize
 
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 outdir = os.path.join(outdir, dataset.lower(), timestamp)
@@ -93,8 +105,8 @@ with open(os.path.join(outdir, "train_params.txt"), "w") as f:
 # CBISDDSM
 if dataset == "CBISDDSM":
     # Directories
-    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-    data_dir = "/BARRACUDA8T/DATASETS/CBIS_DDSM/"
+    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+    #data_dir = "/BARRACUDA8T/DATASETS/CBIS_DDSM/"
     train_dir = os.path.join(data_dir, "train")
     val_dir = os.path.join(data_dir, "val")
     test_dir = os.path.join(data_dir, "test")
@@ -104,8 +116,8 @@ if dataset == "CBISDDSM":
 # MIMICXR
 elif dataset == "MIMICCXR":
     # Directories
-    # data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
-    data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
+    data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
+    #data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
     train_dir = os.path.join(data_dir, "Train_images_AP_resized")
     val_dir = os.path.join(data_dir, "Val_images_AP_resized")
     test_dir = os.path.join(data_dir, "Test_images_AP_resized")
@@ -123,7 +135,7 @@ if not os.path.isdir(history_dir):
     os.makedirs(history_dir)
 
 # Tensorboard
-tbwritter = SummaryWriter(log_dir=os.path.join(outdir, "tensorboard"))
+tbwritter = SummaryWriter(log_dir=os.path.join(outdir, "tensorboard"), flush_secs=30)
 
 # Choose GPU
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -137,8 +149,8 @@ STD = [0.229, 0.224, 0.225]
 
 # Input Data Dimensions
 img_nr_channels = 3
-img_height = 224
-img_width = 224
+img_height = IMG_SIZE
+img_width = IMG_SIZE
 
 
 # Get the right model from the CLI
@@ -200,13 +212,13 @@ elif model == "CBAMDenseNet121":
 
 # ViT
 elif model == "ViT":
-    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
+    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
     model_name = "vit"
     feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
 
 model = model.to(DEVICE)
 
-model_summary = summary(model, (1, 3, 224, 224), device=DEVICE)
+model_summary = summary(model, (1, 3, IMG_SIZE, IMG_SIZE), device=DEVICE)
 with open(os.path.join(outdir, "model_summary.txt"), 'w') as f:
     f.write(str(model_summary))
 
@@ -227,31 +239,33 @@ if resume:
 # Train
 # Transforms
 train_transforms = torchvision.transforms.Compose([
-    torchvision.transforms.Resize((224, 224)),
+    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
     torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(0.05, 0.1), scale=(0.95, 1.05), shear=0, resample=0, fillcolor=(0, 0, 0)),
     torchvision.transforms.RandomHorizontalFlip(p=0.5),
     torchvision.transforms.ToTensor(),
-    torchvision.transforms.Normalize(mean=MEAN, std=STD)
+    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
 ])
 
 # Validation
 # Transforms
 val_transforms = torchvision.transforms.Compose([
-    torchvision.transforms.Resize((224, 224)),
+    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
     torchvision.transforms.ToTensor(),
-    torchvision.transforms.Normalize(mean=MEAN, std=STD)
+    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
 ])
 
 # Datasets
 # CBISDDSM
 if dataset == "CBISDDSM":
-    train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms, feature_extractor=feature_extractor)
-    val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms, feature_extractor=feature_extractor)
+    train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms)
+    val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms)
 
 # MIMCXR
 elif dataset == "MIMICCXR":
-    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms, feature_extractor=feature_extractor)
-    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms, feature_extractor=feature_extractor)
+    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms)
+    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
 
 # Dataloaders
 train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
