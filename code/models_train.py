@@ -9,6 +9,7 @@ from torchinfo import summary
 
 # Sklearn Import
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.model_selection import train_test_split
 
 # PyTorch Imports
 import torch
@@ -27,7 +28,7 @@ np.random.seed(random_seed)
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, CBISDataset, MIMICXRDataset
+from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset
 from transformers import ViTFeatureExtractor, ViTForImageClassification
 
 
@@ -37,7 +38,7 @@ parser = argparse.ArgumentParser()
 
 # Add the arguments
 # Data set
-parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR")
+parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR", "PH2"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR, PH2")
 
 # Model
 parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT')
@@ -77,30 +78,64 @@ parser.add_argument("--nr_layers", type=int, default=12, help="Number of hidden 
 # Parse the arguments
 args = parser.parse_args()
 
+
+# Resume training
 if args.resume:
     assert args.ckpt is not None, "Please specify the model checkpoint when resume is True"
 
 resume = args.resume
+
+# Training checkpoint
 ckpt = args.ckpt
 
+
+# Dataset
 dataset = args.dataset
+
+# Results Directory
 outdir = args.outdir
+
+# Number of workers (threads)
 workers = args.num_workers
+
+# Number of training epochs
 EPOCHS = args.epochs
+
+# Learning rate
 LEARNING_RATE = args.lr
+
+# Batch size
 BATCH_SIZE = args.batchsize
+
+# Image size (after transforms)
 IMG_SIZE = args.imgsize
+
+# Save frquency
 save_freq = args.save_freq
+
+# Number of layers of the Visual Transformer
 nr_layers = args.nr_layers
+
+# Resize (data transforms)
 resize_opt = args.resize
 
+
+
+# Timestamp (to save results)
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+
+# Create results directory
 outdir = os.path.join(outdir, dataset.lower(), timestamp)
 if not os.path.isdir(outdir):
     os.makedirs(outdir)
 
+
+# Save training parameters
 with open(os.path.join(outdir, "train_params.txt"), "w") as f:
     f.write(str(args))
+
+
 
 # CBISDDSM
 if dataset == "CBISDDSM":
@@ -113,6 +148,7 @@ if dataset == "CBISDDSM":
  
     imgs_labels, labels_dict, nr_classes = cbis_map_images_and_labels(dir=train_dir)
 
+
 # MIMICXR
 elif dataset == "MIMICCXR":
     # Directories
@@ -124,18 +160,53 @@ elif dataset == "MIMICCXR":
 
     _, _, nr_classes = mimic_map_images_and_labels(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"))
 
+
+# ISIC2020
+elif dataset == "ISIC2020":
+    # Directories
+    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train"
+    # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train"
+    csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
+    # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
+
+
+# PH2
+elif dataset == "PH2":
+    # Directories
+    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
+
+    # Data split
+    # Get all the images, labels, and number of classes of PH2 Dataset
+    ph2_imgs, ph2_labels, nr_classes = ph2_map_images_and_labels(data_dir)
+
+    # Remove class 1
+    ph2_imgs = ph2_imgs[ph2_labels!=1]
+    ph2_labels = ph2_labels[ph2_labels!=1]
+
+
+    # Split into train, validation and test (60%, 20%, 20%)
+    # Train and Test
+    ph2_imgs_train, ph2_imgs_test, ph2_labels_train, ph2_labels_test = train_test_split(ph2_imgs, ph2_labels, test_size=0.20, random_state=random_seed)
+    # Train and Validation
+    ph2_imgs_train, ph2_imgs_val, ph2_labels_train, ph2_labels_val = train_test_split(ph2_imgs_train, ph2_labels_train, test_size=0.25, random_state=random_seed)
+
+
+
 # Results and Weights
 weights_dir = os.path.join(outdir, "weights")
 if not os.path.isdir(weights_dir):
     os.makedirs(weights_dir)
+
 
 # History Files
 history_dir = os.path.join(outdir, "history")
 if not os.path.isdir(history_dir):
     os.makedirs(history_dir)
 
+
 # Tensorboard
 tbwritter = SummaryWriter(log_dir=os.path.join(outdir, "tensorboard"), flush_secs=30)
+
 
 # Choose GPU
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -156,6 +227,7 @@ img_width = IMG_SIZE
 # Get the right model from the CLI
 model = args.model
 feature_extractor = None
+
 
 # VGG-16
 if model == "VGG16":
@@ -216,24 +288,32 @@ elif model == "ViT":
     model_name = "vit"
     feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
 
+
+
+# Move movel to device (CPU vs GPU)
 model = model.to(DEVICE)
 
+
+# Get model summary
 model_summary = summary(model, (1, 3, IMG_SIZE, IMG_SIZE), device=DEVICE)
 with open(os.path.join(outdir, "model_summary.txt"), 'w') as f:
     f.write(str(model_summary))
+
 
 # Hyper-parameters
 LOSS = torch.nn.CrossEntropyLoss(reduction="sum")
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-init_epoch = 0
+
 # Resume training from given checkpoint
+init_epoch = 0
 if resume:
     checkpoint = torch.load(ckpt)
     model.load_state_dict(checkpoint['model_state_dict'], strict=True)
     OPTIMISER.load_state_dict(checkpoint['optimizer_state_dict'])
     epoch = checkpoint['epoch']
     print(f"Resuming from {ckpt} at epoch {epoch}")
+
 
 # Load data
 # Train
@@ -262,10 +342,25 @@ if dataset == "CBISDDSM":
     train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms)
     val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms)
 
-# MIMCXR
+
+# MIMCCXR
 elif dataset == "MIMICCXR":
     train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms)
     val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
+
+
+# ISIC2020
+elif dataset == "ISIC2020":
+    train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='train', random_seed=random_seed, transform=train_transforms, feature_extractor=feature_extractor)
+    val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='val', random_seed=random_seed, transform=val_transforms, feature_extractor=feature_extractor)
+
+
+# PH2
+elif dataset == "PH2":
+    train_set = PH2Dataset(ph2_imgs=ph2_imgs_train, ph2_labels=ph2_labels_train, base_data_path=train_dir, transform=train_transforms)
+    val_set = PH2Dataset(ph2_imgs=ph2_imgs_val, ph2_labels=ph2_labels_val, base_data_path=val_dir, transform=val_transforms)
+
+
 
 # Dataloaders
 train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
@@ -436,8 +531,7 @@ for epoch in range(EPOCHS):
             # Update batch losses
             run_val_loss += loss
 
-            # Concatenate lists
-            
+
             # Using Softmax Activation
             # Apply Softmax on Logits and get the argmax to get the predicted labels
             s_logits = torch.nn.Softmax(dim=1)(logits)
@@ -508,13 +602,14 @@ for epoch in range(EPOCHS):
             torch.save(save_dict, model_path)
 
             print(f"Successfully saved at: {model_path}")
-        
 
+
+        # Checkpoint loop/condition
         if epoch % save_freq == 0 and epoch > 0:
 
             # Save checkpoint
             model_path = os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_{epoch:04}.pt")
-            
+
             save_dict = {
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
