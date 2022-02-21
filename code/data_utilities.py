@@ -87,14 +87,14 @@ class CBISDataset(Dataset):
                 on a sample.
             feature_extractor (callable, optional): feature extractor for ViT
         """
-        
+
         # Init variables
         self.base_data_path = base_data_path
         imgs_labels, self.labels_dict, self.nr_classes = cbis_map_images_and_labels(dir=base_data_path)
         self.images_paths, self.images_labels = imgs_labels[:, 0], imgs_labels[:, 1]
         self.transform = transform
 
-        return 
+        return
 
 
     # Method: __len__
@@ -221,7 +221,7 @@ class ISIC2020Dataset(Dataset):
         """
         
         # Assure we have the right string in the split argument
-        assert split in ["train", "val", "test"], "Please provide a valid split (i.e., 'train', 'val' or 'test')"
+        assert split in ["Train", "Validation", "Test"], "Please provide a valid split (i.e., 'Train', 'Validation' or 'Test')"
 
         # Aux variables to obtain the correct data splits
         # Read CSV file with label information       
@@ -242,7 +242,7 @@ class ISIC2020Dataset(Dataset):
 
 
         # Now, we get the data
-        if split == "train":
+        if split == "Train":
             # Get the right sampled dataframe
             tr_pids_mask = csv_df.copy().patient_id.isin(train_ids)
             self.dataframe = csv_df.copy()[tr_pids_mask]
@@ -257,7 +257,7 @@ class ISIC2020Dataset(Dataset):
             print(f"The {split} split has {len(self.image_names)} images")
 
 
-        elif split == "val":
+        elif split == "Validation":
             # Get the right sampled dataframe
             val_pids_mask = csv_df.copy().patient_id.isin(val_ids)
             self.dataframe = csv_df.copy()[val_pids_mask]
@@ -296,7 +296,7 @@ class ISIC2020Dataset(Dataset):
         self.transform = transform
         self.feature_extractor = feature_extractor
 
-        return 
+        return
 
 
     # Method: __len__

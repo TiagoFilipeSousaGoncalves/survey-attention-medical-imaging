@@ -2,12 +2,11 @@
 import os
 import argparse
 import numpy as np
-from PIL import Image
 from tqdm import tqdm
 import datetime
 from torchinfo import summary
 
-# Sklearn Import
+# Sklearn Imports
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
@@ -28,8 +27,9 @@ np.random.seed(random_seed)
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset
 from transformers import ViTFeatureExtractor, ViTForImageClassification
+from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset
+
 
 
 # Command Line Interface
