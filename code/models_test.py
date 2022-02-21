@@ -268,11 +268,12 @@ elif model == "ViT":
 
 
 # Load model weights
+checkpoint = torch.load(os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_best.pt"), map_location=DEVICE)
+
 # We need to add an exception to prevent some errors from the attention mechanisms that were already trained
 # Case without any error
 try:
-    model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_best.pt"), map_location=DEVICE), strict=True)
-
+    model.load_state_dict(checkpoint['model_state_dict'], strict=True)
 
 # Case related to CBAM blocks
 except:
@@ -281,12 +282,12 @@ except:
     print("Fixing key values with old trained CBAM models")
 
     # Get missing keys
-    missing, unexpected = model.load_state_dict(torch.load(os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_best.pt"), map_location=DEVICE), strict=False) 
+    missing, unexpected = model.load_state_dict(checkpoint['model_state_dict'], strict=False) 
 
     if len(missing) == len(unexpected):
         
         # Method to remap the new state_dict keys (https://gist.github.com/the-bass/0bf8aaa302f9ba0d26798b11e4dd73e3)
-        state_dict = torch.load(os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_best.pt"), map_location=DEVICE)
+        state_dict = checkpoint['model_state_dict']
         
         # New state dict
         new_state_dict = OrderedDict()
