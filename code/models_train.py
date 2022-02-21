@@ -357,8 +357,8 @@ elif dataset == "ISIC2020":
 
 # PH2
 elif dataset == "PH2":
-    train_set = PH2Dataset(ph2_imgs=ph2_imgs_train, ph2_labels=ph2_labels_train, base_data_path=train_dir, transform=train_transforms)
-    val_set = PH2Dataset(ph2_imgs=ph2_imgs_val, ph2_labels=ph2_labels_val, base_data_path=val_dir, transform=val_transforms)
+    train_set = PH2Dataset(ph2_imgs=ph2_imgs_train, ph2_labels=ph2_labels_train, base_data_path=data_dir, transform=train_transforms)
+    val_set = PH2Dataset(ph2_imgs=ph2_imgs_val, ph2_labels=ph2_labels_val, base_data_path=data_dir, transform=val_transforms)
 
 
 
