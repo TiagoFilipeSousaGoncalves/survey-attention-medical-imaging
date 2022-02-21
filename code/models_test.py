@@ -355,6 +355,10 @@ LOSS = torch.nn.CrossEntropyLoss(reduction="sum")
 print(f"Testing Step | Data Set: {dataset}")
 
 
+# Initialise lists to compute scores
+y_eval_true = np.empty((0), int)
+y_eval_pred = torch.empty(0, dtype=torch.int32, device=DEVICE)
+
 # Running train loss
 run_eval_loss = 0.0
 
