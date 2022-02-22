@@ -351,8 +351,8 @@ elif dataset == "MIMICCXR":
 
 # ISIC2020
 elif dataset == "ISIC2020":
-    train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='train', random_seed=random_seed, transform=train_transforms, feature_extractor=feature_extractor)
-    val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='val', random_seed=random_seed, transform=val_transforms, feature_extractor=feature_extractor)
+    train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Train', random_seed=random_seed, transform=train_transforms, feature_extractor=feature_extractor)
+    val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Validation', random_seed=random_seed, transform=val_transforms, feature_extractor=feature_extractor)
 
 
 # PH2
