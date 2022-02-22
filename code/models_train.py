@@ -169,6 +169,9 @@ elif dataset == "ISIC2020":
     csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
     # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
 
+    # Add the number of classes manually
+    nr_classes = 2
+
 
 # PH2
 elif dataset == "PH2":
