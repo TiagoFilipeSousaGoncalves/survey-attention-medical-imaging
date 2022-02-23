@@ -507,7 +507,6 @@ class APTOSDataset(Dataset):
         """
         Args:
             base_data_path (string): Data directory.
-            pickle_path (string): Path for pickle with annotations.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
         """
