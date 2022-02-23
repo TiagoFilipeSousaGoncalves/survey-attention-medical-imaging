@@ -212,7 +212,7 @@ class MIMICXRDataset(Dataset):
 # ISIC2020
 # ISIC2020: Dataset Class
 class ISIC2020Dataset(Dataset):
-    def __init__(self, base_data_path, csv_path, split, random_seed=42, transform=None):
+    def __init__(self, base_data_path, csv_path, split, random_seed=42, transform=None, **kwargs):
         """
         Args:
             base_data_path (string): Data directory.
@@ -295,6 +295,14 @@ class ISIC2020Dataset(Dataset):
         # print(f"The folder has: {len(imgs_in_folder)} files.")
 
         self.transform = transform
+
+        # **kwargs
+        if kwargs['feature_extractor']:
+            self.feature_extractor = kwargs['feature_extractor']
+        
+        else:
+            self.feature_extractor = None
+            
 
         return
 
