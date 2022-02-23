@@ -64,6 +64,9 @@ parser.add_argument("--outdir", type=str, default="results", help="Output direct
 # Number of workers
 parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for dataloader")
 
+# GPU ID
+parser.add_argument("--gpu_id", type=int, default=0, help="The index of the GPU")
+
 # Save frequency
 parser.add_argument("--save_freq", type=int, default=10, help="Frequency (in number of epochs) to save the model")
 
@@ -212,7 +215,7 @@ tbwritter = SummaryWriter(log_dir=os.path.join(outdir, "tensorboard"), flush_sec
 
 
 # Choose GPU
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {DEVICE}")
 
 
