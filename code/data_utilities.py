@@ -480,7 +480,7 @@ class PH2Dataset(Dataset):
 
 # APTOS2019: Get labels and paths
 
-def aptos_map_images_and_labels(base_path, split='train'):
+def aptos_map_images_and_labels(base_path, split='Train'):
     df = pd.read_csv(os.path.join(base_path, 'train.csv'))
     df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_images", x + '.png'))
     
@@ -492,11 +492,11 @@ def aptos_map_images_and_labels(base_path, split='train'):
     X_train, X_test, y_train, y_test = train_test_split(df["id_code"].values, df["diagnosis"].values, train_size=0.85, stratify=df["diagnosis"], random_state=42)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, train_size=0.75, stratify=y_train, random_state=42)
 
-    if(split == "train"):
+    if(split == "Train"):
         return X_train, y_train
-    elif(split == "val"):
+    elif(split == "Validation"):
         return X_val, y_val
-    elif(split == "test"):
+    elif(split == "Test"):
         return X_test, y_test
     else:
         print("Invalid split. Please choose from [train, val, test]")
@@ -506,7 +506,7 @@ def aptos_map_images_and_labels(base_path, split='train'):
 
 # APTOS2019: Dataset Class
 class APTOSDataset(Dataset):
-    def __init__(self, base_data_path, split='train', transform=None):
+    def __init__(self, base_data_path, split='Train', transform=None):
         """
         Args:
             base_data_path (string): Data directory.

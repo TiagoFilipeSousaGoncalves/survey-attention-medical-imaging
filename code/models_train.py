@@ -338,8 +338,8 @@ elif dataset == "MIMICCXR":
 
 # APTOS
 elif dataset == "APTOS":
-    train_set = APTOSDataset(base_data_path=data_dir, split="train", transform=train_transforms)
-    val_set = APTOSDataset(base_data_path=data_dir, split="val", transform=val_transforms)
+    train_set = APTOSDataset(base_data_path=data_dir, split="Train", transform=train_transforms)
+    val_set = APTOSDataset(base_data_path=data_dir, split="Validation", transform=val_transforms)
 
 # ISIC2020
 elif dataset == "ISIC2020":
