@@ -25,8 +25,8 @@ np.random.seed(random_seed)
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from transformers import ViTFeatureExtractor, ViTForImageClassification
-from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset
+from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
+from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset, APTOSDataset
 
 
 
@@ -36,13 +36,16 @@ parser = argparse.ArgumentParser()
 
 # Add the arguments
 # Data set
-parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR", "PH2"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR, PH2")
+parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR", "APTOS", "PH2"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR, APTOS, PH2")
 
 # Data split
 parser.add_argument('--split', type=str, required=True, choices=["Train", "Validation", "Test"], help="Data split: Train, Validation or Test")
 
 # Model
-parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT')
+parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT')
+
+# Model checkpoint
+parser.add_argument("--modelckpt", type=str, required=True, help="Directory where model is stored")
 
 # Batch size
 parser.add_argument('--batchsize', type=int, default=4, help="Batch-size for training and validation")
@@ -52,9 +55,6 @@ parser.add_argument('--imgsize', type=int, default=224, help="Size of the image 
 
 # Resize
 parser.add_argument('--resize', type=str, choices=["direct_resize", "resizeshortest_randomcrop"], default="direct_resize", help="Resize data transformation")
-
-# Output directory
-parser.add_argument("--outdir", type=str, default="results", help="Output directory")
 
 # Number of workers
 parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for dataloader")
@@ -74,8 +74,8 @@ dataset = args.dataset
 # Data split
 data_split = args.split
 
-# Results Directory
-outdir = args.outdir
+# Model Directory
+modelckpt = args.modelckpt
 
 # Number of workers (threads)
 workers = args.num_workers
@@ -92,12 +92,8 @@ nr_layers = args.nr_layers
 # Resize (data transforms)
 resize_opt = args.resize
 
-# Results directory
-outdir = args.outdir
-
-
 # Weights directory
-weights_dir = os.path.join(outdir, "weights")
+weights_dir = os.path.join(modelckpt, "weights")
 
 
 
@@ -140,6 +136,10 @@ elif dataset == "MIMICCXR":
 
     _, _, nr_classes = mimic_map_images_and_labels(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"))
 
+# APTOS
+elif dataset == "APTOS":
+    nr_classes = 2
+    data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
 
 # ISIC2020
 elif dataset == "ISIC2020":
@@ -203,77 +203,74 @@ img_width = IMG_SIZE
 
 # Get the right model from the CLI
 model = args.model
+model_name = model.lower()
 feature_extractor = None
 
 
 # VGG-16
 if model == "VGG16":
     model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "vgg16"
 
 
 # DenseNet-121
 elif model == "DenseNet121":
     model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "densenet121"
 
 
 # ResNet50
 elif model == "ResNet50":
     model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "resnet50"
 
 
 # SEResNet50
 elif model == "SEResNet50":
     model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "seresnet50"
 
 
 # SEVGG16
 elif model == "SEVGG16":
     model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "sevgg16"
 
 
 # SEDenseNet121
 elif model == "SEDenseNet121":
     model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "sedensenet121"
 
 
 # CBAMResNet50
 elif model == "CBAMResNet50":
     model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "cbamresnet50"
 
 
 # CBAMVGG16
 elif model == "CBAMVGG16":
     model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "cbamvgg16"
 
 
 # CBAMDenseNet121
 elif model == "CBAMDenseNet121":
     model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "cbamdensenet121"
 
 # ViT
 elif model == "ViT":
     model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
-    model_name = "vit"
     feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
 
+# DeiT
+elif model == "DeiT":
+    model = DeiTForImageClassification.from_pretrained('facebook/deit-tiny-distilled-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
+    feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
 
 
 # Load model weights
-checkpoint = torch.load(os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_best.pt"), map_location=DEVICE)
+model_file = os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_best.pt")
+checkpoint = torch.load(model_file, map_location=DEVICE)
 
 # We need to add an exception to prevent some errors from the attention mechanisms that were already trained
 # Case without any error
 try:
     model.load_state_dict(checkpoint['model_state_dict'], strict=True)
+    print("Loaded model from " + model_file)
 
 # Case related to CBAM blocks
 except:
@@ -331,10 +328,13 @@ if dataset == "CBISDDSM":
 elif dataset == "MIMICCXR":
     eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), transform=eval_transforms)
 
+# APTOS
+elif dataset == "APTOS":
+    eval_set = APTOSDataset(base_data_path=data_dir, split=data_split, transform=eval_transforms)
 
 # ISIC2020
 elif dataset == "ISIC2020":
-    eval_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split=data_split, random_seed=random_seed, transform=eval_transforms, feature_extractor=feature_extractor)
+    eval_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split=data_split, random_seed=random_seed, transform=eval_transforms)
 
 
 # PH2
@@ -374,7 +374,7 @@ with torch.no_grad():
         images, labels = images.to(DEVICE, non_blocking=True), labels.to(DEVICE, non_blocking=True)
 
         # Forward pass: compute predicted outputs by passing inputs to the model
-        if(isinstance(model, ViTForImageClassification)):
+        if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
             out = model(pixel_values=images)
             logits = out.logits
         else:
@@ -405,7 +405,8 @@ with torch.no_grad():
 
 
     # Print Statistics
-    print(f"Model Name: {model_name}\t{data_split} Loss: {avg_eval_loss}\t{data_split} Accuracy: {eval_acc}")
+    best_epoch = checkpoint["epoch"]
+    print(f"Model Name: {model_name}\t{data_split} Epoch: {best_epoch} Loss: {avg_eval_loss}\t{data_split} Accuracy: {eval_acc}")
     
 
 
