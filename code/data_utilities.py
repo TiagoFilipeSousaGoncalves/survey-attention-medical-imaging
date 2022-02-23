@@ -87,7 +87,6 @@ class CBISDataset(Dataset):
             pickle_path (string): Path for pickle with annotations.
             transform (callable, optional): Optional transform to be applied
                 on a sample.
-            feature_extractor (callable, optional): feature extractor for ViT
         """
 
         # Init variables
@@ -213,7 +212,7 @@ class MIMICXRDataset(Dataset):
 # ISIC2020
 # ISIC2020: Dataset Class
 class ISIC2020Dataset(Dataset):
-    def __init__(self, base_data_path, csv_path, split, random_seed=42, transform=None, feature_extractor=None):
+    def __init__(self, base_data_path, csv_path, split, random_seed=42, transform=None):
         """
         Args:
             base_data_path (string): Data directory.
@@ -296,7 +295,6 @@ class ISIC2020Dataset(Dataset):
         # print(f"The folder has: {len(imgs_in_folder)} files.")
 
         self.transform = transform
-        self.feature_extractor = feature_extractor
 
         return
 
@@ -323,9 +321,6 @@ class ISIC2020Dataset(Dataset):
         # Apply transformation
         if self.transform:
             image = self.transform(image)
-
-        if(self.feature_extractor):
-            image = self.feature_extractor(images=image, return_tensors="pt")["pixel_values"].squeeze(0)
 
         return image, label
 
