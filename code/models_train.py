@@ -27,8 +27,8 @@ np.random.seed(random_seed)
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, CBISDataset, MIMICXRDataset
-from transformers import ViTFeatureExtractor, ViTForImageClassification
+from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, CBISDataset, MIMICXRDataset, APTOSDataset
+from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
 
 
 # Command Line Interface
@@ -37,10 +37,10 @@ parser = argparse.ArgumentParser()
 
 # Add the arguments
 # Data set
-parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR")
+parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR", "APTOS"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR")
 
 # Model
-parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT')
+parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT')
 
 # Batch size
 parser.add_argument('--batchsize', type=int, default=4, help="Batch-size for training and validation")
@@ -93,9 +93,11 @@ IMG_SIZE = args.imgsize
 save_freq = args.save_freq
 nr_layers = args.nr_layers
 resize_opt = args.resize
+model = args.model
+model_name = model.lower()
 
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-outdir = os.path.join(outdir, dataset.lower(), timestamp)
+outdir = os.path.join(outdir, dataset.lower(), model_name, timestamp)
 if not os.path.isdir(outdir):
     os.makedirs(outdir)
 
@@ -111,7 +113,7 @@ if dataset == "CBISDDSM":
     val_dir = os.path.join(data_dir, "val")
     test_dir = os.path.join(data_dir, "test")
  
-    imgs_labels, labels_dict, nr_classes = cbis_map_images_and_labels(dir=train_dir)
+    _, _, nr_classes = cbis_map_images_and_labels(dir=train_dir)
 
 # MIMICXR
 elif dataset == "MIMICCXR":
@@ -123,6 +125,10 @@ elif dataset == "MIMICCXR":
     test_dir = os.path.join(data_dir, "Test_images_AP_resized")
 
     _, _, nr_classes = mimic_map_images_and_labels(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"))
+
+elif dataset == "APTOS":
+    nr_classes = 2
+    data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
 
 # Results and Weights
 weights_dir = os.path.join(outdir, "weights")
@@ -152,69 +158,54 @@ img_nr_channels = 3
 img_height = IMG_SIZE
 img_width = IMG_SIZE
 
-
-# Get the right model from the CLI
-model = args.model
 feature_extractor = None
 
 # VGG-16
 if model == "VGG16":
     model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "vgg16"
-
 
 # DenseNet-121
 elif model == "DenseNet121":
     model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "densenet121"
-
 
 # ResNet50
 elif model == "ResNet50":
     model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "resnet50"
-
 
 # SEResNet50
 elif model == "SEResNet50":
     model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "seresnet50"
-
 
 # SEVGG16
 elif model == "SEVGG16":
     model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "sevgg16"
-
 
 # SEDenseNet121
 elif model == "SEDenseNet121":
     model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "sedensenet121"
-
 
 # CBAMResNet50
 elif model == "CBAMResNet50":
     model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "cbamresnet50"
-
 
 # CBAMVGG16
 elif model == "CBAMVGG16":
     model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
     model_name = "cbamvgg16"
 
-
 # CBAMDenseNet121
 elif model == "CBAMDenseNet121":
     model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "cbamdensenet121"
 
 # ViT
 elif model == "ViT":
     model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
-    model_name = "vit"
     feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
+
+# DeiT
+elif model == "DeiT":
+    model = DeiTForImageClassification.from_pretrained('facebook/deit-tiny-distilled-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
+    feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
 
 model = model.to(DEVICE)
 
@@ -222,11 +213,6 @@ model_summary = summary(model, (1, 3, IMG_SIZE, IMG_SIZE), device=DEVICE)
 with open(os.path.join(outdir, "model_summary.txt"), 'w') as f:
     f.write(str(model_summary))
 
-# Hyper-parameters
-LOSS = torch.nn.CrossEntropyLoss(reduction="sum")
-OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-
-init_epoch = 0
 # Resume training from given checkpoint
 if resume:
     checkpoint = torch.load(ckpt)
@@ -267,10 +253,20 @@ elif dataset == "MIMICCXR":
     train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms)
     val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
 
+# APTOS
+elif dataset == "APTOS":
+    train_set = APTOSDataset(base_data_path=data_dir, split="train", transform=train_transforms)
+    val_set = APTOSDataset(base_data_path=data_dir, split="val", transform=val_transforms)
+
+
 # Dataloaders
 train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
 val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
 
+# Hyper-parameters
+LOSS = torch.nn.CrossEntropyLoss(reduction="sum")
+OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+steps_per_epoch = int(np.ceil(len(train_set) / BATCH_SIZE))
 
 # Train model and save best weights on validation set
 # Initialise min_train and min_val loss trackers
@@ -285,7 +281,7 @@ val_losses = np.zeros_like(train_losses)
 train_metrics = np.zeros((EPOCHS, 4))
 val_metrics = np.zeros_like(train_metrics)
 
-
+global_step = 0
 # Go through the number of Epochs
 for epoch in range(EPOCHS):
     # Epoch 
@@ -320,7 +316,7 @@ for epoch in range(EPOCHS):
 
 
         # Forward pass: compute predicted outputs by passing inputs to the model
-        if(isinstance(model, ViTForImageClassification)):
+        if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
             out = model(pixel_values=images)
             logits = out.logits
         else:
@@ -346,6 +342,7 @@ for epoch in range(EPOCHS):
         s_logits = torch.argmax(s_logits, dim=1)
         y_train_pred = torch.cat((y_train_pred, s_logits))
 
+        global_step += 1
 
     # Compute Average Train Loss
     avg_train_loss = run_train_loss/len(train_loader.dataset)
@@ -423,7 +420,7 @@ for epoch in range(EPOCHS):
             images, labels = images.to(DEVICE, non_blocking=True), labels.to(DEVICE, non_blocking=True)
 
             # Forward pass: compute predicted outputs by passing inputs to the model
-            if(isinstance(model, ViTForImageClassification)):
+            if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
                 out = model(pixel_values=images)
                 logits = out.logits
             else:
