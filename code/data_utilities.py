@@ -3,6 +3,8 @@ import os
 import _pickle as cPickle
 import numpy as np
 from PIL import Image
+import pandas as pd
+from sklearn.model_selection import train_test_split
 
 # PyTorch Imports
 import torch
@@ -180,6 +182,74 @@ class MIMICXRDataset(Dataset):
     def __len__(self):
         return len(self.images_paths)
 
+
+
+    # Method: __getitem__
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        
+
+        # Get images
+        img_name = self.images_paths[idx]
+        image = Image.open(img_name)
+
+        # Get labels
+        label = self.images_labels[idx]
+
+        # Apply transformation
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label
+
+# APTOS2019: Get labels and paths
+
+def aptos_map_images_and_labels(base_path, split='train'):
+    df = pd.read_csv(os.path.join(base_path, 'train.csv'))
+    df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_images", x + '.png'))
+    
+    # convert to binary classification
+    df["diagnosis"] = df["diagnosis"].apply(lambda x: 1 if x > 0 else 0)
+    stats = np.unique(df["diagnosis"], return_counts=True)
+    #print(stats)
+
+    X_train, X_test, y_train, y_test = train_test_split(df["id_code"].values, df["diagnosis"].values, train_size=0.85, stratify=df["diagnosis"], random_state=42)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, train_size=0.75, stratify=y_train, random_state=42)
+
+    if(split == "train"):
+        return X_train, y_train
+    elif(split == "val"):
+        return X_val, y_val
+    elif(split == "test"):
+        return X_test, y_test
+    else:
+        print("Invalid split. Please choose from [train, val, test]")
+        quit()
+
+
+
+# APTOS2019: Dataset Class
+class APTOSDataset(Dataset):
+    def __init__(self, base_data_path, split='train', transform=None):
+        """
+        Args:
+            base_data_path (string): Data directory.
+            pickle_path (string): Path for pickle with annotations.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        
+        # Init variables
+        self.images_paths, self.images_labels = aptos_map_images_and_labels(base_data_path, split=split)
+        self.transform = transform
+
+        return 
+
+
+    # Method: __len__
+    def __len__(self):
+        return len(self.images_paths)
 
 
     # Method: __getitem__
