@@ -344,7 +344,7 @@ elif dataset == "PH2":
 
 
 # Dataloaders
-eval_loader = DataLoader(dataset=eval_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
+eval_loader = DataLoader(dataset=eval_set, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True, num_workers=workers)
 
 
 # Loss function

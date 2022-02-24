@@ -478,29 +478,32 @@ class PH2Dataset(Dataset):
 
 
 
+# APTOS2018
 # APTOS2019: Get labels and paths
-
 def aptos_map_images_and_labels(base_path, split='Train'):
+
+    assert split in ["Train", "Validation", "Test"], f"Invalid split '{split}'. Please choose from ['Train', 'Validation', 'Test']."
+
+
     df = pd.read_csv(os.path.join(base_path, 'train.csv'))
     df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_images", x + '.png'))
     
-    # convert to binary classification
+    # Convert to binary classification
     df["diagnosis"] = df["diagnosis"].apply(lambda x: 1 if x > 0 else 0)
     stats = np.unique(df["diagnosis"], return_counts=True)
-    #print(stats)
+    # print(stats)
 
     X_train, X_test, y_train, y_test = train_test_split(df["id_code"].values, df["diagnosis"].values, train_size=0.85, stratify=df["diagnosis"], random_state=42)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, train_size=0.75, stratify=y_train, random_state=42)
 
-    if(split == "Train"):
+    if split == "Train":
         return X_train, y_train
-    elif(split == "Validation"):
+    
+    elif split == "Validation":
         return X_val, y_val
-    elif(split == "Test"):
+    
+    elif split == "Test":
         return X_test, y_test
-    else:
-        print("Invalid split. Please choose from [train, val, test]")
-        quit()
 
 
 
