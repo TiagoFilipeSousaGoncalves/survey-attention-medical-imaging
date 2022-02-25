@@ -428,7 +428,11 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
     model = model.to(DEVICE)
 
     # Forward pass: compute predicted outputs by passing inputs to the model
-    logits = model(images)
+    if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
+        out = model(pixel_values=images)
+        logits = out.logits
+    else:
+        logits = model(images)
 
     
     # Using Softmax Activation
