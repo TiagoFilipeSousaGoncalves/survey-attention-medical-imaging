@@ -20,9 +20,6 @@ np.random.seed(random_seed)
 parser = argparse.ArgumentParser()
 
 # Add the arguments
-# Data set
-parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR", "APTOS", "PH2"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR, APTOS, PH2")
-
 # Model
 parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT')
 
@@ -35,9 +32,6 @@ args = parser.parse_args()
 
 
 # Data directory
-# Dataset
-dataset = args.dataset
-
 # Model
 model = args.model
 
