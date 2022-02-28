@@ -5,8 +5,6 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
-from code.models_train import EPOCHS
-
 
 
 # Fix Random Seeds
