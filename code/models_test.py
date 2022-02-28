@@ -150,6 +150,10 @@ elif dataset == "ISIC2020":
     # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
 
 
+    # Add manually the number of classes
+    nr_classes = 2
+
+
 # PH2
 elif dataset == "PH2":
     # Directories
@@ -344,7 +348,7 @@ elif dataset == "PH2":
 
 
 # Dataloaders
-eval_loader = DataLoader(dataset=eval_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
+eval_loader = DataLoader(dataset=eval_set, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True, num_workers=workers)
 
 
 # Loss function
