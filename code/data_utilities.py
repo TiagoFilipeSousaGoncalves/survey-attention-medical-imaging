@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 # Sklearn Imports
 from sklearn.model_selection import train_test_split
@@ -212,7 +211,7 @@ class MIMICXRDataset(Dataset):
 # ISIC2020
 # ISIC2020: Dataset Class
 class ISIC2020Dataset(Dataset):
-    def __init__(self, base_data_path, csv_path, split, random_seed=42, transform=None, **kwargs):
+    def __init__(self, base_data_path, csv_path, split, random_seed=42, transform=None):
         """
         Args:
             base_data_path (string): Data directory.
@@ -252,7 +251,7 @@ class ISIC2020Dataset(Dataset):
             self.image_names = self.dataframe.copy()["image_name"].values
 
             # Get the image labels
-            self.image_labels = self.dataframe.copy()["target"].values
+            self.images_labels = self.dataframe.copy()["target"].values
 
             # Information print
             print(f"The {split} split has {len(self.image_names)} images")
@@ -267,7 +266,7 @@ class ISIC2020Dataset(Dataset):
             self.image_names = self.dataframe.copy()["image_name"].values
 
             # Get the image labels
-            self.image_labels = self.dataframe.copy()["target"].values
+            self.images_labels = self.dataframe.copy()["target"].values
 
             # Information print
             print(f"The {split} split has {len(self.image_names)} images")
@@ -282,7 +281,7 @@ class ISIC2020Dataset(Dataset):
             self.image_names = self.dataframe.copy()["image_name"].values
 
             # Get the image labels
-            self.image_labels = self.dataframe.copy()["target"].values
+            self.images_labels = self.dataframe.copy()["target"].values
 
             # Information print
             print(f"The {split} split has {len(self.image_names)} images")
@@ -295,14 +294,6 @@ class ISIC2020Dataset(Dataset):
         # print(f"The folder has: {len(imgs_in_folder)} files.")
 
         self.transform = transform
-
-        # **kwargs
-        if kwargs['feature_extractor']:
-            self.feature_extractor = kwargs['feature_extractor']
-        
-        else:
-            self.feature_extractor = None
-            
 
         return
 
@@ -324,7 +315,7 @@ class ISIC2020Dataset(Dataset):
         image = Image.open(os.path.join(self.base_data_path, f"{img_name}.jpg"))
 
         # Get labels
-        label = self.image_labels[idx]
+        label = self.images_labels[idx]
 
         # Apply transformation
         if self.transform:
