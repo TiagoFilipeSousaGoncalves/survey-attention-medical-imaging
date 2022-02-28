@@ -56,6 +56,12 @@ plt.plot(val_losses, label="Validation")
 plt.legend(loc='best')
 plt.savefig(fname=os.path.join(history_dir, f"{model.lower()}_losses.png"), pad_inches='tight')
 plt.clf()
+plt.close()
+
+
+
+# Print best validation epoch
+print(f"Best validation loss (epoch): {np.argmin(val_losses)}")
 
 
 
@@ -71,3 +77,5 @@ plt.plot(val_metrics, label="Validation")
 plt.legend(loc='best')
 plt.savefig(fname=os.path.join(history_dir, f"{model.lower()}_accuracy.png"), pad_inches='tight')
 plt.clf()
+plt.close()
+
