@@ -72,10 +72,11 @@ val_metrics = np.load(file=os.path.join(history_dir, f"{model.lower()}_val_metri
 
 # Plot configuration
 plt.title(f"{model} Accuracy Values")
-plt.plot(tr_metrics, label="Train")
-plt.plot(val_metrics, label="Validation")
+plt.plot(tr_metrics[:, 0], label="Train")
+plt.plot(val_metrics[:, 0], label="Validation")
 plt.legend(loc='best')
 plt.savefig(fname=os.path.join(history_dir, f"{model.lower()}_accuracy.png"), pad_inches='tight')
 plt.clf()
 plt.close()
 
+print("Finished.")
