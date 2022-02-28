@@ -297,7 +297,7 @@ class ISIC2020Dataset(Dataset):
         self.transform = transform
 
         # **kwargs
-        if kwargs['feature_extractor']:
+        if 'feature_extractor' in kwargs.keys():
             self.feature_extractor = kwargs['feature_extractor']
         
         else:
