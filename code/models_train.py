@@ -7,8 +7,9 @@ import datetime
 from torchinfo import summary
 
 # Sklearn Imports
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
 from sklearn.model_selection import train_test_split
+from sklearn.utils.class_weight import compute_class_weight
 
 # PyTorch Imports
 import torch
@@ -50,6 +51,9 @@ parser.add_argument('--imgsize', type=int, default=224, help="Size of the image 
 
 # Resize
 parser.add_argument('--resize', type=str, choices=["direct_resize", "resizeshortest_randomcrop"], default="direct_resize", help="Resize data transformation")
+
+# Class Weights
+parser.add_argument("--classweights", action="store_true", help="Weight loss with class imbalance")
 
 # Number of epochs
 parser.add_argument('--epochs', type=int, default=300, help="Number of training epochs")
@@ -170,7 +174,7 @@ elif dataset == "APTOS":
 elif dataset == "ISIC2020":
     # Directories
     data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train"
-    # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train"
+    # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train_resized"
     csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
     # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
 
@@ -289,11 +293,6 @@ with open(os.path.join(outdir, "model_summary.txt"), 'w') as f:
     f.write(str(model_summary))
 
 
-# Hyper-parameters
-LOSS = torch.nn.CrossEntropyLoss(reduction="sum")
-OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
-
-
 # Resume training from given checkpoint
 if resume:
     checkpoint = torch.load(ckpt)
@@ -343,19 +342,28 @@ elif dataset == "APTOS":
 
 # ISIC2020
 elif dataset == "ISIC2020":
-    train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Train', random_seed=random_seed, transform=train_transforms, feature_extractor=feature_extractor)
-    val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Validation', random_seed=random_seed, transform=val_transforms, feature_extractor=feature_extractor)
+    train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Train', random_seed=random_seed, transform=train_transforms)
+    val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Validation', random_seed=random_seed, transform=val_transforms)
 
 # PH2
 elif dataset == "PH2":
     train_set = PH2Dataset(ph2_imgs=ph2_imgs_train, ph2_labels=ph2_labels_train, base_data_path=data_dir, transform=train_transforms)
     val_set = PH2Dataset(ph2_imgs=ph2_imgs_val, ph2_labels=ph2_labels_val, base_data_path=data_dir, transform=val_transforms)
 
+if args.classweights:
+    classes = np.array(range(nr_classes))
+    cw = compute_class_weight('balanced', classes=classes, y=np.array(train_set.images_labels))
+    print(f"Using class weights {cw}")
+
+# Hyper-parameters
+LOSS = torch.nn.CrossEntropyLoss(reduction="sum", weight=torch.from_numpy(cw).float().to(DEVICE))
+VAL_LOSS = torch.nn.CrossEntropyLoss(reduction="sum")
+OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 
 # Dataloaders
-train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
-val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=True, num_workers=workers)
+train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=False, num_workers=workers)
+val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=False, num_workers=workers)
 
 
 # Train model and save best weights on validation set
@@ -368,7 +376,7 @@ train_losses = np.zeros((EPOCHS, ))
 val_losses = np.zeros_like(train_losses)
 
 # Initialise metrics arrays
-train_metrics = np.zeros((EPOCHS, 4))
+train_metrics = np.zeros((EPOCHS, 5))
 val_metrics = np.zeros_like(train_metrics)
 
 global_step = 0
@@ -383,6 +391,7 @@ for epoch in range(EPOCHS):
     # Initialise lists to compute scores
     y_train_true = np.empty((0), int)
     y_train_pred = torch.empty(0, dtype=torch.int32, device=DEVICE)
+    y_train_scores = torch.empty(0, dtype=torch.float, device=DEVICE) # save scores before softmax for roc auc
 
 
     # Running train loss
@@ -417,14 +426,16 @@ for epoch in range(EPOCHS):
         # Using CrossEntropy w/ Softmax
         loss = LOSS(logits, labels)
 
+        # Update batch losses
+        run_train_loss += loss
+
         # Backward pass: compute gradient of the loss with respect to model parameters
         loss.backward()
         
         # Perform a single optimization step (parameter update)
         OPTIMISER.step()
-        
-        # Update batch losses
-        run_train_loss += loss
+
+        y_train_scores = torch.cat((y_train_scores, logits))
 
         # Using Softmax
         # Apply Softmax on Logits and get the argmax to get the predicted labels
@@ -440,10 +451,12 @@ for epoch in range(EPOCHS):
 
     # Compute Train Metrics
     y_train_pred = y_train_pred.cpu().detach().numpy()
+    y_train_scores = y_train_scores.cpu().detach().numpy()
     train_acc = accuracy_score(y_true=y_train_true, y_pred=y_train_pred)
     train_recall = recall_score(y_true=y_train_true, y_pred=y_train_pred, average='micro')
     train_precision = precision_score(y_true=y_train_true, y_pred=y_train_pred, average='micro')
     train_f1 = f1_score(y_true=y_train_true, y_pred=y_train_pred, average='micro')
+    train_auc = roc_auc_score(y_true=y_train_true, y_score=y_train_scores[:, 1], average='micro')
 
     # Print Statistics
     print(f"Train Loss: {avg_train_loss}\tTrain Accuracy: {train_acc}")
@@ -467,6 +480,9 @@ for epoch in range(EPOCHS):
     train_metrics[epoch, 2] = train_precision
     # F1-Score
     train_metrics[epoch, 3] = train_f1
+    # ROC AUC
+    train_metrics[epoch, 4] = train_auc
+
     # Save it to directory
     fname = os.path.join(history_dir, f"{model_name}_tr_metrics.npy")
     np.save(file=fname, arr=train_metrics, allow_pickle=True)
@@ -477,6 +493,7 @@ for epoch in range(EPOCHS):
     tbwritter.add_scalar("rec/train", train_recall, global_step=epoch)
     tbwritter.add_scalar("prec/train", train_precision, global_step=epoch)
     tbwritter.add_scalar("f1/train", train_f1, global_step=epoch)
+    tbwritter.add_scalar("auc/train", train_auc, global_step=epoch)
 
     # Update Variables
     # Min Training Loss
@@ -492,6 +509,7 @@ for epoch in range(EPOCHS):
     # Initialise lists to compute scores
     y_val_true = np.empty((0), int)
     y_val_pred = torch.empty(0, dtype=torch.int32, device=DEVICE)
+    y_val_scores = torch.empty(0, dtype=torch.float, device=DEVICE) # save scores before softmax for roc auc
 
     # Running train loss
     run_val_loss = 0.0
@@ -518,11 +536,12 @@ for epoch in range(EPOCHS):
             
             # Compute the batch loss
             # Using CrossEntropy w/ Softmax
-            loss = LOSS(logits, labels)
+            loss = VAL_LOSS(logits, labels)
             
             # Update batch losses
             run_val_loss += loss
 
+            y_val_scores = torch.cat((y_val_scores, logits))
 
             # Using Softmax Activation
             # Apply Softmax on Logits and get the argmax to get the predicted labels
@@ -537,10 +556,12 @@ for epoch in range(EPOCHS):
 
         # Compute Validation Accuracy
         y_val_pred = y_val_pred.cpu().detach().numpy()
+        y_val_scores = y_val_scores.cpu().detach().numpy()
         val_acc = accuracy_score(y_true=y_val_true, y_pred=y_val_pred)
         val_recall = recall_score(y_true=y_val_true, y_pred=y_val_pred, average='micro')
         val_precision = precision_score(y_true=y_val_true, y_pred=y_val_pred, average='micro')
         val_f1 = f1_score(y_true=y_val_true, y_pred=y_val_pred, average='micro')
+        val_auc = roc_auc_score(y_true=y_val_true, y_score=y_val_scores[:, 1], average='micro')
 
         # Print Statistics
         print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}")
@@ -563,6 +584,9 @@ for epoch in range(EPOCHS):
         val_metrics[epoch, 2] = val_precision
         # F1-Score
         val_metrics[epoch, 3] = val_f1
+        # ROC AUC
+        val_metrics[epoch, 4] = val_auc
+
         # Save it to directory
         fname = os.path.join(history_dir, f"{model_name}_val_metrics.npy")
         np.save(file=fname, arr=val_metrics, allow_pickle=True)
@@ -573,6 +597,7 @@ for epoch in range(EPOCHS):
         tbwritter.add_scalar("rec/val", val_recall, global_step=epoch)
         tbwritter.add_scalar("prec/val", val_precision, global_step=epoch)
         tbwritter.add_scalar("f1/val", val_f1, global_step=epoch)
+        tbwritter.add_scalar("auc/val", val_auc, global_step=epoch)
 
         # Update Variables
         # Min validation loss and save if validation loss decreases
