@@ -329,6 +329,10 @@ class ISIC2020Dataset(Dataset):
         # Apply transformation
         if self.transform:
             image = self.transform(image)
+        
+
+        if self.feature_extractor:
+            image = self.feature_extractor(images=image, return_tensors="pt")["pixel_values"].squeeze(0)
 
         return image, label
 
