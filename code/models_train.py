@@ -293,14 +293,6 @@ with open(os.path.join(outdir, "model_summary.txt"), 'w') as f:
     f.write(str(model_summary))
 
 
-# Resume training from given checkpoint
-if resume:
-    checkpoint = torch.load(ckpt)
-    model.load_state_dict(checkpoint['model_state_dict'], strict=True)
-    OPTIMISER.load_state_dict(checkpoint['optimizer_state_dict'])
-    epoch = checkpoint['epoch']
-    print(f"Resuming from {ckpt} at epoch {epoch}")
-
 
 # Load data
 # Train
@@ -350,10 +342,15 @@ elif dataset == "PH2":
     train_set = PH2Dataset(ph2_imgs=ph2_imgs_train, ph2_labels=ph2_labels_train, base_data_path=data_dir, transform=train_transforms)
     val_set = PH2Dataset(ph2_imgs=ph2_imgs_val, ph2_labels=ph2_labels_val, base_data_path=data_dir, transform=val_transforms)
 
+
+
+# Class weights for loss
 if args.classweights:
     classes = np.array(range(nr_classes))
     cw = compute_class_weight('balanced', classes=classes, y=np.array(train_set.images_labels))
     print(f"Using class weights {cw}")
+
+
 
 # Hyper-parameters
 LOSS = torch.nn.CrossEntropyLoss(reduction="sum", weight=torch.from_numpy(cw).float().to(DEVICE))
@@ -361,9 +358,21 @@ VAL_LOSS = torch.nn.CrossEntropyLoss(reduction="sum")
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
 
+
+# Resume training from given checkpoint
+if resume:
+    checkpoint = torch.load(ckpt)
+    model.load_state_dict(checkpoint['model_state_dict'], strict=True)
+    OPTIMISER.load_state_dict(checkpoint['optimizer_state_dict'])
+    epoch = checkpoint['epoch']
+    print(f"Resuming from {ckpt} at epoch {epoch}")
+
+
+
 # Dataloaders
 train_loader = DataLoader(dataset=train_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=False, num_workers=workers)
 val_loader = DataLoader(dataset=val_set, batch_size=BATCH_SIZE, shuffle=True, pin_memory=False, num_workers=workers)
+
 
 
 # Train model and save best weights on validation set
