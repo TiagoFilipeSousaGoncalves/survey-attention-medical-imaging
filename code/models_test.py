@@ -6,7 +6,7 @@ import numpy as np
 from collections import OrderedDict
 
 # Sklearn Import
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from sklearn.model_selection import train_test_split
 
 # PyTorch Imports
@@ -362,6 +362,7 @@ print(f"Testing Step | Data Set: {dataset}")
 # Initialise lists to compute scores
 y_eval_true = np.empty((0), int)
 y_eval_pred = torch.empty(0, dtype=torch.int32, device=DEVICE)
+y_eval_scores = torch.empty(0, dtype=torch.float, device=DEVICE)
 
 # Running train loss
 run_eval_loss = 0.0
@@ -395,6 +396,7 @@ with torch.no_grad():
         # Using Softmax Activation
         # Apply Softmax on Logits and get the argmax to get the predicted labels
         s_logits = torch.nn.Softmax(dim=1)(logits)
+        y_eval_scores = torch.cat((y_eval_scores, s_logits))
         s_logits = torch.argmax(s_logits, dim=1)
         y_eval_pred = torch.cat((y_eval_pred, s_logits))
 
@@ -405,12 +407,14 @@ with torch.no_grad():
 
     # Compute Validation Accuracy
     y_eval_pred = y_eval_pred.cpu().detach().numpy()
+    y_eval_scores = y_eval_pred.cpu().detach().numpy()
     eval_acc = accuracy_score(y_true=y_eval_true, y_pred=y_eval_pred)
-
+    eval_f1 = f1_score(y_true=y_eval_true, y_pred=y_eval_pred, average='micro')
+    eval_auc = roc_auc_score(y_true=y_eval_true, y_score=y_eval_scores[:, 1], average='micro')
 
     # Print Statistics
     best_epoch = checkpoint["epoch"]
-    print(f"Model Name: {model_name}\t{data_split} Epoch: {best_epoch} Loss: {avg_eval_loss}\t{data_split} Accuracy: {eval_acc}")
+    print(f"Model Name: {model_name}\t{data_split} Epoch: {best_epoch} Loss: {avg_eval_loss} Accuracy: {eval_acc} F1-score: {eval_f1} ROC AUC: {eval_auc}")
     
 
 
