@@ -173,10 +173,10 @@ elif dataset == "APTOS":
 # ISIC2020
 elif dataset == "ISIC2020":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train"
-    # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train_resized"
-    csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
-    # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train"
+    data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train_resized"
+    # csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
+    csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
 
     # Add the number of classes manually
     nr_classes = 2
@@ -391,7 +391,7 @@ for epoch in range(EPOCHS):
     # Initialise lists to compute scores
     y_train_true = np.empty((0), int)
     y_train_pred = torch.empty(0, dtype=torch.int32, device=DEVICE)
-    y_train_scores = torch.empty(0, dtype=torch.float, device=DEVICE) # save scores before softmax for roc auc
+    y_train_scores = torch.empty(0, dtype=torch.float, device=DEVICE) # save scores after softmax for roc auc
 
 
     # Running train loss
@@ -435,11 +435,10 @@ for epoch in range(EPOCHS):
         # Perform a single optimization step (parameter update)
         OPTIMISER.step()
 
-        y_train_scores = torch.cat((y_train_scores, logits))
-
         # Using Softmax
         # Apply Softmax on Logits and get the argmax to get the predicted labels
         s_logits = torch.nn.Softmax(dim=1)(logits)
+        y_train_scores = torch.cat((y_train_scores, s_logits))
         s_logits = torch.argmax(s_logits, dim=1)
         y_train_pred = torch.cat((y_train_pred, s_logits))
 
@@ -509,7 +508,7 @@ for epoch in range(EPOCHS):
     # Initialise lists to compute scores
     y_val_true = np.empty((0), int)
     y_val_pred = torch.empty(0, dtype=torch.int32, device=DEVICE)
-    y_val_scores = torch.empty(0, dtype=torch.float, device=DEVICE) # save scores before softmax for roc auc
+    y_val_scores = torch.empty(0, dtype=torch.float, device=DEVICE) # save scores after softmax for roc auc
 
     # Running train loss
     run_val_loss = 0.0
@@ -541,11 +540,11 @@ for epoch in range(EPOCHS):
             # Update batch losses
             run_val_loss += loss
 
-            y_val_scores = torch.cat((y_val_scores, logits))
 
             # Using Softmax Activation
             # Apply Softmax on Logits and get the argmax to get the predicted labels
-            s_logits = torch.nn.Softmax(dim=1)(logits)
+            s_logits = torch.nn.Softmax(dim=1)(logits)                        
+            y_val_scores = torch.cat((y_val_scores, s_logits))
             s_logits = torch.argmax(s_logits, dim=1)
             y_val_pred = torch.cat((y_val_pred, s_logits))
 
