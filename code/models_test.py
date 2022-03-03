@@ -100,8 +100,8 @@ weights_dir = os.path.join(modelckpt, "weights")
 # CBISDDSM
 if dataset == "CBISDDSM":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-    # data_dir = "/BARRACUDA8T/DATASETS/CBIS_DDSM/"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+    data_dir = "/BARRACUDA8T/DATASETS/CBIS_DDSM/"
 
     # Data splits
     if data_split == "Train":
@@ -144,9 +144,9 @@ elif dataset == "APTOS":
 # ISIC2020
 elif dataset == "ISIC2020":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train"
+    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train_resized"
     csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
-    # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train"
+    # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train_resized"
     # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
 
 
@@ -407,7 +407,7 @@ with torch.no_grad():
 
     # Compute Validation Accuracy
     y_eval_pred = y_eval_pred.cpu().detach().numpy()
-    y_eval_scores = y_eval_pred.cpu().detach().numpy()
+    y_eval_scores = y_eval_scores.cpu().detach().numpy()
     eval_acc = accuracy_score(y_true=y_eval_true, y_pred=y_eval_pred)
     eval_f1 = f1_score(y_true=y_eval_true, y_pred=y_eval_pred, average='micro')
     eval_auc = roc_auc_score(y_true=y_eval_true, y_score=y_eval_scores[:, 1], average='micro')

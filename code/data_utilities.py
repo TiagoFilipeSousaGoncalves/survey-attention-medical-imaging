@@ -477,7 +477,7 @@ def aptos_map_images_and_labels(base_path, split='Train'):
 
 
     df = pd.read_csv(os.path.join(base_path, 'train.csv'))
-    df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_images", x + '.png'))
+    df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_resized", x + '.png'))
     
     # Convert to binary classification
     df["diagnosis"] = df["diagnosis"].apply(lambda x: 1 if x > 0 else 0)

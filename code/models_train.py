@@ -158,7 +158,7 @@ if dataset == "CBISDDSM":
 elif dataset == "MIMICCXR":
     # Directories
     data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
-    #data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
+    # data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
     train_dir = os.path.join(data_dir, "Train_images_AP_resized")
     val_dir = os.path.join(data_dir, "Val_images_AP_resized")
     test_dir = os.path.join(data_dir, "Test_images_AP_resized")
@@ -173,10 +173,10 @@ elif dataset == "APTOS":
 # ISIC2020
 elif dataset == "ISIC2020":
     # Directories
-    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train"
-    data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train_resized"
-    # csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
-    csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
+    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train_resized"
+    # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train_resized"
+    csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
+    # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
 
     # Add the number of classes manually
     nr_classes = 2
@@ -348,12 +348,14 @@ elif dataset == "PH2":
 if args.classweights:
     classes = np.array(range(nr_classes))
     cw = compute_class_weight('balanced', classes=classes, y=np.array(train_set.images_labels))
+    cw = torch.from_numpy(cw).float().to(DEVICE)
     print(f"Using class weights {cw}")
-
+else:
+    cw = None
 
 
 # Hyper-parameters
-LOSS = torch.nn.CrossEntropyLoss(reduction="sum", weight=torch.from_numpy(cw).float().to(DEVICE))
+LOSS = torch.nn.CrossEntropyLoss(reduction="sum", weight=cw)
 VAL_LOSS = torch.nn.CrossEntropyLoss(reduction="sum")
 OPTIMISER = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
