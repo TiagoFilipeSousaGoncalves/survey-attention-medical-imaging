@@ -72,65 +72,74 @@ for sub_dir_name in sub_dirs:
 
 
 # Debug print
-print("Creating figures...")
+print(f"Creating figures from: {modelckpt}")
 
 # Loop through files
 for fname in attribute_flist:
-
-    # Original Image
-    original_fname = os.path.join(xai_maps_dir, sub_dirs[0], fname)
-    original_img = np.load(original_fname, allow_pickle=True)
-
-    # Get figure
-    figure, axis = viz.visualize_image_attr(None, original_img, method="original_image", use_pyplot=False)
-
-    # Get the figure from memory
-    convert_figure(figure)
     
-    # Save figure
-    plt.axis('off')
-    plt.savefig(os.path.join(png_figs_dir, sub_dirs[0], fname.split('.')[0]+'.png'), bbox_inches='tight')
-    plt.clf()
-    # plt.show()
-    plt.close()
+
+    # Try to generate the final images of the attributes
+    try:
+
+        # Original Image
+        original_fname = os.path.join(xai_maps_dir, sub_dirs[0], fname)
+        original_img = np.load(original_fname, allow_pickle=True)
+
+        # Get figure
+        figure, axis = viz.visualize_image_attr(None, original_img, method="original_image", use_pyplot=False)
+
+        # Get the figure from memory
+        convert_figure(figure)
+        
+        # Save figure
+        plt.axis('off')
+        plt.savefig(os.path.join(png_figs_dir, sub_dirs[0], fname.split('.')[0]+'.png'), bbox_inches='tight')
+        plt.clf()
+        # plt.show()
+        plt.close()
 
 
 
-    # Deeplift
-    deeplift_fname = os.path.join(xai_maps_dir, sub_dirs[1], fname)
-    deeplift_map = np.load(deeplift_fname, allow_pickle=True)
+        # Deeplift
+        deeplift_fname = os.path.join(xai_maps_dir, sub_dirs[1], fname)
+        deeplift_map = np.load(deeplift_fname, allow_pickle=True)
 
-    # Get figure
-    figure, axis = viz.visualize_image_attr(deeplift_map, original_img, method="blended_heat_map", sign="all", show_colorbar=False, use_pyplot=False)
+        # Get figure
+        figure, axis = viz.visualize_image_attr(deeplift_map, original_img, method="blended_heat_map", sign="all", show_colorbar=False, use_pyplot=False)
+        
+        # Get the figure from memory
+        convert_figure(figure)
+
+        # Save figure
+        plt.axis('off')
+        plt.savefig(os.path.join(png_figs_dir, sub_dirs[1], fname.split('.')[0]+'.png'), bbox_inches='tight')
+        plt.clf()
+        # plt.show()
+        plt.close()
+
+
+
+        # LRP
+        lrp_fname = os.path.join(xai_maps_dir, sub_dirs[2], fname)
+        lrp_map = np.load(lrp_fname, allow_pickle=True)
+
+        # Get figure
+        figure, axis = viz.visualize_image_attr(lrp_map, original_img, method="blended_heat_map", sign="all", show_colorbar=False, use_pyplot=False)
+        
+        # Get the figure from memory
+        convert_figure(figure)
+
+        # Save figure
+        plt.axis('off')
+        plt.savefig(os.path.join(png_figs_dir, sub_dirs[2], fname.split('.')[0]+'.png'), bbox_inches='tight')
+        plt.clf()
+        # plt.show()
+        plt.close()
     
-    # Get the figure from memory
-    convert_figure(figure)
 
-    # Save figure
-    plt.axis('off')
-    plt.savefig(os.path.join(png_figs_dir, sub_dirs[1], fname.split('.')[0]+'.png'), bbox_inches='tight')
-    plt.clf()
-    # plt.show()
-    plt.close()
-
-
-
-    # LRP
-    lrp_fname = os.path.join(xai_maps_dir, sub_dirs[2], fname)
-    lrp_map = np.load(lrp_fname, allow_pickle=True)
-
-    # Get figure
-    figure, axis = viz.visualize_image_attr(lrp_map, original_img, method="blended_heat_map", sign="all", show_colorbar=False, use_pyplot=False)
-    
-    # Get the figure from memory
-    convert_figure(figure)
-
-    # Save figure
-    plt.axis('off')
-    plt.savefig(os.path.join(png_figs_dir, sub_dirs[2], fname.split('.')[0]+'.png'), bbox_inches='tight')
-    plt.clf()
-    # plt.show()
-    plt.close()
+    # Pass if the image + attribute has bad quality
+    except:
+        pass
 
 
 
