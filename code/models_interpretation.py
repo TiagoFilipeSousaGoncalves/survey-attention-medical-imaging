@@ -186,10 +186,13 @@ elif dataset == "APTOS":
 # ISIC2020
 elif dataset == "ISIC2020":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train"
-    csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train"
+    # csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
     # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train"
     # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
+    # data_dir = "data/ISIC2020/jpeg/train"
+    # csv_fpath = "data/ISIC2020/train.csv"
+
     dataset_dir = os.path.join(data_dir, "ISIC2020/jpeg/train")
     csv_fpath = os.path.join(data_dir, "ISIC2020/train.csv")
 
