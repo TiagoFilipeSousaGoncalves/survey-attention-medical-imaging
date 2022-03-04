@@ -471,13 +471,18 @@ class PH2Dataset(Dataset):
 
 # APTOS2018
 # APTOS2019: Get labels and paths
-def aptos_map_images_and_labels(base_path, split='Train'):
+def aptos_map_images_and_labels(base_path, split='Train', resized=None):
 
     assert split in ["Train", "Validation", "Test"], f"Invalid split '{split}'. Please choose from ['Train', 'Validation', 'Test']."
 
 
     df = pd.read_csv(os.path.join(base_path, 'train.csv'))
-    df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_resized", x + '.png'))
+    
+    if resized:
+        df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_resized", x + '.png'))
+    
+    else:
+        df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_images", x + '.png'))
     
     # Convert to binary classification
     df["diagnosis"] = df["diagnosis"].apply(lambda x: 1 if x > 0 else 0)
@@ -500,7 +505,7 @@ def aptos_map_images_and_labels(base_path, split='Train'):
 
 # APTOS2019: Dataset Class
 class APTOSDataset(Dataset):
-    def __init__(self, base_data_path, split='Train', transform=None):
+    def __init__(self, base_data_path, split='Train', resized=None, transform=None):
         """
         Args:
             base_data_path (string): Data directory.
@@ -509,7 +514,7 @@ class APTOSDataset(Dataset):
         """
         
         # Init variables
-        self.images_paths, self.images_labels = aptos_map_images_and_labels(base_data_path, split=split)
+        self.images_paths, self.images_labels = aptos_map_images_and_labels(base_data_path, split=split, resized=resized)
         self.transform = transform
 
         return 
