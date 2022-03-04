@@ -157,8 +157,8 @@ if dataset == "CBISDDSM":
 # MIMICXR
 elif dataset == "MIMICCXR":
     # Directories
-    #data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
-    data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
+    data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
+    # data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
     train_dir = os.path.join(data_dir, "Train_images_AP_resized")
     val_dir = os.path.join(data_dir, "Val_images_AP_resized")
     test_dir = os.path.join(data_dir, "Test_images_AP_resized")
