@@ -1,0 +1,6 @@
+python code/models_interpretation.py --dataset ISIC2020 --split Test --model DenseNet121 --modelckpt results/isic2020/densenet121/2022-03-01_18-19-07 --batchsize 1
+python code/models_interpretation.py --dataset ISIC2020 --split Test --model SEDenseNet121 --modelckpt results/isic2020/sedensenet121/2022-03-02_01-12-08 --batchsize 1
+python code/models_interpretation.py --dataset ISIC2020 --split Test --model CBAMDenseNet121 --modelckpt results/isic2020/cbamdensenet121/2022-03-02_08-19-52 --batchsize 1
+python code/models_interpretation.py --dataset ISIC2020 --split Test --model ResNet50 --modelckpt results/isic2020/resnet50/2022-02-28_22-58-32 --batchsize 1
+python code/models_interpretation.py --dataset ISIC2020 --split Test --model SEResNet50 --modelckpt results/isic2020/seresnet50/2022-03-01_04-29-33 --batchsize 1
+python code/models_interpretation.py --dataset ISIC2020 --split Test --model CBAMResNet50 --modelckpt results/isic2020/cbamresnet50/2022-03-01_10-57-05 --batchsize 1
