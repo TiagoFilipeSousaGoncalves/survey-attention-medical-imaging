@@ -157,8 +157,8 @@ if dataset == "CBISDDSM":
 # MIMICXR
 elif dataset == "MIMICCXR":
     # Directories
-    data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
-    # data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
+    #data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
+    data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
     train_dir = os.path.join(data_dir, "Train_images_AP_resized")
     val_dir = os.path.join(data_dir, "Val_images_AP_resized")
     test_dir = os.path.join(data_dir, "Test_images_AP_resized")
@@ -366,9 +366,10 @@ if resume:
     checkpoint = torch.load(ckpt)
     model.load_state_dict(checkpoint['model_state_dict'], strict=True)
     OPTIMISER.load_state_dict(checkpoint['optimizer_state_dict'])
-    epoch = checkpoint['epoch']
-    print(f"Resuming from {ckpt} at epoch {epoch}")
-
+    init_epoch = checkpoint['epoch'] + 1
+    print(f"Resuming from {ckpt} at epoch {init_epoch}")
+else:
+    init_epoch = 0
 
 
 # Dataloaders
@@ -390,9 +391,8 @@ val_losses = np.zeros_like(train_losses)
 train_metrics = np.zeros((EPOCHS, 5))
 val_metrics = np.zeros_like(train_metrics)
 
-global_step = 0
 # Go through the number of Epochs
-for epoch in range(EPOCHS):
+for epoch in range(init_epoch, EPOCHS):
     # Epoch 
     print(f"Epoch: {epoch+1}")
     
@@ -453,7 +453,6 @@ for epoch in range(EPOCHS):
         s_logits = torch.argmax(s_logits, dim=1)
         y_train_pred = torch.cat((y_train_pred, s_logits))
 
-        global_step += 1
 
     # Compute Average Train Loss
     avg_train_loss = run_train_loss/len(train_loader.dataset)
