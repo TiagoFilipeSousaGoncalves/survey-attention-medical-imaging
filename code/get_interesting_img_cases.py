@@ -29,12 +29,12 @@ dataset = args.dataset
 
 # Modelcheckpoints list
 modelckpt_list = [
-    'results/aptos/densenet121/2022-03-02_20-18-23',
-    'results/aptos/resnet50/2022-03-02_17-57-24',
-    'results/aptos/sedensenet121/2022-03-02_21-16-28',
-    'results/aptos/seresnet50/2022-03-02_18-46-07',
-    'results/aptos/cbamdensenet121/2022-03-02_22-17-26',
-    'results/aptos/cbamresnet50/2022-03-02_19-41-49'
+   'results/isic2020/densenet121/2022-03-01_18-19-07',
+   'results/isic2020/sedensenet121/2022-03-02_01-12-08',
+   'results/isic2020/cbamdensenet121/2022-03-02_08-19-52',
+   'results/isic2020/resnet50/2022-02-28_22-58-32',
+   'results/isic2020/seresnet50/2022-03-01_04-29-33',
+   'results/isic2020/cbamresnet50/2022-03-01_10-57-05'
     ]
 
 

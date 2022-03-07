@@ -132,6 +132,7 @@ dmypy.json
 # Directories
 data/
 results/
+paper/
 
 # macOS files
 *.DS_Store
