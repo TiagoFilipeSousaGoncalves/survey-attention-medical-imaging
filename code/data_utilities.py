@@ -494,7 +494,7 @@ def aptos_map_images_and_labels(base_path, split='Train', resized=None, low_data
         assert perc_train > 0.0 and perc_train <= 0.50, f" Invalid perc_train '{perc_train}'. Please be sure that perc_train > 0 and perc_train <= 50"
 
         X_train, X_test, y_train, y_test = train_test_split(df["id_code"].values, df["diagnosis"].values, train_size=perc_train, stratify=df["diagnosis"], random_state=42)
-        X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, train_size=0.50, stratify=y_train, random_state=42)
+        X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, train_size=0.50, stratify=y_test, random_state=42)
 
         print(f"Low data regimen.\n% of train data: {perc_train}")
 
