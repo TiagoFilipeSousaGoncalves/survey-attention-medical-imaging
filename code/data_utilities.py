@@ -471,7 +471,7 @@ class PH2Dataset(Dataset):
 
 # APTOS2018
 # APTOS2019: Get labels and paths
-def aptos_map_images_and_labels(base_path, split='Train', resized=None):
+def aptos_map_images_and_labels(base_path, split='Train', resized=None, low_data_regimen=None, perc_train=None):
 
     assert split in ["Train", "Validation", "Test"], f"Invalid split '{split}'. Please choose from ['Train', 'Validation', 'Test']."
 
@@ -486,26 +486,40 @@ def aptos_map_images_and_labels(base_path, split='Train', resized=None):
     
     # Convert to binary classification
     df["diagnosis"] = df["diagnosis"].apply(lambda x: 1 if x > 0 else 0)
-    stats = np.unique(df["diagnosis"], return_counts=True)
-    # print(stats)
+    nr_classes = len(np.unique(df["diagnosis"]))
+    # print(nr_classes)
 
-    X_train, X_test, y_train, y_test = train_test_split(df["id_code"].values, df["diagnosis"].values, train_size=0.85, stratify=df["diagnosis"], random_state=42)
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, train_size=0.75, stratify=y_train, random_state=42)
 
+    if low_data_regimen:
+        assert perc_train > 0.0 and perc_train <= 0.50, f" Invalid perc_train '{perc_train}'. Please be sure that perc_train > 0 and perc_train <= 50"
+
+        X_train, X_test, y_train, y_test = train_test_split(df["id_code"].values, df["diagnosis"].values, train_size=perc_train, stratify=df["diagnosis"], random_state=42)
+        X_test, X_val, y_test, y_val = train_test_split(X_test, y_test, train_size=0.50, stratify=y_test, random_state=42)
+
+        print(f"Low data regimen.\n% of train data: {perc_train}")
+
+
+    # Regular train, validation and test split
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(df["id_code"].values, df["diagnosis"].values, train_size=0.85, stratify=df["diagnosis"], random_state=42)
+        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, train_size=0.75, stratify=y_train, random_state=42)
+
+
+    # Get splits
     if split == "Train":
-        return X_train, y_train
+        return X_train, y_train, nr_classes
     
     elif split == "Validation":
-        return X_val, y_val
+        return X_val, y_val, nr_classes
     
     elif split == "Test":
-        return X_test, y_test
+        return X_test, y_test, nr_classes
 
 
 
 # APTOS2019: Dataset Class
 class APTOSDataset(Dataset):
-    def __init__(self, base_data_path, split='Train', resized=None, transform=None):
+    def __init__(self, base_data_path, split='Train', resized=None, low_data_regimen=None, perc_train=None, transform=None):
         """
         Args:
             base_data_path (string): Data directory.
@@ -514,10 +528,9 @@ class APTOSDataset(Dataset):
         """
         
         # Init variables
-        self.images_paths, self.images_labels = aptos_map_images_and_labels(base_data_path, split=split, resized=resized)
+        self.images_paths, self.images_labels, _ = aptos_map_images_and_labels(base_data_path, split=split, resized=resized, low_data_regimen=low_data_regimen, perc_train=perc_train)
         self.transform = transform
 
-        return 
 
 
     # Method: __len__
