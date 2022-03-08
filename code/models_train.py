@@ -28,7 +28,7 @@ np.random.seed(random_seed)
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, APTOSDataset, PH2Dataset, ISIC2020Dataset
+from data_utilities import aptos_map_images_and_labels, cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, APTOSDataset, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
 
 
@@ -37,11 +37,18 @@ from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFea
 parser = argparse.ArgumentParser()
 
 # Add the arguments
+# Data directory
+parser.add_argument('--data_dir', type=str, required=True, help="Directory of the data set.")
+
 # Data set
 parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR", "APTOS", "PH2"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR, APTOS, PH2")
 
 # Model
 parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT')
+
+# Low Data Regimen
+parser.add_argument('--low_data_regimen', action="store_true", help="Activate the low data regimen training.")
+parser.add_argument('--perc_train', type=float, default=1, help="Percentage of training data to be used during training.")
 
 # Batch size
 parser.add_argument('--batchsize', type=int, default=4, help="Batch-size for training and validation")
@@ -95,6 +102,9 @@ resume = args.resume
 ckpt = args.ckpt
 
 
+# Data directory
+data_dir = args.data_dir
+
 # Dataset
 dataset = args.dataset
 
@@ -127,6 +137,10 @@ resize_opt = args.resize
 model = args.model
 model_name = model.lower()
 
+# Low data regimen
+low_data_regimen = args.low_data_regimen
+perc_train = args.perc_train
+
 
 
 # Timestamp (to save results)
@@ -145,7 +159,7 @@ with open(os.path.join(outdir, "train_params.txt"), "w") as f:
 # CBISDDSM
 if dataset == "CBISDDSM":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
     #data_dir = "/BARRACUDA8T/DATASETS/CBIS_DDSM/"
     train_dir = os.path.join(data_dir, "train")
     val_dir = os.path.join(data_dir, "val")
@@ -157,7 +171,7 @@ if dataset == "CBISDDSM":
 # MIMICXR
 elif dataset == "MIMICCXR":
     # Directories
-    data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
+    # data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
     # data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
     train_dir = os.path.join(data_dir, "Train_images_AP_resized")
     val_dir = os.path.join(data_dir, "Val_images_AP_resized")
@@ -165,26 +179,32 @@ elif dataset == "MIMICCXR":
 
     _, _, nr_classes = mimic_map_images_and_labels(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"))
 
+
 # APTOS
 elif dataset == "APTOS":
-    nr_classes = 2
-    data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
+    _, _, nr_classes = aptos_map_images_and_labels(base_path=data_dir)
+    # data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
+
 
 # ISIC2020
 elif dataset == "ISIC2020":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train_resized"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train_resized"
     # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train_resized"
-    csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
+    # csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
     # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
+
+    data_dir = os.path.join(data_dir, 'jpeg', 'train_resized')
+    csv_fpath = os.path.join(data_dir, 'train.csv')
 
     # Add the number of classes manually
     nr_classes = 2
 
+
 # PH2
 elif dataset == "PH2":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
 
     # Data split
     # Get all the images, labels, and number of classes of PH2 Dataset
@@ -268,7 +288,6 @@ elif model == "CBAMResNet50":
 # CBAMVGG16
 elif model == "CBAMVGG16":
     model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-    model_name = "cbamvgg16"
 
 # CBAMDenseNet121
 elif model == "CBAMDenseNet121":
@@ -316,8 +335,14 @@ val_transforms = torchvision.transforms.Compose([
 ])
 
 # Datasets
+# APTOS
+if dataset == "APTOS":
+    train_set = APTOSDataset(base_data_path=data_dir, split="Train", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    val_set = APTOSDataset(base_data_path=data_dir, split="Validation", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
+
+
 # CBISDDSM
-if dataset == "CBISDDSM":
+elif dataset == "CBISDDSM":
     train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms)
     val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms)
 
@@ -327,10 +352,6 @@ elif dataset == "MIMICCXR":
     train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms)
     val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
 
-# APTOS
-elif dataset == "APTOS":
-    train_set = APTOSDataset(base_data_path=data_dir, split="Train", transform=train_transforms)
-    val_set = APTOSDataset(base_data_path=data_dir, split="Validation", transform=val_transforms)
 
 # ISIC2020
 elif dataset == "ISIC2020":
