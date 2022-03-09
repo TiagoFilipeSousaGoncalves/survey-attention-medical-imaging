@@ -5,6 +5,7 @@ idx1_gt0_pred1.png
 idx28_gt0_pred1.png 
 idx39_gt0_pred1.png 
 idx558_gt0_pred1.png 
+idx560_gt0_pred1.png 
 idx562_gt0_pred1.png 
 idx580_gt0_pred1.png 
 idx584_gt0_pred1.png 
@@ -12,6 +13,8 @@ idx605_gt0_pred1.png
 idx659_gt0_pred1.png 
 idx705_gt0_pred1.png 
 idx748_gt0_pred1.png 
+idx755_gt0_pred1.png 
+idx75_gt0_pred1.png 
 idx824_gt0_pred1.png 
 idx875_gt0_pred1.png 
 idx903_gt0_pred1.png 
