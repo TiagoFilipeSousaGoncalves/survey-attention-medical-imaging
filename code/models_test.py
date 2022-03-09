@@ -66,6 +66,9 @@ parser.add_argument('--resize', type=str, choices=["direct_resize", "resizeshort
 # Number of workers
 parser.add_argument("--num_workers", type=int, default=0, help="Number of workers for dataloader")
 
+# GPU ID
+parser.add_argument("--gpu_id", type=int, default=0, help="The index of the GPU")
+
 # Number of layers (ViT)
 parser.add_argument("--nr_layers", type=int, default=12, help="Number of hidden layers (only for ViT)")
 
@@ -209,7 +212,8 @@ elif dataset == "PH2":
 
 
 # Choose GPU
-DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {DEVICE}")
 
 
 # Mean and STD to Normalize the inputs into pretrained models
