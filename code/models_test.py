@@ -79,7 +79,7 @@ args = parser.parse_args()
 
 
 # Data directory
-data_dir = args.datadir
+data_dir = args.data_dir
 
 # Dataset
 dataset = args.dataset
