@@ -26,7 +26,7 @@ from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
-from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset, APTOSDataset
+from data_utilities import aptos_map_images_and_labels, cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset, APTOSDataset
 
 
 
@@ -35,6 +35,9 @@ from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labe
 parser = argparse.ArgumentParser()
 
 # Add the arguments
+# Data directory
+parser.add_argument('--data_dir', type=str, required=True, help="Directory of the data set.")
+
 # Data set
 parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR", "APTOS", "PH2"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR, APTOS, PH2")
 
@@ -43,6 +46,10 @@ parser.add_argument('--split', type=str, required=True, choices=["Train", "Valid
 
 # Model
 parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT')
+
+# Low Data Regimen
+parser.add_argument('--low_data_regimen', action="store_true", help="Activate the low data regimen training.")
+parser.add_argument('--perc_train', type=float, default=1, help="Percentage of training data to be used during training.")
 
 # Model checkpoint
 parser.add_argument("--modelckpt", type=str, required=True, help="Directory where model is stored")
@@ -68,6 +75,9 @@ args = parser.parse_args()
 
 
 
+# Data directory
+data_dir = args.datadir
+
 # Dataset
 dataset = args.dataset
 
@@ -92,6 +102,10 @@ nr_layers = args.nr_layers
 # Resize (data transforms)
 resize_opt = args.resize
 
+# Low data regimen
+low_data_regimen = args.low_data_regimen
+perc_train = args.perc_train
+
 # Weights directory
 weights_dir = os.path.join(modelckpt, "weights")
 
@@ -101,7 +115,7 @@ weights_dir = os.path.join(modelckpt, "weights")
 if dataset == "CBISDDSM":
     # Directories
     # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-    data_dir = "/BARRACUDA8T/DATASETS/CBIS_DDSM/"
+    # data_dir = "/BARRACUDA8T/DATASETS/CBIS_DDSM/"
 
     # Data splits
     if data_split == "Train":
@@ -120,7 +134,7 @@ if dataset == "CBISDDSM":
 # MIMICXR
 elif dataset == "MIMICCXR":
     # Directories
-    data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
+    # data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
     # data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
 
     # Data splits
@@ -136,28 +150,32 @@ elif dataset == "MIMICCXR":
 
     _, _, nr_classes = mimic_map_images_and_labels(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"))
 
+
 # APTOS
 elif dataset == "APTOS":
-    nr_classes = 2
-    data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
+    _, _, nr_classes = aptos_map_images_and_labels(base_path=data_dir)
+    # data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
+
 
 # ISIC2020
 elif dataset == "ISIC2020":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train_resized"
-    csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train_resized"
     # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train_resized"
+    # csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
     # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
 
+    data_dir = os.path.join(data_dir, 'jpeg', 'train_resized')
+    csv_fpath = os.path.join(data_dir, 'train.csv')
 
-    # Add manually the number of classes
+    # Add the number of classes manually
     nr_classes = 2
 
 
 # PH2
 elif dataset == "PH2":
     # Directories
-    data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
+    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
 
     # Data split
     # Get all the images, labels, and number of classes of PH2 Dataset
@@ -334,7 +352,7 @@ elif dataset == "MIMICCXR":
 
 # APTOS
 elif dataset == "APTOS":
-    eval_set = APTOSDataset(base_data_path=data_dir, split=data_split, transform=eval_transforms)
+    eval_set = APTOSDataset(base_data_path=data_dir, split=data_split, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
 
 # ISIC2020
 elif dataset == "ISIC2020":
