@@ -30,6 +30,9 @@ parser = argparse.ArgumentParser()
 # Model checkpoint
 parser.add_argument("--modelckpt", type=str, required=True, help="Directory where model is stored")
 
+# Alpha overlay for saliency maps
+parser.add_argument("--alpha_overlay", type=float, default=0.5, help="Alpha parameter for overlayed saliency maps.")
+
 
 # Parse the argument
 args = parser.parse_args()
@@ -37,6 +40,9 @@ args = parser.parse_args()
 
 # Checkpoint
 modelckpt = args.modelckpt
+
+# Alpha overlay
+alpha_overlay = args.alpha_overlay
 
 
     
@@ -107,7 +113,7 @@ for fname in attribute_flist:
 
         # Get figure
         # figure, axis = viz.visualize_image_attr(deeplift_map, original_img, method="blended_heat_map", sign="all", show_colorbar=False, use_pyplot=False)
-        figure, axis = viz.visualize_image_attr(deeplift_map, original_img, method="blended_heat_map", sign="all", cmap='bwr', show_colorbar=False, use_pyplot=False, alpha_overlay=0.7)
+        figure, axis = viz.visualize_image_attr(deeplift_map, original_img, method="blended_heat_map", sign="all", cmap='bwr', show_colorbar=False, use_pyplot=False, alpha_overlay=alpha_overlay)
         
         # Get the figure from memory
         convert_figure(figure)
@@ -127,7 +133,7 @@ for fname in attribute_flist:
 
         # Get figure
         # figure, axis = viz.visualize_image_attr(lrp_map, original_img, method="blended_heat_map", sign="all", show_colorbar=False, use_pyplot=False)
-        figure, axis = viz.visualize_image_attr(lrp_map, original_img, method="blended_heat_map", sign="all", cmap='bwr', show_colorbar=False, use_pyplot=False, alpha_overlay=0.7)
+        figure, axis = viz.visualize_image_attr(lrp_map, original_img, method="blended_heat_map", sign="all", cmap='bwr', show_colorbar=False, use_pyplot=False, alpha_overlay=alpha_overlay)
         
         # Get the figure from memory
         convert_figure(figure)
