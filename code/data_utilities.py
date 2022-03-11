@@ -165,7 +165,7 @@ def mimic_map_images_and_labels(base_data_path, pickle_path):
 
 # MIMIC-CXR: Dataset Class
 class MIMICXRDataset(Dataset):
-    def __init__(self, base_data_path, pickle_path, transform=None):
+    def __init__(self, base_data_path, pickle_path, random_seed=42, resized=None, low_data_regimen=None, perc_train=None, transform=None):
         """
         Args:
             base_data_path (string): Data directory.
@@ -175,8 +175,24 @@ class MIMICXRDataset(Dataset):
         """
         
         # Init variables
-        self.images_paths, self.images_labels, _ = mimic_map_images_and_labels(base_data_path, pickle_path)
+        images_paths, images_labels, _ = mimic_map_images_and_labels(base_data_path, pickle_path)
+
+        # Activate low data regimen training
+        if low_data_regimen:
+            assert perc_train > 0.0 and perc_train <= 0.50, f"Invalid perc_train '{perc_train}'. Please be sure that perc_train > 0 and perc_train <= 50"
+
+
+            # Get the data percentage
+            images_paths, _, images_labels, _ = train_test_split(images_paths, images_labels, train_size=perc_train, stratify=images_labels, random_state=random_seed)
+
+            print(f"Low data regimen.\n% of train data: {perc_train}")
+
+
+        # Attribute variables
+        self.images_paths = images_paths
+        self.images_labels = images_labels
         self.transform = transform
+
 
         return 
 
@@ -211,7 +227,7 @@ class MIMICXRDataset(Dataset):
 # ISIC2020
 # ISIC2020: Dataset Class
 class ISIC2020Dataset(Dataset):
-    def __init__(self, base_data_path, csv_path, split, random_seed=42, transform=None):
+    def __init__(self, base_data_path, csv_path, split, random_seed=42, resized=None, low_data_regimen=None, perc_train=None, transform=None):
         """
         Args:
             base_data_path (string): Data directory.
@@ -248,10 +264,28 @@ class ISIC2020Dataset(Dataset):
             self.dataframe = csv_df.copy()[tr_pids_mask]
             
             # Get the image names
-            self.image_names = self.dataframe.copy()["image_name"].values
+            image_names = self.dataframe.copy()["image_name"].values
 
             # Get the image labels
-            self.images_labels = self.dataframe.copy()["target"].values
+            images_labels = self.dataframe.copy()["target"].values
+
+
+            # Activate low data regimen training
+            if low_data_regimen:
+                assert perc_train > 0.0 and perc_train <= 0.50, f"Invalid perc_train '{perc_train}'. Please be sure that perc_train > 0 and perc_train <= 50"
+
+
+                # Get the data percentage
+                image_names, _, images_labels, _ = train_test_split(image_names, images_labels, train_size=perc_train, stratify=images_labels, random_state=random_seed)
+
+                print(f"Low data regimen.\n% of train data: {perc_train}")
+            
+
+
+            # Attribute variables object variables
+            self.image_names = image_names
+            self.images_labels = images_labels
+
 
             # Information print
             print(f"The {split} split has {len(self.image_names)} images")
