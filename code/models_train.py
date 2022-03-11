@@ -349,14 +349,14 @@ elif dataset == "CBISDDSM":
 
 # MIMCCXR
 elif dataset == "MIMICCXR":
-    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), transform=train_transforms)
-    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
+    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
 
 
 # ISIC2020
 elif dataset == "ISIC2020":
-    train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Train', random_seed=random_seed, transform=train_transforms)
-    val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Validation', random_seed=random_seed, transform=val_transforms)
+    train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Train', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Validation', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
 
 # PH2
 elif dataset == "PH2":
