@@ -352,7 +352,10 @@ if dataset == "CBISDDSM":
 
 # MIMCCXR
 elif dataset == "MIMICCXR":
-    eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), resized=None, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
+    if data_split == "Train":
+        eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), resized=None, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
+    else:
+        eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), transform=eval_transforms)
 
 # APTOS
 elif dataset == "APTOS":
