@@ -18,4 +18,3 @@ python code/models_test.py --data_dir /ctm-hdd-pool01/wjsilva19/MedIA --dataset 
 python code/models_test.py --data_dir /ctm-hdd-pool01/wjsilva19/MedIA --dataset MIMICCXR --split Test --model ResNet50 --low_data_regimen --perc_train 0.1 --modelckpt results/mimiccxr/resnet50/2022-03-14_13-38-38 --batchsize 32 --num_workers 4 --gpu_id 0
 python code/models_test.py --data_dir /ctm-hdd-pool01/wjsilva19/MedIA --dataset MIMICCXR --split Test --model SEResNet50 --low_data_regimen --perc_train 0.1 --modelckpt results/mimiccxr/seresnet50/2022-03-14_18-10-07 --batchsize 32 --num_workers 4 --gpu_id 0
 python code/models_test.py --data_dir /ctm-hdd-pool01/wjsilva19/MedIA --dataset MIMICCXR --split Test --model CBAMResNet50 --low_data_regimen --perc_train 0.1 --modelckpt results/mimiccxr/cbamresnet50/2022-03-14_23-08-55 --batchsize 32 --num_workers 4 --gpu_id 0
-
