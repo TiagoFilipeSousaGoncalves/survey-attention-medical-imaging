@@ -225,6 +225,22 @@ class MIMICXRDataset(Dataset):
 
 
 # ISIC2020
+# ISIC2020: Get data paths
+def isic_get_data_paths(base_data_path, resized=None):
+    
+    # Build data directories
+    data_dir = os.path.join(base_data_path, 'jpeg', 'train_resized') if resized else os.path.join(base_data_path, 'jpeg', 'train')
+    csv_fpath = os.path.join(base_data_path, 'train.csv')
+
+
+    # Get number of classes
+    nr_classes = 2
+
+
+    return data_dir, csv_fpath, nr_classes
+
+
+
 # ISIC2020: Dataset Class
 class ISIC2020Dataset(Dataset):
     def __init__(self, base_data_path, csv_path, split, random_seed=42, resized=None, low_data_regimen=None, perc_train=None, transform=None):
