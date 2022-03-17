@@ -194,7 +194,7 @@ elif dataset == "ISIC2020":
     # csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
     # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
 
-    data_dir = os.path.join(data_dir, 'jpeg', 'train_resized')
+    # data_dir = os.path.join(data_dir, 'jpeg', 'train_resized')
     csv_fpath = os.path.join(data_dir, 'train.csv')
 
     # Add the number of classes manually
