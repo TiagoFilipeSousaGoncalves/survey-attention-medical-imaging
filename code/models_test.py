@@ -26,7 +26,7 @@ from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
-from data_utilities import aptos_map_images_and_labels, cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset, APTOSDataset
+from data_utilities import aptos_map_images_and_labels, cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, isic_get_data_paths, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset, APTOSDataset
 
 
 
@@ -168,11 +168,8 @@ elif dataset == "ISIC2020":
     # csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
     # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
 
-    data_dir = os.path.join(data_dir, 'jpeg', 'train_resized')
-    csv_fpath = os.path.join(data_dir, 'train.csv')
-
-    # Add the number of classes manually
-    nr_classes = 2
+    # Build data directories and get number of classes
+    data_dir, csv_fpath, nr_classes = isic_get_data_paths(base_data_path=data_dir, resized=True)
 
 
 # PH2
