@@ -1,10 +1,5 @@
 idx1186_gt0_pred1.png 
 idx1881_gt0_pred1.png 
-idx2383_gt0_pred1.png 
-idx3371_gt0_pred1.png 
-idx3819_gt0_pred1.png 
-idx1186_gt0_pred1.png 
-idx1881_gt0_pred1.png 
-idx2383_gt0_pred1.png 
-idx3371_gt0_pred1.png 
-idx3819_gt0_pred1.png 
+idx3385_gt0_pred1.png 
+idx4090_gt0_pred1.png 
+idx6375_gt0_pred1.png 

@@ -51,9 +51,9 @@ elif dataset == "ISIC2020":
     'results/isic2020/densenet121/2022-03-01_18-19-07',
     'results/isic2020/sedensenet121/2022-03-02_01-12-08',
     'results/isic2020/cbamdensenet121/2022-03-02_08-19-52',
-    'results/isic2020/resnet50/2022-02-28_22-58-32',
-    'results/isic2020/seresnet50/2022-03-01_04-29-33',
-    'results/isic2020/cbamresnet50/2022-03-01_10-57-05'
+    'results/isic2020/resnet50/2022-03-04_12-11-36',
+    'results/isic2020/seresnet50/2022-03-04_20-18-10',
+    'results/isic2020/cbamresnet50/2022-03-05_05-26-22'
         ]
 
 
