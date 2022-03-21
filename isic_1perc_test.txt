@@ -1,0 +1,120 @@
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/densenet121/2022-03-17_11-25-24/weights/densenet121_isic2020_best.pt
+Low data regimen.
+% of train data: 0.01
+The Train split has 195 images
+Testing Step | Data Set: ISIC2020
+Model Name: densenet121	Train Epoch: 289 Loss: 0.09334194660186768 Accuracy: 0.9794871794871794 F1-score: 0.9794871794871794 ROC AUC: 1.0
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/sedensenet121/2022-03-17_13-03-51/weights/sedensenet121_isic2020_best.pt
+Low data regimen.
+% of train data: 0.01
+The Train split has 195 images
+Testing Step | Data Set: ISIC2020
+Model Name: sedensenet121	Train Epoch: 285 Loss: 0.06826582551002502 Accuracy: 0.9846153846153847 F1-score: 0.9846153846153847 ROC AUC: 1.0
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/cbamdensenet121/2022-03-17_14-44-47/weights/cbamdensenet121_isic2020_best.pt
+Low data regimen.
+% of train data: 0.01
+The Train split has 195 images
+Testing Step | Data Set: ISIC2020
+Model Name: cbamdensenet121	Train Epoch: 298 Loss: 0.0956156998872757 Accuracy: 0.9846153846153847 F1-score: 0.9846153846153847 ROC AUC: 1.0
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/resnet50/2022-03-17_16-48-43/weights/resnet50_isic2020_best.pt
+Low data regimen.
+% of train data: 0.01
+The Train split has 195 images
+Testing Step | Data Set: ISIC2020
+Model Name: resnet50	Train Epoch: 295 Loss: 0.1476394087076187 Accuracy: 1.0 F1-score: 1.0 ROC AUC: 1.0
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/seresnet50/2022-03-17_18-24-18/weights/seresnet50_isic2020_best.pt
+Low data regimen.
+% of train data: 0.01
+The Train split has 195 images
+Testing Step | Data Set: ISIC2020
+Model Name: seresnet50	Train Epoch: 295 Loss: 0.22417862713336945 Accuracy: 1.0 F1-score: 1.0 ROC AUC: 1.0
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/cbamresnet50/2022-03-17_20-10-53/weights/cbamresnet50_isic2020_best.pt
+Low data regimen.
+% of train data: 0.01
+The Train split has 195 images
+Testing Step | Data Set: ISIC2020
+Model Name: cbamresnet50	Train Epoch: 295 Loss: 0.480038583278656 Accuracy: 0.8205128205128205 F1-score: 0.8205128205128205 ROC AUC: 0.9982638888888888
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/densenet121/2022-03-17_11-25-24/weights/densenet121_isic2020_best.pt
+The Validation split has 6568 images
+Testing Step | Data Set: ISIC2020
+Model Name: densenet121	Validation Epoch: 289 Loss: 0.1723235696554184 Accuracy: 0.9540194884287454 F1-score: 0.9540194884287454 ROC AUC: 0.5440314693143713
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/sedensenet121/2022-03-17_13-03-51/weights/sedensenet121_isic2020_best.pt
+The Validation split has 6568 images
+Testing Step | Data Set: ISIC2020
+Model Name: sedensenet121	Validation Epoch: 285 Loss: 0.14526799321174622 Accuracy: 0.9595006090133983 F1-score: 0.9595006090133983 ROC AUC: 0.7040609883579966
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/cbamdensenet121/2022-03-17_14-44-47/weights/cbamdensenet121_isic2020_best.pt
+The Validation split has 6568 images
+Testing Step | Data Set: ISIC2020
+Model Name: cbamdensenet121	Validation Epoch: 298 Loss: 0.18663544952869415 Accuracy: 0.9403166869671132 F1-score: 0.9403166869671132 ROC AUC: 0.7138891869941318
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/resnet50/2022-03-17_16-48-43/weights/resnet50_isic2020_best.pt
+The Validation split has 6568 images
+Testing Step | Data Set: ISIC2020
+Model Name: resnet50	Validation Epoch: 295 Loss: 0.20207153260707855 Accuracy: 0.9736601705237515 F1-score: 0.9736601705237515 ROC AUC: 0.590203334274021
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/seresnet50/2022-03-17_18-24-18/weights/seresnet50_isic2020_best.pt
+The Validation split has 6568 images
+Testing Step | Data Set: ISIC2020
+Model Name: seresnet50	Validation Epoch: 295 Loss: 0.26271939277648926 Accuracy: 0.9683313032886723 F1-score: 0.9683313032886723 ROC AUC: 0.6230200843439101
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/cbamresnet50/2022-03-17_20-10-53/weights/cbamresnet50_isic2020_best.pt
+The Validation split has 6568 images
+Testing Step | Data Set: ISIC2020
+Model Name: cbamresnet50	Validation Epoch: 295 Loss: 0.5076615810394287 Accuracy: 0.8137941534713764 F1-score: 0.8137941534713764 ROC AUC: 0.680771681856785
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/densenet121/2022-03-17_11-25-24/weights/densenet121_isic2020_best.pt
+The Test split has 6965 images
+Testing Step | Data Set: ISIC2020
+Model Name: densenet121	Test Epoch: 289 Loss: 0.17208141088485718 Accuracy: 0.9572146446518306 F1-score: 0.9572146446518306 ROC AUC: 0.5447384117932903
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/sedensenet121/2022-03-17_13-03-51/weights/sedensenet121_isic2020_best.pt
+The Test split has 6965 images
+Testing Step | Data Set: ISIC2020
+Model Name: sedensenet121	Test Epoch: 285 Loss: 0.14577043056488037 Accuracy: 0.9585068198133525 F1-score: 0.9585068198133525 ROC AUC: 0.6370018861710727
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/cbamdensenet121/2022-03-17_14-44-47/weights/cbamdensenet121_isic2020_best.pt
+The Test split has 6965 images
+Testing Step | Data Set: ISIC2020
+Model Name: cbamdensenet121	Test Epoch: 298 Loss: 0.17692050337791443 Accuracy: 0.9396984924623115 F1-score: 0.9396984924623115 ROC AUC: 0.6744454910378086
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/resnet50/2022-03-17_16-48-43/weights/resnet50_isic2020_best.pt
+The Test split has 6965 images
+Testing Step | Data Set: ISIC2020
+Model Name: resnet50	Test Epoch: 295 Loss: 0.2054065614938736 Accuracy: 0.9715721464465183 F1-score: 0.9715721464465183 ROC AUC: 0.5655265963939358
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/seresnet50/2022-03-17_18-24-18/weights/seresnet50_isic2020_best.pt
+The Test split has 6965 images
+Testing Step | Data Set: ISIC2020
+Model Name: seresnet50	Test Epoch: 295 Loss: 0.2676900029182434 Accuracy: 0.9692749461593683 F1-score: 0.9692749461593683 ROC AUC: 0.5594339644368087
+Finished.
+Using device: cuda:0
+Loaded model from /ctm-hdd-pool01/tgoncalv/survey-attention-medical-imaging/results/isic2020/cbamresnet50/2022-03-17_20-10-53/weights/cbamresnet50_isic2020_best.pt
+The Test split has 6965 images
+Testing Step | Data Set: ISIC2020
+Model Name: cbamresnet50	Test Epoch: 295 Loss: 0.5090370178222656 Accuracy: 0.8050251256281407 F1-score: 0.8050251256281407 ROC AUC: 0.6202416786231643
+Finished.
