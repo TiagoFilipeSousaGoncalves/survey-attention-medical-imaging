@@ -1,0 +1,182 @@
+results/isic2020/
+├── cbamdensenet121
+│   ├── 2022-03-02_08-19-52
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   ├── weights
+│   │   ├── xai_maps
+│   │   │   ├── deeplift
+│   │   │   ├── lrp
+│   │   │   └── original-imgs
+│   │   └── xai_maps_png
+│   │       ├── deeplift
+│   │       ├── lrp
+│   │       └── original-imgs
+│   ├── 2022-03-17_14-44-47
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   └── weights
+│   └── 2022-03-18_06-05-41
+│       ├── history
+│       ├── tensorboard
+│       └── weights
+├── cbamresnet50
+│   ├── 2022-03-01_10-57-05
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   ├── weights
+│   │   ├── xai_maps
+│   │   │   ├── deeplift
+│   │   │   ├── lrp
+│   │   │   └── original-imgs
+│   │   └── xai_maps_png
+│   │       ├── deeplift
+│   │       ├── lrp
+│   │       └── original-imgs
+│   ├── 2022-03-05_05-26-22
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   ├── weights
+│   │   ├── xai_maps
+│   │   │   ├── deeplift
+│   │   │   ├── lrp
+│   │   │   └── original-imgs
+│   │   └── xai_maps_png
+│   │       ├── deeplift
+│   │       ├── lrp
+│   │       └── original-imgs
+│   ├── 2022-03-17_20-10-53
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   └── weights
+│   └── 2022-03-18_15-47-52
+│       ├── history
+│       ├── tensorboard
+│       └── weights
+├── deit
+│   └── 2022-03-03_07-22-05
+│       ├── history
+│       ├── tensorboard
+│       └── weights
+├── densenet121
+│   ├── 2022-02-22_09-17-51
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   └── weights
+│   ├── 2022-03-01_18-19-07
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   ├── weights
+│   │   ├── xai_maps
+│   │   │   ├── deeplift
+│   │   │   ├── lrp
+│   │   │   └── original-imgs
+│   │   └── xai_maps_png
+│   │       ├── deeplift
+│   │       ├── lrp
+│   │       └── original-imgs
+│   ├── 2022-03-17_11-25-24
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   └── weights
+│   └── 2022-03-18_00-01-27
+│       ├── history
+│       ├── tensorboard
+│       └── weights
+├── resnet50
+│   ├── 2022-02-23_10-34-27
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   └── weights
+│   ├── 2022-02-23_11-14-29
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   └── weights
+│   ├── 2022-02-28_22-58-32
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   ├── weights
+│   │   ├── xai_maps
+│   │   │   ├── deeplift
+│   │   │   ├── lrp
+│   │   │   └── original-imgs
+│   │   └── xai_maps_png
+│   │       ├── deeplift
+│   │       ├── lrp
+│   │       └── original-imgs
+│   ├── 2022-03-04_12-11-36
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   ├── weights
+│   │   ├── xai_maps
+│   │   │   ├── deeplift
+│   │   │   ├── lrp
+│   │   │   └── original-imgs
+│   │   └── xai_maps_png
+│   │       ├── deeplift
+│   │       ├── lrp
+│   │       └── original-imgs
+│   ├── 2022-03-17_16-48-43
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   └── weights
+│   └── 2022-03-18_09-41-16
+│       ├── history
+│       ├── tensorboard
+│       └── weights
+├── sedensenet121
+│   ├── 2022-03-02_01-12-08
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   ├── weights
+│   │   ├── xai_maps
+│   │   │   ├── deeplift
+│   │   │   ├── lrp
+│   │   │   └── original-imgs
+│   │   └── xai_maps_png
+│   │       ├── deeplift
+│   │       ├── lrp
+│   │       └── original-imgs
+│   ├── 2022-03-17_13-03-51
+│   │   ├── history
+│   │   ├── tensorboard
+│   │   └── weights
+│   └── 2022-03-18_03-00-44
+│       ├── history
+│       ├── tensorboard
+│       └── weights
+└── seresnet50
+    ├── 2022-03-01_04-29-33
+    │   ├── history
+    │   ├── tensorboard
+    │   ├── weights
+    │   ├── xai_maps
+    │   │   ├── deeplift
+    │   │   ├── lrp
+    │   │   └── original-imgs
+    │   └── xai_maps_png
+    │       ├── deeplift
+    │       ├── lrp
+    │       └── original-imgs
+    ├── 2022-03-04_20-18-10
+    │   ├── history
+    │   ├── tensorboard
+    │   ├── weights
+    │   ├── xai_maps
+    │   │   ├── deeplift
+    │   │   ├── lrp
+    │   │   └── original-imgs
+    │   └── xai_maps_png
+    │       ├── deeplift
+    │       ├── lrp
+    │       └── original-imgs
+    ├── 2022-03-17_18-24-18
+    │   ├── history
+    │   ├── tensorboard
+    │   └── weights
+    └── 2022-03-18_12-33-00
+        ├── history
+        ├── tensorboard
+        └── weights
+
+179 directories
