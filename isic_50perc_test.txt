@@ -1,0 +1,6 @@
+Using device: cpu
+Loaded model from results/isic2020/densenet121/2022-03-21_13-07-09/weights/densenet121_isic2020_best.pt
+Low data regimen.
+% of train data: 0.5
+The Train split has 9796 images
+Testing Step | Data Set: ISIC2020
