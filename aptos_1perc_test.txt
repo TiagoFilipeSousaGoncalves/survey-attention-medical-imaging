@@ -1,0 +1,147 @@
+Using device: cpu
+Loaded model from results/aptos/densenet121/2022-03-29_16-29-57/weights/densenet121_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: densenet121	Train Epoch: 287 Loss: 0.10263071209192276 Accuracy: 1.0 F1-score: 1.0 ROC AUC: 1.0
+Finished.
+Using device: cpu
+Loaded model from results/aptos/sedensenet121/2022-03-29_16-54-40/weights/sedensenet121_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: sedensenet121	Train Epoch: 299 Loss: 0.09252145141363144 Accuracy: 1.0 F1-score: 1.0 ROC AUC: 1.0
+Finished.
+Using device: cpu
+Loaded model from results/aptos/cbamdensenet121/2022-03-29_17-20-44/weights/cbamdensenet121_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: cbamdensenet121	Train Epoch: 296 Loss: 0.12087737023830414 Accuracy: 1.0 F1-score: 1.0 ROC AUC: 1.0
+Finished.
+Using device: cpu
+Loaded model from results/aptos/resnet50/2022-03-29_17-46-25/weights/resnet50_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: resnet50	Train Epoch: 299 Loss: 0.1543339341878891 Accuracy: 1.0 F1-score: 1.0 ROC AUC: 1.0
+Finished.
+Using device: cpu
+Loaded model from results/aptos/seresnet50/2022-03-29_18-25-34/weights/seresnet50_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: seresnet50	Train Epoch: 299 Loss: 0.290892094373703 Accuracy: 1.0 F1-score: 1.0 ROC AUC: 1.0
+Finished.
+Using device: cpu
+Loaded model from results/aptos/cbamresnet50/2022-03-29_19-04-59/weights/cbamresnet50_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: cbamresnet50	Train Epoch: 299 Loss: 0.3356839120388031 Accuracy: 0.9130434782608695 F1-score: 0.9130434782608695 ROC AUC: 0.9848484848484849
+Finished.
+Using device: cpu
+Loaded model from results/aptos/deit/2022-03-29_19-35-13/weights/deit_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: deit	Train Epoch: 280 Loss: 0.14648255705833435 Accuracy: 0.9565217391304348 F1-score: 0.9565217391304348 ROC AUC: 1.0
+Finished.
+Using device: cpu
+Loaded model from results/aptos/densenet121/2022-03-29_16-29-57/weights/densenet121_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: densenet121	Validation Epoch: 287 Loss: 0.32150596380233765 Accuracy: 0.8586118251928021 F1-score: 0.8586118251928021 ROC AUC: 0.9564826565143824
+Finished.
+Using device: cpu
+Loaded model from results/aptos/sedensenet121/2022-03-29_16-54-40/weights/sedensenet121_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: sedensenet121	Validation Epoch: 299 Loss: 0.44991201162338257 Accuracy: 0.8187660668380463 F1-score: 0.8187660668380463 ROC AUC: 0.8794812817258884
+Finished.
+Using device: cpu
+Loaded model from results/aptos/cbamdensenet121/2022-03-29_17-20-44/weights/cbamdensenet121_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: cbamdensenet121	Validation Epoch: 296 Loss: 0.5003786087036133 Accuracy: 0.787917737789203 F1-score: 0.787917737789203 ROC AUC: 0.8397875687394247
+Finished.
+Using device: cpu
+Loaded model from results/aptos/resnet50/2022-03-29_17-46-25/weights/resnet50_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: resnet50	Validation Epoch: 299 Loss: 0.3498147130012512 Accuracy: 0.9074550128534704 F1-score: 0.9074550128534704 ROC AUC: 0.9650916085025381
+Finished.
+Using device: cpu
+Loaded model from results/aptos/seresnet50/2022-03-29_18-25-34/weights/seresnet50_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: seresnet50	Validation Epoch: 299 Loss: 0.48148617148399353 Accuracy: 0.8856041131105399 F1-score: 0.8856041131105399 ROC AUC: 0.9546749418358713
+Finished.
+Using device: cpu
+Loaded model from results/aptos/cbamresnet50/2022-03-29_19-04-59/weights/cbamresnet50_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: cbamresnet50	Validation Epoch: 299 Loss: 0.5450640320777893 Accuracy: 0.7544987146529563 F1-score: 0.7544987146529563 ROC AUC: 0.8276788546954316
+Finished.
+Using device: cpu
+Loaded model from results/aptos/deit/2022-03-29_19-35-13/weights/deit_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: deit	Validation Epoch: 280 Loss: 0.3516160845756531 Accuracy: 0.8598971722365039 F1-score: 0.8598971722365039 ROC AUC: 0.9607887848984772
+Finished.
+Using device: cpu
+Loaded model from results/aptos/densenet121/2022-03-29_16-29-57/weights/densenet121_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: densenet121	Test Epoch: 287 Loss: 0.31000545620918274 Accuracy: 0.8818181818181818 F1-score: 0.8818181818181818 ROC AUC: 0.9547474507003135
+Finished.
+Using device: cpu
+Loaded model from results/aptos/sedensenet121/2022-03-29_16-54-40/weights/sedensenet121_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: sedensenet121	Test Epoch: 299 Loss: 0.4775415062904358 Accuracy: 0.8163636363636364 F1-score: 0.8163636363636365 ROC AUC: 0.8615442606038963
+Finished.
+Using device: cpu
+Loaded model from results/aptos/cbamdensenet121/2022-03-29_17-20-44/weights/cbamdensenet121_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: cbamdensenet121	Test Epoch: 296 Loss: 0.5184900164604187 Accuracy: 0.7654545454545455 F1-score: 0.7654545454545455 ROC AUC: 0.8275932759327593
+Finished.
+Using device: cpu
+Loaded model from results/aptos/resnet50/2022-03-29_17-46-25/weights/resnet50_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: resnet50	Test Epoch: 299 Loss: 0.3325845003128052 Accuracy: 0.9236363636363636 F1-score: 0.9236363636363636 ROC AUC: 0.9704730918276925
+Finished.
+Using device: cpu
+Loaded model from results/aptos/seresnet50/2022-03-29_18-25-34/weights/seresnet50_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: seresnet50	Test Epoch: 299 Loss: 0.47455495595932007 Accuracy: 0.9072727272727272 F1-score: 0.9072727272727272 ROC AUC: 0.9557261701649276
+Finished.
+Using device: cpu
+Loaded model from results/aptos/cbamresnet50/2022-03-29_19-04-59/weights/cbamresnet50_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: cbamresnet50	Test Epoch: 299 Loss: 0.558897852897644 Accuracy: 0.7509090909090909 F1-score: 0.7509090909090909 ROC AUC: 0.8236519461968813
+Finished.
+Using device: cpu
+Loaded model from results/aptos/deit/2022-03-29_19-35-13/weights/deit_aptos_best.pt
+Low data regimen.
+% of train data: 0.01
+Testing Step | Data Set: APTOS
+Model Name: deit	Test Epoch: 280 Loss: 0.32688671350479126 Accuracy: 0.8781818181818182 F1-score: 0.8781818181818182 ROC AUC: 0.9633839886785965
+Finished.
