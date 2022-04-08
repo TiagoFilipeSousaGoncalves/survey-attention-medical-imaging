@@ -33,7 +33,7 @@ class LRP:
     def generate_LRP(self, input, index=None, method="transformer_attribution", is_ablation=False, start_layer=0):
         output = self.model(input)
         # TODO: Review
-        output = output.logits
+        # output = output.logits
 
         kwargs = {"alpha": 1}
         
