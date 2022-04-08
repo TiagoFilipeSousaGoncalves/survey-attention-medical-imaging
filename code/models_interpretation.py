@@ -448,7 +448,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
             out = model(pixel_values=images)
             logits = out.logits
         except:
-            out = model(images)
+            logits = model(images)
     
     else:
         logits = model(images)
