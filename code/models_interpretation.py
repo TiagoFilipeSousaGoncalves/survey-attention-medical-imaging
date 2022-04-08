@@ -462,7 +462,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
 
     # Generate post-hoc explanation
     # For DeiT
-    if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
+    if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification) or isinstance(model, deit_distilled_patch16_224)):
         
         # Create an attribution generator
         attribution_generator = LRP(model, device=DEVICE)
