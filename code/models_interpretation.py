@@ -443,7 +443,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
     model = model.to(DEVICE)
 
     # Forward pass: compute predicted outputs by passing inputs to the model
-    if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
+    if(isinstance(feature_extractor, DeiTFeatureExtractor) or isinstance(feature_extractor, ViTFeatureExtractor)):
         out = model(pixel_values=images)
         logits = out.logits
     else:
@@ -462,7 +462,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
 
     # Generate post-hoc explanation
     # For DeiT
-    if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification) or isinstance(model, deit_distilled_patch16_224)):
+    if(isinstance(feature_extractor, DeiTFeatureExtractor) or isinstance(feature_extractor, ViTFeatureExtractor)):
         
         # Create an attribution generator
         attribution_generator = LRP(model, device=DEVICE)
