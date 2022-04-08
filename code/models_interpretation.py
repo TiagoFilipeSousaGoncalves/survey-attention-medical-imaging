@@ -456,7 +456,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
     if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
         
         # Create an attribution generator
-        attribution_generator = LRP(model)
+        attribution_generator = LRP(model, device=DEVICE)
         original_image, original_label, xai_map = generate_attribution(image=images[0], attribution_generator=attribution_generator, ground_truth_label=labels[0], device=DEVICE, mean_array=MEAN, std_array=STD)
 
         # xAI maps saving directory
