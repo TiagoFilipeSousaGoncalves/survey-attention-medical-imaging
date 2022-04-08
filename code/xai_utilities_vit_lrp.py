@@ -425,8 +425,7 @@ def vit_large_patch16_224(pretrained=False, **kwargs):
     return model
 
 def deit_base_patch16_224(pretrained=False, **kwargs):
-    model = VisionTransformer(
-        patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, **kwargs)
+    model = VisionTransformer(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, **kwargs)
     model.default_cfg = _cfg()
     if pretrained:
         checkpoint = torch.hub.load_state_dict_from_url(
@@ -434,4 +433,19 @@ def deit_base_patch16_224(pretrained=False, **kwargs):
             map_location="cpu", check_hash=True
         )
         model.load_state_dict(checkpoint["model"])
+    return model
+
+
+
+# DeiT Distilled Version
+def deit_distilled_patch16_224(num_labels, img_size, pool_size=None, crop_pct=0.9, patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, **kwargs):
+    cfg = {
+        'num_classes': num_labels, 'input_size': (3, img_size, img_size), 'pool_size': pool_size,
+        'crop_pct': crop_pct, 'interpolation': 'bicubic',
+        'first_conv': 'patch_embed.proj', 'classifier': 'head',
+        **kwargs
+    }
+    model = VisionTransformer(patch_size=patch_size, embed_dim=embed_dim, depth=depth, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, **kwargs)
+    model.default_cfg = cfg
+
     return model
