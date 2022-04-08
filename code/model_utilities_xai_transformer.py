@@ -32,12 +32,16 @@ def compute_rollout_attention(all_layer_matrices, start_layer=0):
 
 # Class: Transformer LRP
 class LRP:
-    def __init__(self, model):
+    def __init__(self, model, device):
+        self.device = device
         self.model = model
         self.model.eval()
 
     def generate_LRP(self, input, index=None, method="transformer_attribution", is_ablation=False, start_layer=0):
-        output = self.model(input)
+        # output = self.model(input)
+        output = self.model(pixel_values=input)
+        output = output.logits
+        
         kwargs = {"alpha": 1}
         if index == None:
             index = np.argmax(output.cpu().data.numpy(), axis=-1)
@@ -46,32 +50,37 @@ class LRP:
         one_hot[0, index] = 1
         one_hot_vector = one_hot
         one_hot = torch.from_numpy(one_hot).requires_grad_(True)
-        one_hot = torch.sum(one_hot.cuda() * output)
+        # one_hot = torch.sum(one_hot.cuda() * output)
+        one_hot = torch.sum(one_hot.to(self.device) * output)
 
         self.model.zero_grad()
         one_hot.backward(retain_graph=True)
 
 
-        return self.model.relprop(torch.tensor(one_hot_vector).to(input.device), method=method, is_ablation=is_ablation, start_layer=start_layer, **kwargs)
+        return self.model.relprop(torch.tensor(one_hot_vector).to(self.device), method=method, is_ablation=is_ablation, start_layer=start_layer, **kwargs)
 
 
 
 # Class: Baselines
 class Baselines:
-    def __init__(self, model):
+    def __init__(self, model, device):
+        self.device = device
         self.model = model
         self.model.eval()
 
 
     def generate_cam_attn(self, input, index=None):
-        output = self.model(input.cuda(), register_hook=True)
+        # output = self.model(input.cuda(), register_hook=True)
+        output = self.model(input, register_hook=True)
+
         if index == None:
             index = np.argmax(output.cpu().data.numpy())
 
         one_hot = np.zeros((1, output.size()[-1]), dtype=np.float32)
         one_hot[0][index] = 1
         one_hot = torch.from_numpy(one_hot).requires_grad_(True)
-        one_hot = torch.sum(one_hot.cuda() * output)
+        # one_hot = torch.sum(one_hot.cuda() * output)
+        one_hot = torch.sum(one_hot.to(self.device) * output)
 
         self.model.zero_grad()
         one_hot.backward(retain_graph=True)
@@ -127,7 +136,7 @@ def generate_attribution(image, attribution_generator, ground_truth_label, **kwa
     # Put model in evaluation mode
     device = kwargs["device"]
 
-    transformer_attribution = attribution_generator.generate_LRP(original_image.unsqueeze(0).to(device), method="transformer_attribution", index=label).detach()
+    transformer_attribution = attribution_generator.generate_LRP(image.unsqueeze(0).to(device), method="transformer_attribution", index=label).detach()
     transformer_attribution = transformer_attribution.reshape(1, 1, 14, 14)
     transformer_attribution = torch.nn.functional.interpolate(transformer_attribution, scale_factor=16, mode='bilinear')
     transformer_attribution = transformer_attribution.reshape(224, 224).to(device).data.cpu().numpy()
