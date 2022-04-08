@@ -355,7 +355,9 @@ except:
     print("Fixing key values with old trained CBAM models")
 
     # Get missing keys
-    missing, unexpected = model.load_state_dict(checkpoint['model_state_dict'], strict=False) 
+    missing, unexpected = model.load_state_dict(checkpoint['model_state_dict'], strict=False)
+    print(len(missing), len(unexpected))
+    exit()
 
     if len(missing) == len(unexpected):
         
