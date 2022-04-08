@@ -18,7 +18,9 @@ from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from model_utilities_xai import generate_post_hoc_xmap
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
+from model_utilities_xai_transformer import LRP, generate_attribution, generate_visualization
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
+
 
 
 
@@ -449,28 +451,47 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
 
 
     # Generate post-hoc explanation
-    for post_hoc_method in ["deeplift", "lrp"]:
-
-        # Get original image and post-hoc explanation
-        original_image, original_label, xai_map = generate_post_hoc_xmap(image=images[0], ground_truth_label=labels[0], model=model, post_hoc_method=post_hoc_method, device=DEVICE, mean_array=MEAN, std_array=STD)
-
-
-        # Original images saving directory
-        ori_img_save_dir = os.path.join(xai_maps_dir, "original-imgs")
-        if not(os.path.isdir(ori_img_save_dir)):
-            os.makedirs(ori_img_save_dir)
-
-        # Save image
-        np.save(file=os.path.join(ori_img_save_dir, f"idx{batch_idx}_gt{original_label}_pred{prediction}.npy"), arr=original_image, allow_pickle=True)
-
+    # For DeiT
+    if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
+        
+        # Create an attribution generator
+        attribution_generator = LRP(model)
+        original_image, original_label, xai_map = generate_attribution(image=images[0], attribution_generator=attribution_generator, ground_truth_label=labels[0], device=DEVICE, mean_array=MEAN, std_array=STD)
 
         # xAI maps saving directory
-        xai_map_save_dir = os.path.join(xai_maps_dir, post_hoc_method)
+        xai_map_save_dir = os.path.join(xai_maps_dir, "lrp")
         if not(os.path.isdir(xai_map_save_dir)):
             os.makedirs(xai_map_save_dir)
         
         # Save image
         np.save(file=os.path.join(xai_map_save_dir, f"idx{batch_idx}_gt{original_label}_pred{prediction}.npy"), arr=xai_map, allow_pickle=True)
+
+
+
+    # For the rest of the models
+    else:
+        for post_hoc_method in ["deeplift", "lrp"]:
+
+            # Get original image and post-hoc explanation
+            original_image, original_label, xai_map = generate_post_hoc_xmap(image=images[0], ground_truth_label=labels[0], model=model, post_hoc_method=post_hoc_method, device=DEVICE, mean_array=MEAN, std_array=STD)
+
+
+            # Original images saving directory
+            ori_img_save_dir = os.path.join(xai_maps_dir, "original-imgs")
+            if not(os.path.isdir(ori_img_save_dir)):
+                os.makedirs(ori_img_save_dir)
+
+            # Save image
+            np.save(file=os.path.join(ori_img_save_dir, f"idx{batch_idx}_gt{original_label}_pred{prediction}.npy"), arr=original_image, allow_pickle=True)
+
+
+            # xAI maps saving directory
+            xai_map_save_dir = os.path.join(xai_maps_dir, post_hoc_method)
+            if not(os.path.isdir(xai_map_save_dir)):
+                os.makedirs(xai_map_save_dir)
+            
+            # Save image
+            np.save(file=os.path.join(xai_map_save_dir, f"idx{batch_idx}_gt{original_label}_pred{prediction}.npy"), arr=xai_map, allow_pickle=True)
 
 
 
