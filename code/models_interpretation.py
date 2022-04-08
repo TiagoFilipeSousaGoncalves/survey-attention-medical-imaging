@@ -357,7 +357,7 @@ except:
     # Get missing keys
     missing, unexpected = model.load_state_dict(checkpoint['model_state_dict'], strict=False)
     print(missing) 
-    print(unexpected)
+    # print(unexpected)
     exit()
 
     if len(missing) == len(unexpected):
