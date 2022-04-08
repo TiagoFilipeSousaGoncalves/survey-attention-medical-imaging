@@ -18,7 +18,8 @@ from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from model_utilities_xai import generate_post_hoc_xmap
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
-from model_utilities_xai_transformer import LRP, generate_attribution, generate_visualization
+from model_utilities_xai_transformer import generate_attribution
+from xai_utilities_explanation_generator import LRP
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
 
 
@@ -455,7 +456,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
     if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
         
         # Create an attribution generator
-        attribution_generator = LRP(model, DEVICE)
+        attribution_generator = LRP(model)
         original_image, original_label, xai_map = generate_attribution(image=images[0], attribution_generator=attribution_generator, ground_truth_label=labels[0], device=DEVICE, mean_array=MEAN, std_array=STD)
 
         # xAI maps saving directory
