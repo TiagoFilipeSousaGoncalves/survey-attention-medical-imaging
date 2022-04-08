@@ -445,7 +445,7 @@ def deit_distilled_patch16_224(num_labels, img_size, pool_size=None, crop_pct=0.
         'first_conv': 'patch_embed.proj', 'classifier': 'head',
         **kwargs
     }
-    model = VisionTransformer(patch_size=patch_size, embed_dim=embed_dim, depth=depth, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, **kwargs)
+    model = VisionTransformer(img_size=img_size, patch_size=patch_size, num_classes=num_labels, embed_dim=embed_dim, depth=depth, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, **kwargs)
     model.default_cfg = cfg
 
     return model
