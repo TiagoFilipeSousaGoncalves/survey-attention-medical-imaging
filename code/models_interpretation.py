@@ -357,8 +357,7 @@ except:
     # Get missing keys
     missing, unexpected = model.load_state_dict(checkpoint['model_state_dict'], strict=False)
     # print(missing) 
-    print(unexpected)
-    exit()
+    # print(unexpected)
 
     if len(missing) == len(unexpected):
         
@@ -375,8 +374,13 @@ except:
                 new_state_dict[key] = value
 
 
-    # Now we try to load the new state_dict
-    model.load_state_dict(new_state_dict, strict=True)
+        # Now we try to load the new state_dict
+        model.load_state_dict(new_state_dict, strict=True)
+    
+
+    else:
+        model.load_state_dict(checkpoint['model_state_dict'], strict=False)
+    
     print("Success!")
 
 
