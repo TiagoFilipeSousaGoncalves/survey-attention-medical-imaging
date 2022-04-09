@@ -92,7 +92,7 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=3, filter_fn=Non
         return
 
     state_dict = model_zoo.load_url(cfg['url'], progress=False, map_location='cpu')
-    print(state_dict.keys)
+    print(state_dict.keys())
 
     if filter_fn is not None:
         state_dict = filter_fn(state_dict)
