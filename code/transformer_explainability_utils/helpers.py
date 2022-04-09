@@ -92,7 +92,12 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=3, filter_fn=Non
         return
 
     state_dict = model_zoo.load_url(cfg['url'], progress=False, map_location='cpu')
-    print(state_dict.keys())
+    
+    # TODO: Erase uppon review
+    # print(state_dict.keys())
+    if 'model' in state_dict.keys():
+        state_dict = state_dict['model']
+    
 
     if filter_fn is not None:
         state_dict = filter_fn(state_dict)
@@ -147,13 +152,11 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=3, filter_fn=Non
         del state_dict[classifier_name + '.bias']
         strict = False
 
-    try:
-        print("Loading an expected checkpoint")
-        model.load_state_dict(state_dict, strict=strict)
-    
-    except:
-        print("Loading a different checkpoint")
-        model.load_state_dict(state_dict["model"], strict=strict)
+
+    # Load state_dict
+    model.load_state_dict(state_dict, strict=strict)
+    print("Model loaded with success.")
+
 
 
 def extract_layer(model, layer):
