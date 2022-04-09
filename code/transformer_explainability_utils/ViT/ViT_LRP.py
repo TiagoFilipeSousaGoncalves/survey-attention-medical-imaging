@@ -8,9 +8,9 @@ from einops import rearrange
 
 # Custom Imports
 from modules.layers_ours import *
-from baselines.ViT.helpers import load_pretrained
-from baselines.ViT.weight_init import trunc_normal_
-from baselines.ViT.layer_helpers import to_2tuple
+from helpers import load_pretrained
+from weight_init import trunc_normal_
+from layer_helpers import to_2tuple
 
 
 
