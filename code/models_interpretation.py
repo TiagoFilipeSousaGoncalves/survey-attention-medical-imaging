@@ -11,6 +11,7 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import DataLoader
 import torchvision
+from torchinfo import summary
 
 # Project Imports
 from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset, APTOSDataset
@@ -335,6 +336,9 @@ elif model == "DeiT":
     feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-base-patch16-224")
 
 
+
+# Print model summary
+model_summary = summary(model, (1, 3, IMG_SIZE, IMG_SIZE), device=DEVICE)
 
 """
 # Load model weights
