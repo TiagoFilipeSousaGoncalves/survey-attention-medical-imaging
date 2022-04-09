@@ -575,6 +575,7 @@ for epoch in range(init_epoch, EPOCHS):
             if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
                 out = model(pixel_values=images)
                 logits = out.logits
+            
             else:
                 logits = model(images)
             
