@@ -7,10 +7,10 @@ import torch.nn as nn
 from einops import rearrange
 
 # Custom Imports
-from layers_ours import *
-from helpers import load_pretrained
-from weight_init import trunc_normal_
-from layer_helpers import to_2tuple
+from .layers_ours import *
+from .helpers import load_pretrained
+from .weight_init import trunc_normal_
+from .layer_helpers import to_2tuple
 
 
 
