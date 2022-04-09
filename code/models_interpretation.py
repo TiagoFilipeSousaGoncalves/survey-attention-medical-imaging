@@ -19,7 +19,7 @@ from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from model_utilities_xai import generate_post_hoc_xmap
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
-from transformer_explainability_utils.baselines.ViT.ViT_LRP import deit_base_patch16_224 as DeiT 
+from transformer_explainability_utils.ViT.ViT_LRP import deit_base_patch16_224 as DeiT 
 
 
 
