@@ -335,9 +335,8 @@ elif model == "DeiT":
     feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-base-patch16-224")
 
 
-exit()
 
-
+"""
 # Load model weights
 model_file = os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_best.pt")
 checkpoint = torch.load(model_file, map_location=DEVICE)
@@ -384,6 +383,7 @@ except:
     print("Success!")
 
 
+"""
 
 # Move model to device
 model = model.to(DEVICE)
