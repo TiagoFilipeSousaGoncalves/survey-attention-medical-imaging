@@ -146,7 +146,13 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=3, filter_fn=Non
         del state_dict[classifier_name + '.bias']
         strict = False
 
-    model.load_state_dict(state_dict, strict=strict)
+    try:
+        print("Loading an expected checkpoint")
+        model.load_state_dict(state_dict, strict=strict)
+    
+    except:
+        print("Loading a different checkpoint")
+        model.load_state_dict(state_dict["model"], strict=strict)
 
 
 def extract_layer(model, layer):
