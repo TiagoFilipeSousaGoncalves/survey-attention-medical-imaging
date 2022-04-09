@@ -339,7 +339,7 @@ elif model == "DeiT":
 
 
 # Print model summary
-print(model)
+model_summary = summary(model, (1, 3, IMG_SIZE, IMG_SIZE), device=DEVICE)
 exit()
 """
 # Load model weights
