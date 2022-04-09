@@ -451,7 +451,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
         except:
             print("New DeiT")
             logits = model(images)
-            print(logits, logits.size())
+            print(logits.size())
             exit()
     
     else:
