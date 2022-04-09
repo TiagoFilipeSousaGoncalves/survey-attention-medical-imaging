@@ -1,5 +1,7 @@
-# Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/baselines/ViT/helpers.py
-# Imports
+""" Model creation / weight loading / state_dict helpers
+
+Hacked together by / Copyright 2020 Ross Wightman
+"""
 import logging
 import os
 import math

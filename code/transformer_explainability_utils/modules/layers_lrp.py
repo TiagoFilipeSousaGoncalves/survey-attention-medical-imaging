@@ -1,5 +1,3 @@
-# Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/modules/layers_ours.py
-# Imports
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -46,6 +44,7 @@ class RelProp(nn.Module):
 
     def relprop(self, R, alpha):
         return R
+
 
 class RelPropSimple(RelProp):
     def relprop(self, R, alpha):
@@ -99,27 +98,6 @@ class AvgPool2d(nn.AvgPool2d, RelPropSimple):
 class Add(RelPropSimple):
     def forward(self, inputs):
         return torch.add(*inputs)
-
-    def relprop(self, R, alpha):
-        Z = self.forward(self.X)
-        S = safe_divide(R, Z)
-        C = self.gradprop(Z, self.X, S)
-
-        a = self.X[0] * C[0]
-        b = self.X[1] * C[1]
-
-        a_sum = a.sum()
-        b_sum = b.sum()
-
-        a_fact = safe_divide(a_sum.abs(), a_sum.abs() + b_sum.abs()) * R.sum()
-        b_fact = safe_divide(b_sum.abs(), a_sum.abs() + b_sum.abs()) * R.sum()
-
-        a = a * safe_divide(a_fact, a.sum())
-        b = b * safe_divide(b_fact, b.sum())
-
-        outputs = [a, b]
-
-        return outputs
 
 class einsum(RelPropSimple):
     def __init__(self, equation):
@@ -193,6 +171,7 @@ class Sequential(nn.Sequential):
             R = m.relprop(R, alpha)
         return R
 
+
 class BatchNorm2d(nn.BatchNorm2d, RelProp):
     def relprop(self, R, alpha):
         X = self.X
@@ -217,8 +196,8 @@ class Linear(nn.Linear, RelProp):
         def f(w1, w2, x1, x2):
             Z1 = F.linear(x1, w1)
             Z2 = F.linear(x2, w2)
-            S1 = safe_divide(R, Z1 + Z2)
-            S2 = safe_divide(R, Z1 + Z2)
+            S1 = safe_divide(R, Z1)
+            S2 = safe_divide(R, Z2)
             C1 = x1 * torch.autograd.grad(Z1, x1, S1)[0]
             C2 = x2 * torch.autograd.grad(Z2, x2, S2)[0]
 

@@ -1,5 +1,6 @@
-# Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/baselines/ViT/layer_helpers.py
-# Imports
+""" Layer/Module Helpers
+Hacked together by / Copyright 2020 Ross Wightman
+"""
 from itertools import repeat
 import collections.abc
 

@@ -1,5 +1,4 @@
-# Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/baselines/ViT/ViT_explanation_generator.py
-# Imports
+import argparse
 import torch
 import numpy as np
 from numpy import *
@@ -19,24 +18,13 @@ def compute_rollout_attention(all_layer_matrices, start_layer=0):
     return joint_attention
 
 class LRP:
-    def __init__(self, model, device):
-
-        # Init variables
-        # Model
+    def __init__(self, model):
         self.model = model
         self.model.eval()
 
-        # Device
-        self.device = device
-
-
     def generate_LRP(self, input, index=None, method="transformer_attribution", is_ablation=False, start_layer=0):
         output = self.model(input)
-        # TODO: Review
-        # output = output.logits
-
         kwargs = {"alpha": 1}
-        
         if index == None:
             index = np.argmax(output.cpu().data.numpy(), axis=-1)
 
@@ -44,12 +32,13 @@ class LRP:
         one_hot[0, index] = 1
         one_hot_vector = one_hot
         one_hot = torch.from_numpy(one_hot).requires_grad_(True)
-        one_hot = torch.sum(one_hot.to(self.device) * output)
+        one_hot = torch.sum(one_hot.cuda() * output)
 
         self.model.zero_grad()
         one_hot.backward(retain_graph=True)
 
-        return self.model.relprop(torch.tensor(one_hot_vector).to(self.device), method=method, is_ablation=is_ablation, start_layer=start_layer, **kwargs)
+        return self.model.relprop(torch.tensor(one_hot_vector).to(input.device), method=method, is_ablation=is_ablation,
+                                  start_layer=start_layer, **kwargs)
 
 
 

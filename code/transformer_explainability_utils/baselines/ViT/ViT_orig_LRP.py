@@ -1,14 +1,14 @@
-# Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/baselines/ViT/ViT_LRP.py
-# Imports
+""" Vision Transformer (ViT) in PyTorch
+Hacked together by / Copyright 2020 Ross Wightman
+"""
 import torch
 import torch.nn as nn
 from einops import rearrange
+from modules.layers_lrp import *
 
-# Custom Imports
-from xai_utilities_modules_layers_ours import *
-from xai_utilities_helpers import load_pretrained
-from xai_utilities_weight_init import trunc_normal_
-from xai_utilities_layer_helpers import to_2tuple
+from baselines.ViT.helpers import load_pretrained
+from baselines.ViT.weight_init import trunc_normal_
+from baselines.ViT.layer_helpers import to_2tuple
 
 
 def _cfg(url='', **kwargs):
@@ -321,7 +321,7 @@ class VisionTransformer(nn.Module):
         x = self.head(x)
         return x
 
-    def relprop(self, cam=None,method="transformer_attribution", is_ablation=False, start_layer=0, **kwargs):
+    def relprop(self, cam=None,method="grad", is_ablation=False, start_layer=0, **kwargs):
         # print(kwargs)
         # print("conservation 1", cam.sum())
         cam = self.head.relprop(cam, **kwargs)
@@ -352,9 +352,8 @@ class VisionTransformer(nn.Module):
             cam = compute_rollout_attention(attn_cams, start_layer=start_layer)
             cam = cam[:, 0, 1:]
             return cam
-        
-        # our method, method name grad is legacy
-        elif method == "transformer_attribution" or method == "grad":
+
+        elif method == "grad":
             cams = []
             for blk in self.blocks:
                 grad = blk.attn.get_attn_gradients()
@@ -367,7 +366,7 @@ class VisionTransformer(nn.Module):
             rollout = compute_rollout_attention(cams, start_layer=start_layer)
             cam = rollout[:, 0, 1:]
             return cam
-            
+
         elif method == "last_layer":
             cam = self.blocks[-1].attn.get_attn_cam()
             cam = cam[0].reshape(-1, cam.shape[-1], cam.shape[-1])
@@ -407,6 +406,7 @@ def _conv_filter(state_dict, patch_size=16):
         out_dict[k] = v
     return out_dict
 
+
 def vit_base_patch16_224(pretrained=False, **kwargs):
     model = VisionTransformer(
         patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, **kwargs)
@@ -422,30 +422,4 @@ def vit_large_patch16_224(pretrained=False, **kwargs):
     model.default_cfg = default_cfgs['vit_large_patch16_224']
     if pretrained:
         load_pretrained(model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 3))
-    return model
-
-def deit_base_patch16_224(pretrained=False, **kwargs):
-    model = VisionTransformer(patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, **kwargs)
-    model.default_cfg = _cfg()
-    if pretrained:
-        checkpoint = torch.hub.load_state_dict_from_url(
-            url="https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth",
-            map_location="cpu", check_hash=True
-        )
-        model.load_state_dict(checkpoint["model"])
-    return model
-
-
-
-# DeiT Distilled Version
-def deit_distilled_patch16_224(num_labels, img_size, pool_size=None, crop_pct=0.9, patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, **kwargs):
-    cfg = {
-        'num_classes': num_labels, 'input_size': (3, img_size, img_size), 'pool_size': pool_size,
-        'crop_pct': crop_pct, 'interpolation': 'bicubic',
-        'first_conv': 'patch_embed.proj', 'classifier': 'head',
-        **kwargs
-    }
-    model = VisionTransformer(img_size=img_size, patch_size=patch_size, num_classes=num_labels, embed_dim=embed_dim, depth=depth, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, **kwargs)
-    model.default_cfg = cfg
-
     return model

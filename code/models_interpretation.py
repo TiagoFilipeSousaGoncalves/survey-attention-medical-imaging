@@ -18,11 +18,8 @@ from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from model_utilities_xai import generate_post_hoc_xmap
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
-from model_utilities_xai_transformer import generate_attribution
-from xai_utilities_explanation_generator import LRP
-from xai_utilities_vit_lrp import deit_distilled_patch16_224
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
-
+from transformer_explainability_utils.baselines.ViT.ViT_LRP import deit_base_patch16_224 as DeiT 
 
 
 
@@ -333,9 +330,12 @@ elif model == "ViT":
 # DeiT
 elif model == "DeiT":
     # model = DeiTForImageClassification.from_pretrained('facebook/deit-tiny-distilled-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
-    model = deit_distilled_patch16_224(num_labels=nr_classes, img_size=IMG_SIZE)
+    # feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
+    model = DeiT(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url='facebook/deit-tiny-distilled-patch16-224')
     feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
 
+
+exit()
 
 
 # Load model weights
@@ -447,8 +447,12 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
         try:
             out = model(pixel_values=images)
             logits = out.logits
+        
         except:
+            print("New DeiT")
             logits = model(images)
+            print(logits, logits.size())
+            exit()
     
     else:
         logits = model(images)

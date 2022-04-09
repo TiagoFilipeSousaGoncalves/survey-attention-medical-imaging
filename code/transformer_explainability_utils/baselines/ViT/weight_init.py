@@ -1,5 +1,3 @@
-# Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/baselines/ViT/weight_init.py
-# Imports
 import torch
 import math
 import warnings
