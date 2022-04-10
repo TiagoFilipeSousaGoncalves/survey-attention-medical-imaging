@@ -31,7 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--modelckpt", type=str, required=True, help="Directory where model is stored")
 
 # Type of saliency maps
-parser.add_argument("--saliency_maps", type=str, choices=["ALL", "DEEPLIFT", "LRP"], help="Saliency maps: ALL, DEEPLIFT, LRP")
+parser.add_argument("--saliency_maps", type=str, required=True, choices=["ALL", "DEEPLIFT", "LRP"], help="Saliency maps: ALL, DEEPLIFT, LRP")
 
 # Alpha overlay for saliency maps
 parser.add_argument("--alpha_overlay", type=float, default=0.5, help="Alpha parameter for overlayed saliency maps.")
@@ -46,6 +46,7 @@ modelckpt = args.modelckpt
 
 # Saliency maps
 saliency_maps = args.saliency_maps
+print(saliency_maps)
 
 # Alpha overlay
 alpha_overlay = args.alpha_overlay
@@ -113,7 +114,7 @@ for fname in attribute_flist:
 
 
         # Deeplift
-        if saliency_maps == "ALL" or saliency_maps == "DEEPLIFT":
+        if saliency_maps in ("ALL", "DEEPLIFT"):
             deeplift_fname = os.path.join(xai_maps_dir, sub_dirs[1], fname)
             deeplift_map = np.load(deeplift_fname, allow_pickle=True)
             # print(deeplift_map.min(), deeplift_map.max(), deeplift_map.mean())
@@ -135,7 +136,7 @@ for fname in attribute_flist:
 
 
         # LRP
-        elif saliency_maps == "ALL" or saliency_maps == "LRP":
+        elif saliency_maps in ("ALL", "LRP"):
             lrp_fname = os.path.join(xai_maps_dir, sub_dirs[2], fname)
             lrp_map = np.load(lrp_fname, allow_pickle=True)
 
