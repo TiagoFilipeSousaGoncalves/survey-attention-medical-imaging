@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --gres=gpu:1
-#SBATCH -o fich.out
-#SBATCH -e fich.err
+#SBATCH -o job-%j.out
+#SBATCH -e job-%j.err
 
 
 
