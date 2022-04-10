@@ -98,29 +98,34 @@ for sub_dir_name in sub_dirs:
 
         # Try to generate the final images of the attributes
         try:
-
-            # Original Image
-            original_fname = os.path.join(xai_maps_dir, sub_dir_name, fname)
-            original_img = np.load(original_fname, allow_pickle=True)
-
-            # Get figure
-            figure, axis = viz.visualize_image_attr(None, original_img, method="original_image", use_pyplot=False)
-
-            # Get the figure from memory
-            convert_figure(figure)
             
-            # Save figure
-            plt.axis('off')
-            plt.savefig(os.path.join(png_figs_dir, sub_dir_name, fname.split('.')[0]+'.png'), bbox_inches='tight')
-            plt.clf()
-            # plt.show()
-            plt.close()
+            if sub_dir_name == "original-imgs":
+                # Original Image
+                original_fname = os.path.join(xai_maps_dir, sub_dir_name, fname)
+                original_img = np.load(original_fname, allow_pickle=True)
+
+                # Get figure
+                figure, axis = viz.visualize_image_attr(None, original_img, method="original_image", use_pyplot=False)
+
+                # Get the figure from memory
+                convert_figure(figure)
+                
+                # Save figure
+                plt.axis('off')
+                plt.savefig(os.path.join(png_figs_dir, sub_dir_name, fname.split('.')[0]+'.png'), bbox_inches='tight')
+                plt.clf()
+                # plt.show()
+                plt.close()
 
 
 
             # Deeplift
-            if sub_dir_name == "deeplift":
-                print("Generating DeepLIFT saliency maps images.")
+            elif sub_dir_name == "deeplift":
+                # Original Image
+                original_fname = os.path.join(xai_maps_dir, "original-imgs", fname)
+                original_img = np.load(original_fname, allow_pickle=True)
+
+                # print("Generating DeepLIFT saliency maps images.")
                 deeplift_fname = os.path.join(xai_maps_dir, sub_dir_name, fname)
                 deeplift_map = np.load(deeplift_fname, allow_pickle=True)
                 # print(deeplift_map.min(), deeplift_map.max(), deeplift_map.mean())
@@ -143,9 +148,16 @@ for sub_dir_name in sub_dirs:
 
             # LRP
             elif sub_dir_name == "lrp":
-                print("Generating LRP saliency maps images.")
+                # Original Image
+                original_fname = os.path.join(xai_maps_dir, "original-imgs", fname)
+                original_img = np.load(original_fname, allow_pickle=True)
+
+                # print("Generating LRP saliency maps images.")
                 lrp_fname = os.path.join(xai_maps_dir, sub_dir_name, fname)
                 lrp_map = np.load(lrp_fname, allow_pickle=True)
+
+                if len(lrp_map.shape) == 2:
+                    lrp_map = np.reshape(lrp_map, (lrp_map.shape[0], lrp_map.shape[1], 1))
 
                 # Get figure
                 # figure, axis = viz.visualize_image_attr(lrp_map, original_img, method="blended_heat_map", sign="all", show_colorbar=False, use_pyplot=False)
