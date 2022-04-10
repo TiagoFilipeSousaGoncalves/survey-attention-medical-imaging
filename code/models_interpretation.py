@@ -11,16 +11,15 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import DataLoader
 import torchvision
-from torchinfo import summary
 
 # Project Imports
 from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset, APTOSDataset
 from model_utilities_baseline import VGG16, DenseNet121, ResNet50
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from model_utilities_xai import generate_post_hoc_xmap
+from model_utilities_xai import generate_post_hoc_xmap, gen_transformer_att
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
-from transformer_explainability_utils.ViT_LRP import deit_base_patch16_224 as DeiT 
+from transformer_explainability_utils.ViT_LRP import deit_base_patch16_224 as DeiT
 
 
 
@@ -46,7 +45,7 @@ parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "
 parser.add_argument('--split', type=str, required=True, choices=["Train", "Validation", "Test"], help="Data split: Train, Validation or Test")
 
 # Model
-parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT')
+parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT", "DeiT-LRP"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT, DeiT-LRP')
 
 # Model checkpoint
 parser.add_argument("--modelckpt", type=str, required=True, help="Directory where model is stored")
@@ -283,41 +282,33 @@ feature_extractor = None
 if model == "VGG16":
     model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-
 # DenseNet-121
 elif model == "DenseNet121":
     model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
 
 # ResNet50
 elif model == "ResNet50":
     model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-
 # SEResNet50
 elif model == "SEResNet50":
     model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
 
 # SEVGG16
 elif model == "SEVGG16":
     model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-
 # SEDenseNet121
 elif model == "SEDenseNet121":
     model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
 
 # CBAMResNet50
 elif model == "CBAMResNet50":
     model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-
 # CBAMVGG16
 elif model == "CBAMVGG16":
     model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
 
 # CBAMDenseNet121
 elif model == "CBAMDenseNet121":
@@ -330,17 +321,15 @@ elif model == "ViT":
 
 # DeiT
 elif model == "DeiT":
-    # model = DeiTForImageClassification.from_pretrained('facebook/deit-tiny-distilled-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
-    # feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
+    model = DeiTForImageClassification.from_pretrained('facebook/deit-tiny-distilled-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
+    feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
+
+# DeiT (compatible with LRP)
+elif model == "DeiT-LRP":
     model = DeiT(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth")
-    # model = DeiTForImageClassification.from_pretrained('facebook/deit-base-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
     feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-base-patch16-224")
 
 
-
-# Print model summary
-# model_summary = summary(model, (1, 3, IMG_SIZE, IMG_SIZE), device=DEVICE)
-# exit()
 
 # Load model weights
 model_file = os.path.join(weights_dir, f"{model_name}_{dataset.lower()}_best.pt")
@@ -448,16 +437,9 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
     model = model.to(DEVICE)
 
     # Forward pass: compute predicted outputs by passing inputs to the model
-    if(isinstance(feature_extractor, DeiTFeatureExtractor) or isinstance(feature_extractor, ViTFeatureExtractor)):
-        try:
-            out = model(pixel_values=images)
-            logits = out.logits
-        
-        except:
-            print("New DeiT")
-            logits = model(images)
-            print(logits.size())
-            exit()
+    if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
+        out = model(pixel_values=images)
+        logits = out.logits
     
     else:
         logits = model(images)
@@ -475,11 +457,20 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
 
     # Generate post-hoc explanation
     # For DeiT
-    if(isinstance(feature_extractor, DeiTFeatureExtractor) or isinstance(feature_extractor, ViTFeatureExtractor)):
+    if model_name.lower() == "DeiT-LRP".lower():
         
-        # Create an attribution generator
-        attribution_generator = LRP(model, device=DEVICE)
-        original_image, original_label, xai_map = generate_attribution(image=images[0], attribution_generator=attribution_generator, ground_truth_label=labels[0], device=DEVICE, mean_array=MEAN, std_array=STD)
+        # Generate transformer attributions
+        original_image, original_label, xai_map = gen_transformer_att(image=images[0], ground_truth_label=labels[0], device=DEVICE, mean_array=feature_extractor.image_mean, std_array=feature_extractor.image_std)
+
+
+        # Original images saving directory
+        ori_img_save_dir = os.path.join(xai_maps_dir, "original-imgs")
+        if not(os.path.isdir(ori_img_save_dir)):
+            os.makedirs(ori_img_save_dir)
+
+        # Save image
+        np.save(file=os.path.join(ori_img_save_dir, f"idx{batch_idx}_gt{original_label}_pred{prediction}.npy"), arr=original_image, allow_pickle=True)
+        
 
         # xAI maps saving directory
         xai_map_save_dir = os.path.join(xai_maps_dir, "lrp")

@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from collections import defaultdict
+import cv2
 
 # PyTorch Imports
 import torch
@@ -11,6 +12,9 @@ import torch.nn as nn
 from captum.attr import DeepLift, LRP
 from captum.attr._utils.custom_modules import Addition_Module
 from captum.attr._utils.lrp_rules import EpsilonRule, PropagationRule
+
+# Transformer xAI Imports
+from transformer_explainability_utils.ViT_explanation_generator import LRP as DeiT_LRP
 
 # Project Imports
 from model_utilities_cbam import ChannelPool
@@ -198,3 +202,56 @@ def convert_figure(fig):
     new_manager = dummy.canvas.manager
     new_manager.canvas.figure = fig
     fig.set_canvas(new_manager.canvas)
+
+
+
+# Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/DeiT_example.ipynb
+# We split the original functions into one to generate attributes and another to generate visualizations
+# Function: Generate Transformer attribution array
+def gen_transformer_att(image, ground_truth_label=None, attribution_generator=DeiT_LRP, device='cpu', **kwargs):
+
+    # Get original image
+    original_image = np.transpose(image.cpu().detach().numpy(), (1, 2, 0))
+    original_image = unnormalize(original_image, mean_array=kwargs["mean_array"], std_array=kwargs["std_array"])
+
+
+    # Get label
+    label = ground_truth_label.cpu().item()
+    label = int(label)
+
+
+    # Input to the xAI models
+    input_img = image.unsqueeze(0)
+    input_img.requires_grad = True
+
+    transformer_attribution = attribution_generator.generate_LRP(input_img.to(device), method="transformer_attribution", index=label).detach()
+    transformer_attribution = transformer_attribution.reshape(1, 1, 14, 14)
+    transformer_attribution = torch.nn.functional.interpolate(transformer_attribution, scale_factor=16, mode='bilinear')
+    transformer_attribution = transformer_attribution.reshape(224, 224).to(device).data.cpu().numpy()
+    transformer_attribution = (transformer_attribution - transformer_attribution.min()) / (transformer_attribution.max() - transformer_attribution.min())
+    
+
+    return original_image, label, transformer_attribution
+    
+
+
+# Function: Create heatmap from mask on image
+def show_cam_on_image(img, mask):
+    heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
+    heatmap = np.float32(heatmap) / 255
+    cam = heatmap + np.float32(img)
+    cam = cam / np.max(cam)
+    
+    
+    return cam
+
+
+
+# Function: Generate Transformer attributions visualization
+def gen_transformer_att_vis(original_image, transformer_attribution):
+    vis = show_cam_on_image(original_image, transformer_attribution)
+    vis =  np.uint8(255 * vis)
+    vis = cv2.cvtColor(np.array(vis), cv2.COLOR_RGB2BGR)
+    
+    
+    return vis
