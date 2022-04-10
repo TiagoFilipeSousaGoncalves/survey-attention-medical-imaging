@@ -460,7 +460,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
     if model_name.lower() == "DeiT-LRP".lower():
         
         # Generate transformer attributions
-        original_image, original_label, xai_map = gen_transformer_att(image=images[0], ground_truth_label=labels[0], device=DEVICE, mean_array=feature_extractor.image_mean, std_array=feature_extractor.image_std)
+        original_image, original_label, xai_map = gen_transformer_att(image=images[0], ground_truth_label=labels[0], model=model, device=DEVICE, mean_array=feature_extractor.image_mean, std_array=feature_extractor.image_std)
 
 
         # Original images saving directory

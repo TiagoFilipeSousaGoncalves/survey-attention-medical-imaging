@@ -15,6 +15,7 @@ from captum.attr._utils.lrp_rules import EpsilonRule, PropagationRule
 
 # Transformer xAI Imports
 from transformer_explainability_utils.ViT_explanation_generator import LRP as DeiT_LRP
+from transformer_explainability_utils.ViT_explanation_generator import Baselines as DeiT_Baselines
 
 # Project Imports
 from model_utilities_cbam import ChannelPool
@@ -208,7 +209,9 @@ def convert_figure(fig):
 # Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/DeiT_example.ipynb
 # We split the original functions into one to generate attributes and another to generate visualizations
 # Function: Generate Transformer attribution array
-def gen_transformer_att(image, ground_truth_label=None, attribution_generator=DeiT_LRP, device='cpu', **kwargs):
+def gen_transformer_att(image, ground_truth_label, model, attribution_generator='lrp', device='cpu', **kwargs):
+
+    assert attribution_generator in ['baselines', 'lrp'], f"Attribution generator {attribution_generator} not supported. Please choose one from ['baselines', 'lrp']."
 
     # Get original image
     original_image = np.transpose(image.cpu().detach().numpy(), (1, 2, 0))
@@ -224,7 +227,18 @@ def gen_transformer_att(image, ground_truth_label=None, attribution_generator=De
     input_img = image.unsqueeze(0)
     input_img.requires_grad = True
 
-    transformer_attribution = attribution_generator.generate_LRP(input_img.to(device), method="transformer_attribution", index=label).detach()
+
+    # Attribution generator
+    # Recreate attribution generator
+    if attribution_generator == 'lrp':
+        attribution_generator = DeiT_LRP(model=model, device=device)
+    
+    elif attribution_generator == 'baselines':
+        attribution_generator = DeiT_Baselines(model=model, device=device)
+
+
+    # Get Transformer attribution
+    transformer_attribution = attribution_generator.generate_attribution(input_img=input_img.to(device), method="transformer_attribution", index=label).detach()
     transformer_attribution = transformer_attribution.reshape(1, 1, 14, 14)
     transformer_attribution = torch.nn.functional.interpolate(transformer_attribution, scale_factor=16, mode='bilinear')
     transformer_attribution = transformer_attribution.reshape(224, 224).to(device).data.cpu().numpy()
