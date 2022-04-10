@@ -115,6 +115,7 @@ for fname in attribute_flist:
 
         # Deeplift
         if saliency_maps in ("ALL", "DEEPLIFT"):
+            print("Generating DeepLIFT saliency maps images.")
             deeplift_fname = os.path.join(xai_maps_dir, sub_dirs[1], fname)
             deeplift_map = np.load(deeplift_fname, allow_pickle=True)
             # print(deeplift_map.min(), deeplift_map.max(), deeplift_map.mean())
@@ -137,6 +138,7 @@ for fname in attribute_flist:
 
         # LRP
         elif saliency_maps in ("ALL", "LRP"):
+            print("Generating LRP saliency maps images.")
             lrp_fname = os.path.join(xai_maps_dir, sub_dirs[2], fname)
             lrp_map = np.load(lrp_fname, allow_pickle=True)
 
