@@ -1,0 +1,24 @@
+Using device: cpu
+Model loaded with success.
+Loaded model from results/aptos/deit-t-lrp/2022-04-11_17-01-22/weights/deit-t-lrp_aptos_best.pt
+Low data regimen.
+% of train data: 0.5
+Testing Step | Data Set: APTOS
+Model Name: deit-t-lrp	Train Epoch: 85 Loss: 0.0331348180770874 Accuracy: 0.9914310197086547 F1-score: 0.9914310197086547 ROC AUC: 0.9992508813160987
+Finished.
+Using device: cpu
+Model loaded with success.
+Loaded model from results/aptos/deit-t-lrp/2022-04-11_17-01-22/weights/deit-t-lrp_aptos_best.pt
+Low data regimen.
+% of train data: 0.5
+Testing Step | Data Set: APTOS
+Model Name: deit-t-lrp	Validation Epoch: 85 Loss: 0.10762680321931839 Accuracy: 0.9665809768637532 F1-score: 0.9665809768637532 ROC AUC: 0.9924089202622673
+Finished.
+Using device: cpu
+Model loaded with success.
+Loaded model from results/aptos/deit-t-lrp/2022-04-11_17-01-22/weights/deit-t-lrp_aptos_best.pt
+Low data regimen.
+% of train data: 0.5
+Testing Step | Data Set: APTOS
+Model Name: deit-t-lrp	Test Epoch: 85 Loss: 0.11958876252174377 Accuracy: 0.9563636363636364 F1-score: 0.9563636363636364 ROC AUC: 0.9913303971749395
+Finished.
