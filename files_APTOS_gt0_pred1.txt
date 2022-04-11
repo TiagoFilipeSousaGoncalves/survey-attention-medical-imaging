@@ -4,3 +4,8 @@ idx310_gt0_pred1.png
 idx416_gt0_pred1.png 
 idx473_gt0_pred1.png 
 idx84_gt0_pred1.png 
+idx211_gt0_pred1.png 
+idx234_gt0_pred1.png 
+idx416_gt0_pred1.png 
+idx473_gt0_pred1.png 
+idx84_gt0_pred1.png 
