@@ -27,7 +27,8 @@ from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from data_utilities import aptos_map_images_and_labels, cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, isic_get_data_paths, APTOSDataset, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
-from transformer_explainability_utils.ViT_LRP import deit_base_patch16_224 as DeiT
+from transformer_explainability_utils.ViT_LRP import deit_base_patch16_224 as DeiT_Base
+from transformer_explainability_utils.ViT_LRP import deit_tiny_patch16_224 as DeiT_Tiny 
 
 
 
@@ -277,10 +278,15 @@ elif model == "DeiT":
     model = DeiTForImageClassification.from_pretrained('facebook/deit-tiny-distilled-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
     feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
 
-# DeiT (compatible with LRP)
-elif model == "DeiT-LRP":
-    model = DeiT(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth")
+# DeiT-Base (compatible with LRP)
+elif model == "DeiT-B-LRP":
+    model = DeiT_Base(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth")
     feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-base-patch16-224")
+
+# DeiT-Tiny (compatible with LRP)
+elif model == "DeiT-T-LRP":
+    model = DeiT_Tiny(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_tiny_patch16_224-a1311bcf.pth")
+    feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-tiny-patch16-224")
 
 
 # Load model weights
