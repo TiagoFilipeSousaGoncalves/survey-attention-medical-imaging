@@ -30,6 +30,13 @@ dataset = args.dataset
 # Modelcheckpoints list
 if dataset == "APTOS":
     modelckpt_list = [
+        "results/aptos/densenet121/2022-03-02_20-18-23",
+        "results/aptos/sedensenet121/2022-03-02_21-16-28",
+        "results/aptos/cbamdensenet121/2022-03-02_22-17-26",
+        "results/aptos/resnet50/2022-03-02_17-57-24",
+        "results/aptos/seresnet50/2022-03-02_18-46-07",
+        "results/aptos/cbamresnet50/2022-03-02_19-41-49",
+        "results/aptos/deit-t-lrp/2022-04-11_12-29-28"
 
     ]
 
