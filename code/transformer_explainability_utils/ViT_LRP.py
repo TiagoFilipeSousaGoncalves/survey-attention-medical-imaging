@@ -477,7 +477,7 @@ def deit_base_patch16_224(pretrained=False, num_classes=2, input_size=(3, 224, 2
 def deit_tiny_patch16_224(pretrained=False, num_classes=2, input_size=(3, 224, 224), url="https://dl.fbaipublicfiles.com/deit/deit_tiny_patch16_224-a1311bcf.pth", **kwargs):
     
     # Build model
-    model = VisionTransformer(patch_size=16, embed_dim=192, depth=12, num_heads=3, mlp_ratio=4, qkv_bias=True, **kwargs)
+    model = VisionTransformer(patch_size=16, num_classes=num_classes, embed_dim=192, depth=12, num_heads=3, mlp_ratio=4, qkv_bias=True, **kwargs)
     # model.default_cfg = _cfg(url=url, num_classes=num_classes, input_size=input_size)
     cfg = _cfg(url=url, num_classes=num_classes, input_size=input_size)
     
