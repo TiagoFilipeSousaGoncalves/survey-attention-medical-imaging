@@ -452,7 +452,8 @@ def vit_large_patch16_224(pretrained=False, **kwargs):
 
 
 
-# DeiT
+# Original Models from: https://github.com/facebookresearch/deit/blob/main/models.py
+# DeiT - Base
 def deit_base_patch16_224(pretrained=False, num_classes=2, input_size=(3, 224, 224), url="https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth", **kwargs):
 
     # Build model
@@ -468,4 +469,23 @@ def deit_base_patch16_224(pretrained=False, num_classes=2, input_size=(3, 224, 2
         load_pretrained(model=model, cfg=cfg)
     
 
+    return model
+
+
+
+# DeiT - Tiny 
+def deit_tiny_patch16_224(pretrained=False, num_classes=2, input_size=(3, 224, 224), url="https://dl.fbaipublicfiles.com/deit/deit_tiny_patch16_224-a1311bcf.pth", **kwargs):
+    
+    # Build model
+    model = VisionTransformer(patch_size=16, embed_dim=192, depth=12, num_heads=3, mlp_ratio=4, qkv_bias=True, **kwargs)
+    # model.default_cfg = _cfg(url=url, num_classes=num_classes, input_size=input_size)
+    cfg = _cfg(url=url, num_classes=num_classes, input_size=input_size)
+    
+    # Load pretrained model
+    if pretrained:
+        # checkpoint = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/deit/deit_tiny_patch16_224-a1311bcf.pth", map_location="cpu", check_hash=True)
+        # model.load_state_dict(checkpoint["model"])
+        load_pretrained(model=model, cfg=cfg)
+    
+    
     return model
