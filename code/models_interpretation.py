@@ -19,7 +19,8 @@ from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
 from model_utilities_xai import generate_post_hoc_xmap, gen_transformer_att
 from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
 from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
-from transformer_explainability_utils.ViT_LRP import deit_base_patch16_224 as DeiT
+from transformer_explainability_utils.ViT_LRP import deit_base_patch16_224 as DeiT_Base
+from transformer_explainability_utils.ViT_LRP import deit_tiny_patch16_224 as DeiT_Tiny 
 
 
 
@@ -45,7 +46,7 @@ parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "
 parser.add_argument('--split', type=str, required=True, choices=["Train", "Validation", "Test"], help="Data split: Train, Validation or Test")
 
 # Model
-parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT", "DeiT-LRP"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT, DeiT-LRP')
+parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT", "DeiT-B-LRP", "DeiT-T-LRP"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT, DeiT-B-LRP, DeiT-T-LRP.')
 
 # Model checkpoint
 parser.add_argument("--modelckpt", type=str, required=True, help="Directory where model is stored")
@@ -324,10 +325,15 @@ elif model == "DeiT":
     model = DeiTForImageClassification.from_pretrained('facebook/deit-tiny-distilled-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
     feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
 
-# DeiT (compatible with LRP)
-elif model == "DeiT-LRP":
-    model = DeiT(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth")
+# DeiT-Base (compatible with LRP)
+elif model == "DeiT-B-LRP":
+    model = DeiT_Base(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth")
     feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-base-patch16-224")
+
+# DeiT-Tiny (compatible with LRP)
+elif model == "DeiT-T-LRP":
+    model = DeiT_Tiny(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_tiny_patch16_224-a1311bcf.pth")
+    feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-tiny-patch16-224")
 
 
 
@@ -457,7 +463,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
 
     # Generate post-hoc explanation
     # For DeiT
-    if model_name.lower() == "DeiT-LRP".lower():
+    if model_name.lower() in ("DeiT-B-LRP".lower(), "DeiT-T-LRP".lower()):
         
         # Generate transformer attributions
         original_image, original_label, xai_map = gen_transformer_att(image=images[0], ground_truth_label=labels[0], model=model, device=DEVICE, mean_array=feature_extractor.image_mean, std_array=feature_extractor.image_std)
