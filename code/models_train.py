@@ -310,7 +310,7 @@ elif model == "DeiT-B-LRP":
 # DeiT-Tiny (compatible with LRP)
 elif model == "DeiT-T-LRP":
     model = DeiT_Tiny(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_tiny_patch16_224-a1311bcf.pth")
-    feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit_tiny_patch16_224")
+    feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-tiny-patch16-224")
 
 
 
