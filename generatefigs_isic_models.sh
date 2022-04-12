@@ -4,4 +4,4 @@
 # python code/generate_xai_figures.py --modelckpt results/isic2020/resnet50/2022-03-04_12-11-36 --alpha_overlay 0.6
 # python code/generate_xai_figures.py --modelckpt results/isic2020/seresnet50/2022-03-04_20-18-10 --alpha_overlay 0.6
 # python code/generate_xai_figures.py --modelckpt results/isic2020/cbamresnet50/2022-03-05_05-26-22 --alpha_overlay 0.6
-python code/generate_xai_figures.py --modelckpt results/isic2020/deit-t-lrp/2022-04-11_12-31-47 --alpha_overlay 0.6
+python code/generate_xai_figures.py --modelckpt results/isic2020/deit-t-lrp/2022-04-11_12-31-47 --saliency_maps LRP --alpha_overlay 0.6
