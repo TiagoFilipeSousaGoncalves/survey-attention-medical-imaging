@@ -48,7 +48,8 @@ elif dataset == "MIMICCXR":
         "results/mimiccxr/cbamdensenet121/2022-03-05_13-17-36",
         "results/mimiccxr/resnet50/2022-03-02_14-53-12",
         "results/mimiccxr/seresnet50/2022-03-04_09-03-01",
-        "results/mimiccxr/cbamresnet50/2022-03-08_16-16-53"
+        "results/mimiccxr/cbamresnet50/2022-03-08_16-16-53",
+        "results/mimiccxr/deit-t-lrp/2022-04-11_12-31-47"
 
     ]
 
