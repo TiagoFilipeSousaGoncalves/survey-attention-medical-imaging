@@ -131,7 +131,9 @@ dmypy.json
 
 # Directories
 data/
-results/
+results/aptos/
+results/isic2020/
+results/mimiccxr/
 paper/
 
 # macOS files
