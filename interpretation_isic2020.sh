@@ -1,1 +1,1 @@
-python code/models_interpretation.py --dataset ISIC2020 --split Test --model DeiT --modelckpt results/isic2020/deit/2022-03-03_07-22-05 --batchsize 1
+python code/models_interpretation.py --dataset ISIC2020 --split Test --model DeiT-T-LRP --modelckpt results/isic2020/deit-t-lrp/2022-04-11_12-31-47 --batchsize 1
