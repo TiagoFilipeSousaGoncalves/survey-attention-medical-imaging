@@ -1,0 +1,20 @@
+Using device: cpu
+Model loaded with success.
+Loaded model from results/mimiccxr/deit-t-lrp/2022-04-12_08-43-56/weights/deit-t-lrp_mimiccxr_best.pt
+Low data regimen.
+% of train data: 0.1
+Testing Step | Data Set: MIMICCXR
+Model Name: deit-t-lrp	Train Epoch: 42 Loss: 0.3616073429584503 Accuracy: 0.842483660130719 F1-score: 0.842483660130719 ROC AUC: 0.9103612067554914
+Finished.
+Using device: cpu
+Model loaded with success.
+Loaded model from results/mimiccxr/deit-t-lrp/2022-04-12_08-43-56/weights/deit-t-lrp_mimiccxr_best.pt
+Testing Step | Data Set: MIMICCXR
+Model Name: deit-t-lrp	Validation Epoch: 42 Loss: 0.36152830719947815 Accuracy: 0.8314606741573034 F1-score: 0.8314606741573034 ROC AUC: 0.9099052540913006
+Finished.
+Using device: cpu
+Model loaded with success.
+Loaded model from results/mimiccxr/deit-t-lrp/2022-04-12_08-43-56/weights/deit-t-lrp_mimiccxr_best.pt
+Testing Step | Data Set: MIMICCXR
+Model Name: deit-t-lrp	Test Epoch: 42 Loss: 0.39146921038627625 Accuracy: 0.8152985074626866 F1-score: 0.8152985074626866 ROC AUC: 0.8621023718700288
+Finished.
