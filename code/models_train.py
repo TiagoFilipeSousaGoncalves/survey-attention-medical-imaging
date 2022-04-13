@@ -357,7 +357,9 @@ val_transforms = torchvision.transforms.Compose([
 # APTOS
 if dataset == "APTOS":
     train_set = APTOSDataset(base_data_path=data_dir, split="Train", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    # print(f"Train set size: {len(train_set)}")
     val_set = APTOSDataset(base_data_path=data_dir, split="Validation", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
+    # print(f"Validation set size: {len(val_set)}")
 
 
 # CBISDDSM
@@ -369,13 +371,17 @@ elif dataset == "CBISDDSM":
 # MIMCCXR
 elif dataset == "MIMICCXR":
     train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    # print(f"Train set size: {len(train_set)}")
     val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
+    # print(f"Validation set size: {len(val_set)}")
 
 
 # ISIC2020
 elif dataset == "ISIC2020":
     train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Train', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    # print(f"Train set size: {len(train_set)}")
     val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Validation', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
+    # print(f"Validation set size: {len(val_set)}")
 
 # PH2
 elif dataset == "PH2":

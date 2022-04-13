@@ -357,14 +357,17 @@ elif dataset == "MIMICCXR":
         eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), resized=None, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
     else:
         eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), transform=eval_transforms)
+        # print(f"Evaluation set size: {len(eval_set)}")
 
 # APTOS
 elif dataset == "APTOS":
     eval_set = APTOSDataset(base_data_path=data_dir, split=data_split, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
+    # print(f"Evaluation set size: {len(eval_set)}")
 
 # ISIC2020
 elif dataset == "ISIC2020":
     eval_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split=data_split, random_seed=random_seed, resized=None, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
+    # print(f"Evaluation set size: {len(eval_set)}")
 
 
 # PH2
