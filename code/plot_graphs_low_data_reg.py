@@ -34,6 +34,6 @@ for d in datasets:
     plt.xlabel("Percentage of training examples")
     plt.title(d)
     # plt.show()
-    plt.savefig(f'plot_{d}.png', bbox_inches='tight')
+    plt.savefig(f'results/plot_{d}.png', bbox_inches='tight')
 
 print("Finished.")
