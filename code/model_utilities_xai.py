@@ -243,8 +243,8 @@ def gen_transformer_att(image, ground_truth_label, model, attribution_generator=
     transformer_attribution = torch.nn.functional.interpolate(transformer_attribution, scale_factor=16, mode='bilinear')
     transformer_attribution = transformer_attribution.reshape(224, 224).to(device).data.cpu().numpy()
     
-    # TODO: Review Original Implementation Applies Normalization
-    # transformer_attribution = (transformer_attribution - transformer_attribution.min()) / (transformer_attribution.max() - transformer_attribution.min())
+    # Original Implementation Applies Normalization (Captum also applies normalization to generate the visualizations, so it's OK to do it)
+    transformer_attribution = (transformer_attribution - transformer_attribution.min()) / (transformer_attribution.max() - transformer_attribution.min())
     
 
     return original_image, label, transformer_attribution
