@@ -1,5 +1,0 @@
-Using device: cpu
-Model loaded with success.
-Using device: cpu
-Model loaded with success.
-Using device: cpu
