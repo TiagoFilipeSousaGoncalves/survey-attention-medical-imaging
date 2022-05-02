@@ -27,11 +27,33 @@ $ pip install -r requirements.txt
 To get access to the dataset used in this paper, please send an e-mail to [**tiago.f.goncalves@inesctec.pt**](mailto:tiago.f.goncalves@inesctec.pt).
 
 ## Usage
-### Generate Train and Test Indices for 5-Fold Cross-Validation
-The original [train_test_indices.pickle](data/train-test-indices/train_test_indices.pickle) file is already provide. However, you may generate this file by running:
+### Train Models
+To train the models:
 ```bash
-$ python generate_train_test_split_indices_cv5.py
+$ python {command line arguments} code/models_train.py
 ```
+This script accepts the following command line arguments:
+```
+--data_dir: Directory of the data set
+--dataset: Data set {CBISDDSM,ISIC2020,MIMICCXR,APTOS,PH2}
+--model: Model Name {DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT, DeiT-B-LRP, DeiT-T-LRP}
+--low_data_regimen: Activate the low data regimen training
+--perc_train: Percentage of training data to be used during training
+--batchsize: Batch-size for training and validation
+--imgsize: Size of the image after transforms
+--resize: Resize data transformation {direct_resize,resizeshortest_randomcrop}
+--classweights: Weight loss with class imbalance
+--epochs: Number of training epochs
+--lr: Learning rate
+--outdir: Output directory
+--num_workers: Number of workers for dataloader
+--gpu_id: The index of the GPU
+--save_freq: Frequency (in number of epochs) to save the model
+--resume: Resume training
+--ckpt: Checkpoint from which to resume training
+--nr_layers: Number of hidden layers (only for ViT)
+```
+
 ### ISBI Model
 #### Train
 First, we need to train the ISBI Model:
@@ -87,15 +109,7 @@ $ python hybrid_model_scoring_results.py
 ```bash
 $ python segmentation_based_model_scoring_results.py
 ```
-### Python Jupyter Notebook
-To generate scores and to plot the predictions, you may run the [plot_predictions_and_get_scores.ipynb](plot_predictions_and_get_scores.ipynb), using Jupyter-Notebook or [Jupyter-Lab](https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html). To install [Jupyter-Lab](https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html):
-```bash
-$ pip install jupyterlab
-```
-And then run:
-```bash
-$ jupyter-lab
-```
+
 
 ## Citation
 If you use this repository in your research work, please cite this paper:
