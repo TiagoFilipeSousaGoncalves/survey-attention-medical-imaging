@@ -242,32 +242,35 @@ def gen_transformer_att(image, ground_truth_label, model, attribution_generator=
     transformer_attribution = transformer_attribution.reshape(1, 1, 14, 14)
     transformer_attribution = torch.nn.functional.interpolate(transformer_attribution, scale_factor=16, mode='bilinear')
     transformer_attribution = transformer_attribution.reshape(224, 224).to(device).data.cpu().numpy()
-    
-    # Original Implementation Applies Normalization (Captum also applies normalization to generate the visualizations, so it's OK to do it)
-    transformer_attribution = (transformer_attribution - transformer_attribution.min()) / (transformer_attribution.max() - transformer_attribution.min())
-    
+
+    # Original Implementation Applies Normalization
+    # (Captum clips the range of attributions to generate the visualizations, so if we do it, we may harm the quality of visualization regarding the signal of attributions)
+    # transformer_attribution = (transformer_attribution - transformer_attribution.min()) / (transformer_attribution.max() - transformer_attribution.min())
+
 
     return original_image, label, transformer_attribution
     
 
 
+# Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/DeiT_example.ipynb
 # Function: Create heatmap from mask on image
 def show_cam_on_image(img, mask):
     heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
     heatmap = np.float32(heatmap) / 255
     cam = heatmap + np.float32(img)
     cam = cam / np.max(cam)
-    
-    
+
+
     return cam
 
 
 
+# Source: https://github.com/hila-chefer/Transformer-Explainability/blob/main/DeiT_example.ipynb
 # Function: Generate Transformer attributions visualization
 def gen_transformer_att_vis(original_image, transformer_attribution):
     vis = show_cam_on_image(original_image, transformer_attribution)
     vis =  np.uint8(255 * vis)
     vis = cv2.cvtColor(np.array(vis), cv2.COLOR_RGB2BGR)
-    
-    
+
+
     return vis

@@ -107,7 +107,7 @@ class ChannelGate(nn.Module):
                 channel_att_sum = channel_att_sum + channel_att_raw
 
 
-        scale = torch.sigmoid( channel_att_sum ).unsqueeze(2).unsqueeze(3).expand_as(x)
+        scale = torch.sigmoid(channel_att_sum).unsqueeze(2).unsqueeze(3).expand_as(x)
 
 
         return x * scale
@@ -321,7 +321,7 @@ class ResNet(nn.Module):
         self.relu = nn.ReLU(inplace=False)
 
 
-        # TODO: Erase uppon review
+
         # We only use CBAM modules
         # if att_type=='BAM':
         #     self.bam1 = BAM(64*block.expansion)
@@ -381,7 +381,7 @@ class ResNet(nn.Module):
         x = self.bn1(x)
         x = self.relu(x)
         
-        # TODO: Erase uppon review
+
         # We use the "ImageNet" config model
         # if self.network_type == "ImageNet":
         x = self.maxpool(x)
@@ -389,28 +389,28 @@ class ResNet(nn.Module):
 
         x = self.layer1(x)
         
-        # TODO: Erase uppon review
+
         # We do not use BAM modules
         # if not self.bam1 is None:
         #     x = self.bam1(x)
 
         x = self.layer2(x)
         
-        # TODO: Erase uppon review
+
         # We do not use BAM modules
         # if not self.bam2 is None:
         #     x = self.bam2(x)
 
         x = self.layer3(x)
         
-        # TODO: Erase uppon review
+
         # We do not use BAM modules
         # if not self.bam3 is None:
         #     x = self.bam3(x)
 
         x = self.layer4(x)
 
-        # TODO: Erase uppon review
+
         # We use the "ImageNet" config model
         # if self.network_type == "ImageNet":
         x = self.avgpool(x)
@@ -880,15 +880,3 @@ class CBAMDenseNet121(torch.nn.Module):
 
 
         return outputs
-
-
-
-# Uncomment to test models
-# model = CBAMResNet50(3, 224, 224, 2)
-# model = CBAMVGG16(3, 224, 224, 2)
-# model = CBAMDenseNet121(3, 224, 224, 2)
-# print(f"Model:\n{model}")
-# aux_tensor = torch.rand(1, 3, 224, 224)
-# print(f"Input shape: {aux_tensor.shape}")
-# output_tensor = model(aux_tensor)
-# print(f"Output shape: {output_tensor.shape}")

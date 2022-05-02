@@ -4,7 +4,6 @@ from typing import Type, Any, Callable, Union, List, Optional
 # PyTorch Imports
 import torch
 from torch import Tensor
-from torch._C import _log_api_usage_once
 import torch.nn as nn
 from torch.hub import load_state_dict_from_url
 import torchvision
