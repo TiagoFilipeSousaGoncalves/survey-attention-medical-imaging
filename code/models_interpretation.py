@@ -4,7 +4,7 @@ import argparse
 from collections import OrderedDict
 import numpy as np
 
-# Sklearn Import
+# Sklearn Imports
 from sklearn.model_selection import train_test_split
 
 # PyTorch Imports

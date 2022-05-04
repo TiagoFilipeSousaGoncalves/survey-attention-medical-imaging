@@ -26,6 +26,7 @@ $ pip install -r requirements.txt
 ## Data
 To get access to the dataset used in this paper, please send an e-mail to [**tiago.f.goncalves@inesctec.pt**](mailto:tiago.f.goncalves@inesctec.pt).
 
+
 ## Usage
 ### Train Models
 To train the models:
@@ -54,61 +55,94 @@ This script accepts the following command line arguments:
 --nr_layers: Number of hidden layers (only for ViT)
 ```
 
-### ISBI Model
-#### Train
-First, we need to train the ISBI Model:
+
+### Test Models
+To test the models:
 ```bash
-$ python isbi_model_train.py
+$ python {command line arguments} code/models_test.py
 ```
-#### Predict
-Then, we generate the ISBI Model Predictions (which are needed for the rest of the models):
-```bash
-$ python isbi_model_predict.py
+This script accepts the following command line arguments:
+```
+--data_dir: Directory of the data set
+--dataset: Data set {CBISDDSM,ISIC2020,MIMICCXR,APTOS,PH2}
+--split: Data split {Train,Validation,Test}
+--model: Model Name {DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT, DeiT-B-LRP, DeiT-T-LRP}
+--low_data_regimen: Activate the low data regimen training
+--perc_train: Percentage of training data to be used during training
+--modelckpt: Directory where model is stored
+--batchsize: Batch-size for training and validation
+--imgsize: Size of the image after transforms
+--resize: Resize data transformation {direct_resize,resizeshortest_randomcrop}
+--num_workers: Number of workers for dataloader
+--gpu_id: The index of the GPU
+--nr_layers: Number of hidden layers (only for ViT)
 ```
 
-### Hybrid Model
-#### Train & Predict
-We are then ready to move to the Hybrid Model, which integrates train and prediction in the same script:
+
+### Generate Post-hoc Explanations (Saliency Maps)
+To generate post-hoc explanations (saliency maps):
 ```bash
-$ python hybrid_model_predict.py
+$ python {command line arguments} code/models_interpretation.py
 ```
-We must convert the Hybrid Model predictions to the same notation as ISBI Model predictions (for scoring purposes):
-```bash
-$ python hybrid_model_reshape_predictions.py
+This script accepts the following command line arguments:
+```
+--data_dir: Directory of the data set
+--dataset: Data set {CBISDDSM, ISIC2020, MIMICCXR, APTOS, PH2}
+--split: Data split {Train, Validation, Test}
+--model: Model Name {DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT, DeiT-B-LRP, DeiT-T-LRP}
+--modelckpt: Directory where model is stored
+--batchsize: Batch-size for training and validation
+--imgsize: Size of the image after transforms
+--resize: Resize data transformation {direct_resize,resizeshortest_randomcrop}
+--num_workers: Number of workers for dataloader
+--gpu_id: The index of the GPU
+--nr_layers: Number of hidden layers (only for ViT)
 ```
 
-### Segmentation Based Model
-#### Train U-Net++
-This model is based on U-Net++ Model. We first train a U-Net++ Model with our data:
+
+### Generate Figures from Post-hoc Explanations (Saliency Maps)
+To generate figures from post-hoc explanations (saliency maps):
 ```bash
-$ python segmentation_based_model_unetpp_train.py
+$ python {command line arguments} code/generate_xai_figures.py
 ```
-#### Generate Breast Masks with U-Net++
-Then, we generate breast masks with the U-Net++ trained model:
-```bash
-$ python segmentation_based_model_unetpp_predict.py
+This script accepts the following command line arguments:
 ```
-#### Project ISBI Model predictions in the U-Net++ masks detected contours
-Finally, we perform contour detection in the U-Net++ predicted masks and combine with the ISBI Model predictions to get a refined breast contour detection:
-```bash
-$ python segmentation_based_model_predict.py
+--modelckpt: Directory where model is stored
+--saliency_maps: Saliency maps {ALL, DEEPLIFT, LRP}
+--alpha_overlay: Alpha parameter for overlayed saliency maps.
 ```
 
-## Scoring and Plots
-### Python Scripts
-To generate scores you must run the scoring scripts:
-#### ISBI Model Scoring
+
+### Get the interesting cases (images that have the same prediction across all models)
+To get the interesting cases:
 ```bash
-$ python isbi_model_scoring_results.py
+$ python {command line arguments} code/get_interesting_img_cases.py
 ```
-#### Hybrid Model Scoring
+This script accepts the following command line arguments:
+```
+--dataset: Data set {CBISDDSM,ISIC2020,MIMICCXR,APTOS,PH2}
+--pattern: Possible patterns: gt0_pred0, gt1_pred1, gt0_pred1, gt1_pred0
+```
+
+
+### Generate the plots with accuracies of all models and data regimes
+To get the plots with accuracies of all models and data regimes
 ```bash
-$ python hybrid_model_scoring_results.py
+$ python {command line arguments} code/plot_graphs_low_data_reg.py
 ```
-#### Segmentation Based Model Scoring
+
+
+### Extra: Generate model-history figures
+To generate model-history figures:
 ```bash
-$ python segmentation_based_model_scoring_results.py
+$ python {command line arguments} code/generate_history_figures.py
 ```
+This script accepts the following command line arguments:
+```
+--model: Model Name {DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT}
+--modelckpt: Directory where model is stored
+```
+
 
 
 ## Citation
@@ -121,6 +155,8 @@ If you use this repository in your research work, please cite this paper:
   year={2022}
 }
 ```
+
+
 
 ## Credits and Acknowledgments
 ### Squeeze-and-Excitation (SE) Networks
