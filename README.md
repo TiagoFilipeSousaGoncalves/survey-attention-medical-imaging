@@ -24,7 +24,7 @@ $ pip install -r requirements.txt
 ```
 
 ## Data
-To get access to the dataset used in this paper, please send an e-mail to [**tiago.f.goncalves@inesctec.pt**](mailto:tiago.f.goncalves@inesctec.pt).
+To know more about the data used in this paper, please send an e-mail to  [**tiago.f.goncalves@inesctec.pt**](mailto:tiago.f.goncalves@inesctec.pt).
 
 
 ## Usage
