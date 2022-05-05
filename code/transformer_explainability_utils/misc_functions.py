@@ -1,18 +1,19 @@
-#
+# Source: https://github.com/hila-chefer/Transformer-Explainability
 # Copyright (c) 2019 Idiap Research Institute, http://www.idiap.ch/
 # Written by Suraj Srinivas <suraj.srinivas@idiap.ch>
-#
 
-""" Misc helper functions """
-
+# Imports
 import cv2
 import numpy as np
 import subprocess
 
+# PyTorch Imports
 import torch
 import torchvision.transforms as transforms
 
 
+
+# Class: NormalizeInverse
 class NormalizeInverse(transforms.Normalize):
     # Undo normalization on images
 
@@ -27,6 +28,8 @@ class NormalizeInverse(transforms.Normalize):
         return super(NormalizeInverse, self).__call__(tensor.clone())
 
 
+
+# Function: Create folder
 def create_folder(folder_name):
     try:
         subprocess.call(['mkdir', '-p', folder_name])
@@ -34,6 +37,8 @@ def create_folder(folder_name):
         None
 
 
+
+# Function: Save saliency map on image
 def save_saliency_map(image, saliency_map, filename):
     """
     Save saliency map on image.

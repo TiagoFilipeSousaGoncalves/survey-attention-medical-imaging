@@ -126,7 +126,7 @@ This script accepts the following command line arguments:
 
 
 ### Generate the plots with accuracies of all models and data regimes
-To get the plots with accuracies of all models and data regimes
+To get the plots with accuracies of all models and data regimes you have to fill the file "[experiments.xlsx](results/experiments.xlsx)" and run:
 ```bash
 $ python {command line arguments} code/plot_graphs_low_data_reg.py
 ```

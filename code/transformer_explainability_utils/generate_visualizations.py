@@ -1,20 +1,24 @@
+# Source: https://github.com/hila-chefer/Transformer-Explainability
+
+# Imports
 import os
 from tqdm import tqdm
 import h5py
-
 import argparse
 
-# Import saliency methods and models
-from misc_functions import *
+# PyTorch Imports
+from torchvision.datasets import ImageNet
 
+# Project Imports (Import saliency methods and models)
+from misc_functions import *
 from ViT_explanation_generator import Baselines, LRP
 from ViT_new import vit_base_patch16_224
 from ViT_LRP import vit_base_patch16_224 as vit_LRP
 from ViT_orig_LRP import vit_base_patch16_224 as vit_orig_LRP
 
-from torchvision.datasets import ImageNet
 
 
+# Function: normalize
 def normalize(tensor,
               mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]):
     dtype = tensor.dtype
@@ -24,6 +28,8 @@ def normalize(tensor,
     return tensor
 
 
+
+# Function: compute_saliency_and_save
 def compute_saliency_and_save(args):
     first = True
     with h5py.File(os.path.join(args.method_dir, 'results.hdf5'), 'a') as f:

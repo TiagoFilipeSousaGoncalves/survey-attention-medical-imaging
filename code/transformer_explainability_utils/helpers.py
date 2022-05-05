@@ -1,7 +1,8 @@
-""" Model creation / weight loading / state_dict helpers
+# Source: https://github.com/hila-chefer/Transformer-Explainability
+# Model creation / weight loading / state_dict helpers
+# Hacked together by / Copyright 2020 Ross Wightman
 
-Hacked together by / Copyright 2020 Ross Wightman
-"""
+# Imports
 import logging
 import os
 import math
@@ -9,6 +10,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from typing import Callable
 
+# PyTorch Imports
 import torch
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
@@ -16,6 +18,8 @@ import torch.utils.model_zoo as model_zoo
 _logger = logging.getLogger(__name__)
 
 
+
+# Function: load_state_dict
 def load_state_dict(checkpoint_path, use_ema=False):
     if checkpoint_path and os.path.isfile(checkpoint_path):
         checkpoint = torch.load(checkpoint_path, map_location='cpu')
@@ -39,11 +43,15 @@ def load_state_dict(checkpoint_path, use_ema=False):
         raise FileNotFoundError()
 
 
+
+# Function: load_checkpoint
 def load_checkpoint(model, checkpoint_path, use_ema=False, strict=True):
     state_dict = load_state_dict(checkpoint_path, use_ema)
     model.load_state_dict(state_dict, strict=strict)
 
 
+
+# Function: resume_checkpoint
 def resume_checkpoint(model, checkpoint_path, optimizer=None, loss_scaler=None, log_info=True):
     resume_epoch = None
     if os.path.isfile(checkpoint_path):
@@ -84,6 +92,8 @@ def resume_checkpoint(model, checkpoint_path, optimizer=None, loss_scaler=None, 
         raise FileNotFoundError()
 
 
+
+# Function: load_pretrained
 def load_pretrained(model, cfg=None, num_classes=1000, in_chans=3, filter_fn=None, strict=True):
     if cfg is None:
         cfg = getattr(model, 'default_cfg')
@@ -93,7 +103,7 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=3, filter_fn=Non
 
     state_dict = model_zoo.load_url(cfg['url'], progress=False, map_location='cpu')
     
-    # TODO: Erase uppon review
+    # We had to change somethings to load the models
     # print(state_dict.keys())
     if 'model' in state_dict.keys():
         state_dict = state_dict['model']
@@ -159,6 +169,7 @@ def load_pretrained(model, cfg=None, num_classes=1000, in_chans=3, filter_fn=Non
 
 
 
+# Function: extract_layer
 def extract_layer(model, layer):
     layer = layer.split('.')
     module = model
@@ -177,6 +188,8 @@ def extract_layer(model, layer):
     return module
 
 
+
+# Function: set_layer
 def set_layer(model, layer, val):
     layer = layer.split('.')
     module = model
@@ -201,6 +214,8 @@ def set_layer(model, layer, val):
     setattr(module, l, val)
 
 
+
+# Function: adapt_model_from_string
 def adapt_model_from_string(parent_module, model_string):
     separator = '***'
     state_dict = {}
@@ -251,12 +266,16 @@ def adapt_model_from_string(parent_module, model_string):
     return new_module
 
 
+
+# Function: adapt_model_from_file
 def adapt_model_from_file(parent_module, model_variant):
     adapt_file = os.path.join(os.path.dirname(__file__), 'pruned', model_variant + '.txt')
     with open(adapt_file, 'r') as f:
         return adapt_model_from_string(parent_module, f.read().strip())
 
 
+
+# Function: build_model_with_cfg
 def build_model_with_cfg(
         model_cls: Callable,
         variant: str,

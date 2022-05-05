@@ -1,8 +1,11 @@
 # Source: https://github.com/hila-chefer/Transformer-Explainability
+
 # Imports
-import torch
 import numpy as np
 from numpy import *
+
+# PyTorch Imports
+import torch
 
 
 
@@ -60,6 +63,7 @@ class LRP:
 
 
 
+# Class: Baselines
 class Baselines:
     def __init__(self, model, device):
         

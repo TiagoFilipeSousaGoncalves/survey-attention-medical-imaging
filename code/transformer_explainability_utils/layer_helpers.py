@@ -1,6 +1,8 @@
-""" Layer/Module Helpers
-Hacked together by / Copyright 2020 Ross Wightman
-"""
+# Source: https://github.com/hila-chefer/Transformer-Explainability
+# Layer/Module Helpers
+# Hacked together by / Copyright 2020 Ross Wightman
+
+# Imports
 from itertools import repeat
 import collections.abc
 

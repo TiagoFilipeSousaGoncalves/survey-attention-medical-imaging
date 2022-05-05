@@ -1,16 +1,21 @@
-""" Vision Transformer (ViT) in PyTorch
-Hacked together by / Copyright 2020 Ross Wightman
-"""
+# Source: https://github.com/hila-chefer/Transformer-Explainability
+# Vision Transformer (ViT) in PyTorch
+# Hacked together by / Copyright 2020 Ross Wightman
+
+# PyTorch Imports
 import torch
 import torch.nn as nn
 from functools import partial
 from einops import rearrange
 
-from baselines.ViT.helpers import load_pretrained
-from baselines.ViT.weight_init import trunc_normal_
-from baselines.ViT.layer_helpers import to_2tuple
+# Project Imports
+from helpers import load_pretrained
+from weight_init import trunc_normal_
+from layer_helpers import to_2tuple
 
 
+
+# Function: Get configurations
 def _cfg(url='', **kwargs):
     return {
         'url': url,
@@ -21,6 +26,8 @@ def _cfg(url='', **kwargs):
     }
 
 
+
+# Dictionary: Default configurations
 default_cfgs = {
     # patch models
     'vit_small_patch16_224': _cfg(
@@ -35,6 +42,9 @@ default_cfgs = {
         mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)),
 }
 
+
+
+# Class: Mlp
 class Mlp(nn.Module):
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
@@ -54,6 +64,8 @@ class Mlp(nn.Module):
         return x
 
 
+
+# Class: Attention
 class Attention(nn.Module):
     def __init__(self, dim, num_heads=8, qkv_bias=False,attn_drop=0., proj_drop=0.):
         super().__init__()
@@ -108,6 +120,8 @@ class Attention(nn.Module):
         return out
 
 
+
+# Class: Block
 class Block(nn.Module):
 
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, drop=0., attn_drop=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm):
@@ -125,6 +139,8 @@ class Block(nn.Module):
         return x
 
 
+
+# Class: PatchEmbed
 class PatchEmbed(nn.Module):
     """ Image to Patch Embedding
     """
@@ -147,6 +163,9 @@ class PatchEmbed(nn.Module):
         x = self.proj(x).flatten(2).transpose(1, 2)
         return x
 
+
+
+# Class: VisionTransformer
 class VisionTransformer(nn.Module):
     """ Vision Transformer
     """
@@ -208,6 +227,8 @@ class VisionTransformer(nn.Module):
         return x
 
 
+
+# Function: _conv_filter
 def _conv_filter(state_dict, patch_size=16):
     """ convert patch embedding weight from manual patchify + linear proj to conv"""
     out_dict = {}
@@ -218,6 +239,8 @@ def _conv_filter(state_dict, patch_size=16):
     return out_dict
 
 
+
+# Function: Build vit_base_patch16_224
 def vit_base_patch16_224(pretrained=False, **kwargs):
     model = VisionTransformer(
         patch_size=16, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True,
@@ -228,6 +251,9 @@ def vit_base_patch16_224(pretrained=False, **kwargs):
             model, num_classes=model.num_classes, in_chans=kwargs.get('in_chans', 3), filter_fn=_conv_filter)
     return model
 
+
+
+# Function: Build vit_large_patch16_224
 def vit_large_patch16_224(pretrained=False, **kwargs):
     model = VisionTransformer(
         patch_size=16, embed_dim=1024, depth=24, num_heads=16, mlp_ratio=4, qkv_bias=True,

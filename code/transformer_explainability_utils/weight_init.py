@@ -1,8 +1,15 @@
-import torch
+# Source: https://github.com/hila-chefer/Transformer-Explainability
+
+# Imports
 import math
 import warnings
 
+# PyTorch Imports
+import torch
 
+
+
+# Function
 def _no_grad_trunc_normal_(tensor, mean, std, a, b):
     # Cut & paste from PyTorch official master until it's in a few official releases - RW
     # Method based on https://people.sc.fsu.edu/~jburkardt/presentations/truncated_normal.pdf
@@ -36,9 +43,12 @@ def _no_grad_trunc_normal_(tensor, mean, std, a, b):
 
         # Clamp to ensure it's in the proper range
         tensor.clamp_(min=a, max=b)
+
         return tensor
 
 
+
+# Function: Fills the input Tensor with values drawn from a truncated normal distribution
 def trunc_normal_(tensor, mean=0., std=1., a=-2., b=2.):
     # type: (Tensor, float, float, float, float) -> Tensor
     r"""Fills the input Tensor with values drawn from a truncated
