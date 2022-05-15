@@ -378,7 +378,6 @@ class ResNet50(torch.nn.Module):
         # Compute in_features
         _in_features = torch.rand(1, self.channels, self.height, self.width)
         _in_features = self.resnet50(_in_features)
-        # print(_in_features.shape)
         _in_features = _in_features.size(0) * _in_features.size(1) * _in_features.size(2) * _in_features.size(3)
 
         # Create FC1 Layer for classification

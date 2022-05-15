@@ -8,7 +8,6 @@ from torchinfo import summary
 
 # Sklearn Imports
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
-from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 
 # PyTorch Imports
@@ -25,13 +24,12 @@ np.random.seed(random_seed)
 
 
 # Project Imports
-from model_utilities_baseline import VGG16, DenseNet121, ResNet50
-from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
-from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
-from data_utilities import aptos_map_images_and_labels, cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, isic_get_data_paths, APTOSDataset, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset
-from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
-from transformer_explainability_utils.ViT_LRP import deit_base_patch16_224 as DeiT_Base
-from transformer_explainability_utils.ViT_LRP import deit_tiny_patch16_224 as DeiT_Tiny 
+from model_utilities_baseline import DenseNet121, ResNet50
+from model_utilities_se import SEDenseNet121, SEResNet50
+from model_utilities_cbam import CBAMDenseNet121, CBAMResNet50
+from data_utilities import aptos_map_images_and_labels, mimic_map_images_and_labels, isic_get_data_paths, APTOSDataset, MIMICXRDataset, ISIC2020Dataset
+from transformers import DeiTFeatureExtractor
+from transformer_explainability_utils.ViT_LRP import deit_tiny_patch16_224 as DeiT_Tiny
 
 
 # Command Line Interface
@@ -43,10 +41,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type=str, required=True, help="Directory of the data set.")
 
 # Data set
-parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR", "APTOS", "PH2"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR, APTOS, PH2")
+parser.add_argument('--dataset', type=str, required=True, choices=["APTOS2019", "ISIC2020", "MIMICCXR"], help="Data set: APTOS2019, ISIC2020, MIMICCXR.")
 
 # Model
-parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT", "DeiT-B-LRP", "DeiT-T-LRP"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT, DeiT-B-LRP, DeiT-T-LRP.')
+parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "SEDenseNet121", "SEResNet50", "CBAMDenseNet121", "CBAMResNet50", "DeiT-T-LRP"], help='Model Name: DenseNet121, ResNet50, SEDenseNet121, SEResNet50, CBAMDenseNet121, CBAMResNet50, DeiT-T-LRP.')
 
 # Low Data Regimen
 parser.add_argument('--low_data_regimen', action="store_true", help="Activate the low data regimen training.")
@@ -157,68 +155,24 @@ with open(os.path.join(outdir, "train_params.txt"), "w") as f:
     f.write(str(args))
 
 
-
-# CBISDDSM
-if dataset == "CBISDDSM":
-    # Directories
-    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-    #data_dir = "/BARRACUDA8T/DATASETS/CBIS_DDSM/"
-    train_dir = os.path.join(data_dir, "train")
-    val_dir = os.path.join(data_dir, "val")
-    test_dir = os.path.join(data_dir, "test")
- 
-    _, _, nr_classes = cbis_map_images_and_labels(dir=train_dir)
+# APTOS2019
+if dataset == "APTOS":
+    _, _, nr_classes = aptos_map_images_and_labels(base_path=data_dir)
 
 
 # MIMICXR
 elif dataset == "MIMICCXR":
     # Directories
-    # data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
-    # data_dir = "/BARRACUDA8T/DATASETS/MIMIC_CXR_Pleural_Subset/"
     train_dir = os.path.join(data_dir, "Train_images_AP_resized")
     val_dir = os.path.join(data_dir, "Val_images_AP_resized")
     test_dir = os.path.join(data_dir, "Test_images_AP_resized")
-
     _, _, nr_classes = mimic_map_images_and_labels(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"))
-
-
-# APTOS
-elif dataset == "APTOS":
-    _, _, nr_classes = aptos_map_images_and_labels(base_path=data_dir)
-    # data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
 
 
 # ISIC2020
 elif dataset == "ISIC2020":
-    # Directories
-    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train_resized"
-    # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train_resized"
-    # csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
-    # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
-
     # Build data directories and get number of classes
     data_dir, csv_fpath, nr_classes = isic_get_data_paths(base_data_path=data_dir, resized=True)
-
-
-# PH2
-elif dataset == "PH2":
-    # Directories
-    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
-
-    # Data split
-    # Get all the images, labels, and number of classes of PH2 Dataset
-    ph2_imgs, ph2_labels, nr_classes = ph2_map_images_and_labels(data_dir)
-
-    # Remove class 1
-    ph2_imgs = ph2_imgs[ph2_labels!=1]
-    ph2_labels = ph2_labels[ph2_labels!=1]
-
-
-    # Split into train, validation and test (60%, 20%, 20%)
-    # Train and Test
-    ph2_imgs_train, ph2_imgs_test, ph2_labels_train, ph2_labels_test = train_test_split(ph2_imgs, ph2_labels, test_size=0.20, random_state=random_seed)
-    # Train and Validation
-    ph2_imgs_train, ph2_imgs_val, ph2_labels_train, ph2_labels_val = train_test_split(ph2_imgs_train, ph2_labels_train, test_size=0.25, random_state=random_seed)
 
 
 
@@ -253,59 +207,34 @@ img_nr_channels = 3
 img_height = IMG_SIZE
 img_width = IMG_SIZE
 
+# Feature extractor (for Transformers)
 feature_extractor = None
 
 
-# VGG-16
-if model == "VGG16":
-    model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-# DenseNet-121
-elif model == "DenseNet121":
+# DenseNet121
+if model == "DenseNet121":
     model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
 # ResNet50
 elif model == "ResNet50":
     model = ResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-# SEResNet50
-elif model == "SEResNet50":
-    model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
-# SEVGG16
-elif model == "SEVGG16":
-    model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
 # SEDenseNet121
 elif model == "SEDenseNet121":
     model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-# CBAMResNet50
-elif model == "CBAMResNet50":
-    model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
-# CBAMVGG16
-elif model == "CBAMVGG16":
-    model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
+# SEResNet50
+elif model == "SEResNet50":
+    model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
 # CBAMDenseNet121
 elif model == "CBAMDenseNet121":
     model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-# ViT
-elif model == "ViT":
-    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
-    feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
-
-# DeiT
-elif model == "DeiT":
-    model = DeiTForImageClassification.from_pretrained('facebook/deit-tiny-distilled-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
-    feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
-
-# DeiT-Base (compatible with LRP)
-elif model == "DeiT-B-LRP":
-    model = DeiT_Base(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth")
-    feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-base-patch16-224")
+# CBAMResNet50
+elif model == "CBAMResNet50":
+    model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
 # DeiT-Tiny (compatible with LRP)
 elif model == "DeiT-T-LRP":
@@ -353,41 +282,24 @@ val_transforms = torchvision.transforms.Compose([
     torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
 ])
 
+
 # Datasets
-# APTOS
+# APTOS2019
 if dataset == "APTOS":
     train_set = APTOSDataset(base_data_path=data_dir, split="Train", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
-    # print(f"Train set size: {len(train_set)}")
     val_set = APTOSDataset(base_data_path=data_dir, split="Validation", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
-    # print(f"Validation set size: {len(val_set)}")
-
-
-# CBISDDSM
-elif dataset == "CBISDDSM":
-    train_set = CBISDataset(base_data_path=train_dir, transform=train_transforms)
-    val_set = CBISDataset(base_data_path=val_dir, transform=val_transforms)
-
-
-# MIMCCXR
-elif dataset == "MIMICCXR":
-    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
-    # print(f"Train set size: {len(train_set)}")
-    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
-    # print(f"Validation set size: {len(val_set)}")
 
 
 # ISIC2020
 elif dataset == "ISIC2020":
     train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Train', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
-    # print(f"Train set size: {len(train_set)}")
     val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Validation', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
-    # print(f"Validation set size: {len(val_set)}")
 
-# PH2
-elif dataset == "PH2":
-    train_set = PH2Dataset(ph2_imgs=ph2_imgs_train, ph2_labels=ph2_labels_train, base_data_path=data_dir, transform=train_transforms)
-    val_set = PH2Dataset(ph2_imgs=ph2_imgs_val, ph2_labels=ph2_labels_val, base_data_path=data_dir, transform=val_transforms)
 
+# MIMCCXR
+elif dataset == "MIMICCXR":
+    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
 
 
 # Class weights for loss
@@ -472,12 +384,7 @@ for epoch in range(init_epoch, EPOCHS):
 
 
         # Forward pass: compute predicted outputs by passing inputs to the model
-        if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
-            out = model(pixel_values=images)
-            logits = out.logits
-        
-        else:
-            logits = model(images)
+        logits = model(images)
 
         
         # Compute the batch loss
@@ -516,7 +423,6 @@ for epoch in range(init_epoch, EPOCHS):
 
     # Print Statistics
     print(f"Train Loss: {avg_train_loss}\tTrain Accuracy: {train_acc}")
-    # print(f"Train Loss: {avg_train_loss}\tTrain Accuracy: {train_acc}\tTrain Recall: {train_recall}\tTrain Precision: {train_precision}\tTrain F1-Score: {train_f1}")
 
 
     # Append values to the arrays
@@ -584,12 +490,7 @@ for epoch in range(init_epoch, EPOCHS):
             images, labels = images.to(DEVICE, non_blocking=True), labels.to(DEVICE, non_blocking=True)
 
             # Forward pass: compute predicted outputs by passing inputs to the model
-            if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
-                out = model(pixel_values=images)
-                logits = out.logits
-            
-            else:
-                logits = model(images)
+            logits = model(images)
             
             # Compute the batch loss
             # Using CrossEntropy w/ Softmax
@@ -622,7 +523,6 @@ for epoch in range(init_epoch, EPOCHS):
 
         # Print Statistics
         print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}")
-        # print(f"Validation Loss: {avg_val_loss}\tValidation Accuracy: {val_acc}\tValidation Recall: {val_recall}\tValidation Precision: {val_precision}\tValidation F1-Score: {val_f1}")
 
         # Append values to the arrays
         # Validation Loss

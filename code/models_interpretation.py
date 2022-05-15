@@ -4,22 +4,18 @@ import argparse
 from collections import OrderedDict
 import numpy as np
 
-# Sklearn Imports
-from sklearn.model_selection import train_test_split
-
 # PyTorch Imports
 import torch
 from torch.utils.data import DataLoader
 import torchvision
 
 # Project Imports
-from data_utilities import cbis_map_images_and_labels, mimic_map_images_and_labels, ph2_map_images_and_labels, CBISDataset, MIMICXRDataset, PH2Dataset, ISIC2020Dataset, APTOSDataset
-from model_utilities_baseline import VGG16, DenseNet121, ResNet50
-from model_utilities_cbam import CBAMResNet50, CBAMVGG16, CBAMDenseNet121
+from data_utilities import APTOSDataset, ISIC2020Dataset, MIMICXRDataset, mimic_map_images_and_labels
+from model_utilities_baseline import DenseNet121, ResNet50
+from model_utilities_cbam import CBAMDenseNet121, CBAMResNet50
 from model_utilities_xai import generate_post_hoc_xmap, gen_transformer_att
-from model_utilities_se import SEResNet50, SEVGG16, SEDenseNet121
-from transformers import ViTFeatureExtractor, ViTForImageClassification, DeiTFeatureExtractor, DeiTForImageClassification
-from transformer_explainability_utils.ViT_LRP import deit_base_patch16_224 as DeiT_Base
+from model_utilities_se import SEDenseNet121, SEResNet50
+from transformers import DeiTFeatureExtractor
 from transformer_explainability_utils.ViT_LRP import deit_tiny_patch16_224 as DeiT_Tiny 
 
 
@@ -40,13 +36,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', type=str, default="data", help="Main data directory (e.g., 'data/')")
 
 # Data set
-parser.add_argument('--dataset', type=str, required=True, choices=["CBISDDSM", "ISIC2020", "MIMICCXR", "APTOS", "PH2"], help="Data set: CBISDDSM, ISIC2020, MIMICCXR, APTOS, PH2")
+parser.add_argument('--dataset', type=str, required=True, choices=["APTOS", "ISIC2020", "MIMICCXR"], help="Data set: APTOS, ISIC2020, MIMICCXR.")
 
 # Data split
 parser.add_argument('--split', type=str, required=True, choices=["Train", "Validation", "Test"], help="Data split: Train, Validation or Test")
 
 # Model
-parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "VGG16", "SEDenseNet121", "SEResNet50", "SEVGG16", "CBAMDenseNet121", "CBAMResNet50", "CBAMVGG16", "ViT", "DeiT", "DeiT-B-LRP", "DeiT-T-LRP"], help='Model Name: DenseNet121, ResNet50, VGG16, SEDenseNet121, SEResNet50, SEVGG16, CBAMDenseNet121, CBAMResNet50, CBAMVGG16, ViT, DeiT, DeiT-B-LRP, DeiT-T-LRP.')
+parser.add_argument('--model', type=str, required=True, choices=["DenseNet121", "ResNet50", "SEDenseNet121", "SEResNet50", "CBAMDenseNet121", "CBAMResNet50", "DeiT-T-LRP"], help='Model Name: DenseNet121, ResNet50, SEDenseNet121, SEResNet50, CBAMDenseNet121, CBAMResNet50, DeiT-T-LRP.')
 
 # Model checkpoint
 parser.add_argument("--modelckpt", type=str, required=True, help="Directory where model is stored")
@@ -106,25 +102,14 @@ resize_opt = args.resize
 
 
 
-# CBISDDSM
-if dataset == "CBISDDSM":
+# APTOS2019
+if dataset == "APTOS":
     # Directories
-    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/CBISPreprocDataset"
-    dataset_dir = os.path.join(data_dir, "CBISPreprocDataset")
+    # data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
+    dataset_dir = os.path.join(data_dir, "APTOS2019")
 
-    if data_split == "Train":
-        eval_dir = os.path.join(dataset_dir, "train")
-    
-    elif data_split == "Validation":
-        eval_dir = os.path.join(dataset_dir, "val")
-    
-    elif data_split == "Test":
-        eval_dir = os.path.join(dataset_dir, "test")
-    
-
-    # Get labels and number of classes
-    imgs_labels, labels_dict, nr_classes = cbis_map_images_and_labels(dir=eval_dir)
-
+    # Number of classes is added manually
+    nr_classes = 2
 
     # Weights directory
     weights_dir = os.path.join(modelckpt, "weights")
@@ -134,6 +119,23 @@ if dataset == "CBISDDSM":
     if not(os.path.isdir(xai_maps_dir)):
         os.makedirs(xai_maps_dir)
 
+
+# ISIC2020
+elif dataset == "ISIC2020":
+    # Directories
+    dataset_dir = os.path.join(data_dir, "ISIC2020/jpeg/train")
+    csv_fpath = os.path.join(data_dir, "ISIC2020/train.csv")
+
+    # Number of classes is added manually
+    nr_classes = 2
+
+    # Weights directory
+    weights_dir = os.path.join(modelckpt, "weights")
+
+    # Post-hoc explanations
+    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
+    if not(os.path.isdir(xai_maps_dir)):
+        os.makedirs(xai_maps_dir)
 
 
 # MIMICXR
@@ -166,98 +168,6 @@ elif dataset == "MIMICCXR":
 
 
 
-# APTOS
-elif dataset == "APTOS":
-    # Directories
-    # data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
-    dataset_dir = os.path.join(data_dir, "APTOS2019")
-
-    # Number of classes is added manually
-    nr_classes = 2
-
-    # Weights directory
-    weights_dir = os.path.join(modelckpt, "weights")
-
-    # Post-hoc explanations
-    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
-    if not(os.path.isdir(xai_maps_dir)):
-        os.makedirs(xai_maps_dir)
-
-
-
-# ISIC2020
-elif dataset == "ISIC2020":
-    # Directories
-    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/jpeg/train"
-    # csv_fpath = "/ctm-hdd-pool01/tgoncalv/datasets/ISIC2020/train.csv"
-    # data_dir = "/BARRACUDA8T/DATASETS/ISIC2020/train"
-    # csv_fpath = "/BARRACUDA8T/DATASETS/ISIC2020/train.csv"
-    # data_dir = "data/ISIC2020/jpeg/train"
-    # csv_fpath = "data/ISIC2020/train.csv"
-
-    dataset_dir = os.path.join(data_dir, "ISIC2020/jpeg/train")
-    csv_fpath = os.path.join(data_dir, "ISIC2020/train.csv")
-
-    # Number of classes is added manually
-    nr_classes = 2
-
-    # Weights directory
-    weights_dir = os.path.join(modelckpt, "weights")
-
-    # Post-hoc explanations
-    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
-    if not(os.path.isdir(xai_maps_dir)):
-        os.makedirs(xai_maps_dir)
-
-
-
-# PH2
-elif dataset == "PH2":
-    # Directories
-    # data_dir = "/ctm-hdd-pool01/tgoncalv/datasets/PH2Dataset"
-    dataset_dir = os.path.join(data_dir, "PH2Dataset")
-
-
-    # Data split
-    # Get all the images, labels, and number of classes of PH2 Dataset
-    ph2_imgs, ph2_labels, nr_classes = ph2_map_images_and_labels(dataset_dir)
-
-    # Remove class 1
-    ph2_imgs = ph2_imgs[ph2_labels!=1]
-    ph2_labels = ph2_labels[ph2_labels!=1]
-
-
-    # Split into train, validation and test (60%, 20%, 20%)
-    # Train and Test
-    ph2_imgs_train, ph2_imgs_test, ph2_labels_train, ph2_labels_test = train_test_split(ph2_imgs, ph2_labels, test_size=0.20, random_state=random_seed)
-    # Train and Validation
-    ph2_imgs_train, ph2_imgs_val, ph2_labels_train, ph2_labels_val = train_test_split(ph2_imgs_train, ph2_labels_train, test_size=0.25, random_state=random_seed)
-
-
-    # Data splits
-    if data_split == "Train":
-        ph2_imgs_eval = ph2_imgs_train.copy()
-        ph2_labels_eval = ph2_labels_train.copy()
-    
-    elif data_split == "Validation":
-        ph2_imgs_eval = ph2_imgs_val.copy()
-        ph2_labels_eval = ph2_labels_val.copy()
-
-    elif data_split == "Test":
-        ph2_imgs_eval = ph2_imgs_test.copy()
-        ph2_labels_eval = ph2_labels_test.copy()
-    
-
-    # Weights directory
-    weights_dir = os.path.join(modelckpt, "weights")
-
-    # Post-hoc explanations
-    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
-    if not(os.path.isdir(xai_maps_dir)):
-        os.makedirs(xai_maps_dir)
-
-
-
 # Choose GPU
 DEVICE = f"cuda:{gpu_id}" if torch.cuda.is_available() else "cpu"
 
@@ -279,12 +189,9 @@ model_name = model.lower()
 feature_extractor = None
 
 
-# VGG-16
-if model == "VGG16":
-    model = VGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-# DenseNet-121
-elif model == "DenseNet121":
+# DenseNet121
+if model == "DenseNet121":
     model = DenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
 # ResNet50
@@ -295,10 +202,6 @@ elif model == "ResNet50":
 elif model == "SEResNet50":
     model = SEResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-# SEVGG16
-elif model == "SEVGG16":
-    model = SEVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
 # SEDenseNet121
 elif model == "SEDenseNet121":
     model = SEDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
@@ -307,28 +210,9 @@ elif model == "SEDenseNet121":
 elif model == "CBAMResNet50":
     model = CBAMResNet50(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
 
-# CBAMVGG16
-elif model == "CBAMVGG16":
-    model = CBAMVGG16(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
 # CBAMDenseNet121
 elif model == "CBAMDenseNet121":
     model = CBAMDenseNet121(channels=img_nr_channels, height=img_height, width=img_width, nr_classes=nr_classes)
-
-# ViT
-elif model == "ViT":
-    model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
-    feature_extractor = ViTFeatureExtractor.from_pretrained('google/vit-base-patch16-224')
-
-# DeiT
-elif model == "DeiT":
-    model = DeiTForImageClassification.from_pretrained('facebook/deit-tiny-distilled-patch16-224', num_labels=nr_classes, ignore_mismatched_sizes=True, num_hidden_layers=nr_layers, image_size=IMG_SIZE)
-    feature_extractor = DeiTFeatureExtractor.from_pretrained('facebook/deit-tiny-distilled-patch16-224')
-
-# DeiT-Base (compatible with LRP)
-elif model == "DeiT-B-LRP":
-    model = DeiT_Base(pretrained=True, num_classes=nr_classes, input_size=(3, IMG_SIZE, IMG_SIZE), url="https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth")
-    feature_extractor = DeiTFeatureExtractor.from_pretrained("facebook/deit-base-patch16-224")
 
 # DeiT-Tiny (compatible with LRP)
 elif model == "DeiT-T-LRP":
@@ -402,28 +286,17 @@ eval_transforms = torchvision.transforms.Compose([
 ])
 
 # Datasets
-# CBISDDSM
-if dataset == "CBISDDSM":
-    eval_set = CBISDataset(base_data_path=eval_dir, transform=eval_transforms)
-
+# APTOS2019
+if dataset == "APTOS":
+    eval_set = APTOSDataset(base_data_path=dataset_dir, split=data_split, transform=eval_transforms)
 
 # MIMCCXR
 elif dataset == "MIMICCXR":
     eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), transform=eval_transforms)
 
-# APTOS
-elif dataset == "APTOS":
-    eval_set = APTOSDataset(base_data_path=dataset_dir, split=data_split, transform=eval_transforms)
-
 # ISIC2020
 elif dataset == "ISIC2020":
     eval_set = ISIC2020Dataset(base_data_path=dataset_dir, csv_path=csv_fpath, split=data_split, random_seed=random_seed, transform=eval_transforms)
-
-
-# PH2
-elif dataset == "PH2":
-    eval_set = PH2Dataset(ph2_imgs=ph2_imgs_eval, ph2_labels=ph2_labels_eval, base_data_path=data_dir, transform=eval_transforms)
-
 
 
 # Dataloaders
@@ -443,12 +316,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
     model = model.to(DEVICE)
 
     # Forward pass: compute predicted outputs by passing inputs to the model
-    if(isinstance(model, ViTForImageClassification) or isinstance(model, DeiTForImageClassification)):
-        out = model(pixel_values=images)
-        logits = out.logits
-    
-    else:
-        logits = model(images)
+    logits = model(images)
 
     
     # Using Softmax Activation
@@ -463,7 +331,7 @@ for batch_idx, (images, labels) in enumerate(eval_loader):
 
     # Generate post-hoc explanation
     # For DeiT
-    if model_name.lower() in ("DeiT-B-LRP".lower(), "DeiT-T-LRP".lower()):
+    if model_name.lower() in ("DeiT-T-LRP".lower()):
         
         # Generate transformer attributions
         original_image, original_label, xai_map = gen_transformer_att(image=images[0], ground_truth_label=labels[0], model=model, device=DEVICE, mean_array=feature_extractor.image_mean, std_array=feature_extractor.image_std)

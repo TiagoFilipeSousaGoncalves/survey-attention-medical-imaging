@@ -43,15 +43,7 @@ class ChannelGate(nn.Module):
         super(ChannelGate, self).__init__()
         
         self.gate_channels = gate_channels
-        
-        # self.mlp = nn.Sequential(
-        #     nn.Flatten(),
-        #     nn.Linear(gate_channels, gate_channels // reduction_ratio),
-        #     nn.ReLU(inplace=False),
-        #     nn.Linear(gate_channels // reduction_ratio, gate_channels)
-        #     )
-        
-        # self.flatten = nn.Flatten()
+
         self.linear1 = nn.Linear(gate_channels, gate_channels // reduction_ratio)
         self.linear2 = nn.Linear(gate_channels // reduction_ratio, gate_channels)
 
@@ -72,8 +64,6 @@ class ChannelGate(nn.Module):
         for idx, pool_type in enumerate(self.pool_types):
             if pool_type=='avg':
                 avg_pool = F.avg_pool2d(x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
-                # channel_att_raw = self.mlp(avg_pool)
-                # channel_att_raw = self.flatten(avg_pool)
                 channel_att_raw = torch.reshape(avg_pool, (avg_pool.size(0), -1))
                 channel_att_raw = self.linear1(channel_att_raw)
                 channel_att_raw = self.relus[idx](channel_att_raw)
@@ -81,8 +71,6 @@ class ChannelGate(nn.Module):
             
             elif pool_type=='max':
                 max_pool = F.max_pool2d(x, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
-                # channel_att_raw = self.mlp(max_pool)
-                # channel_att_raw = self.flatten(max_pool)
                 channel_att_raw = torch.reshape(max_pool, (max_pool.size(0), -1))
                 channel_att_raw = self.linear1(channel_att_raw)
                 channel_att_raw = self.relus[idx](channel_att_raw)
@@ -91,13 +79,13 @@ class ChannelGate(nn.Module):
             
             elif pool_type=='lp':
                 lp_pool = F.lp_pool2d(x, 2, (x.size(2), x.size(3)), stride=(x.size(2), x.size(3)))
-                # channel_att_raw = self.mlp(lp_pool)
+
                 pass
             
             elif pool_type=='lse':
                 # LSE pool only
                 lse_pool = logsumexp_2d(x)
-                # channel_att_raw = self.mlp(lse_pool)
+    
                 pass
 
 
@@ -224,14 +212,9 @@ class CBAMBasicBlock(nn.Module):
         if self.downsample is not None:
             residual = self.downsample(x)
 
-        # Old version
-        # if not self.cbam is None:
-        #     out = self.cbam(out)
-        
-        # Refactored code
+
         if self.use_cbam:
             out = self.cbam(out)
-            # print("Using CBAM!")
 
         out += residual
         out = self.relu2(out)
@@ -288,15 +271,11 @@ class CBAMBottleneck(nn.Module):
 
         if self.downsample is not None:
             residual = self.downsample(x)
-
-        # Old code 
-        # if not self.cbam is None:
-            # out = self.cbam(out)
         
-        # Refactored code
+
         if self.use_cbam:
             out = self.cbam(out)
-            # print("Using CBAM!")
+
 
         out += residual
         out = self.relu3(out)
@@ -320,15 +299,6 @@ class ResNet(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=False)
 
-
-
-        # We only use CBAM modules
-        # if att_type=='BAM':
-        #     self.bam1 = BAM(64*block.expansion)
-        #     self.bam2 = BAM(128*block.expansion)
-        #     self.bam3 = BAM(256*block.expansion)
-        # else:
-        #     self.bam1, self.bam2, self.bam3 = None, None, None
 
         self.layer1 = self._make_layer(block, 64,  layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
@@ -380,42 +350,18 @@ class ResNet(nn.Module):
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
-        
 
-        # We use the "ImageNet" config model
-        # if self.network_type == "ImageNet":
+
         x = self.maxpool(x)
 
 
         x = self.layer1(x)
-        
-
-        # We do not use BAM modules
-        # if not self.bam1 is None:
-        #     x = self.bam1(x)
-
         x = self.layer2(x)
-        
-
-        # We do not use BAM modules
-        # if not self.bam2 is None:
-        #     x = self.bam2(x)
-
         x = self.layer3(x)
-        
-
-        # We do not use BAM modules
-        # if not self.bam3 is None:
-        #     x = self.bam3(x)
-
         x = self.layer4(x)
 
 
-        # We use the "ImageNet" config model
-        # if self.network_type == "ImageNet":
         x = self.avgpool(x)
-        # else:
-        #     x = F.avg_pool2d(x, 4)
 
 
         x = x.view(x.size(0), -1)
@@ -453,7 +399,6 @@ class CBAMResNet50(torch.nn.Module):
         aux_model = torch.nn.Sequential(*(list(model.children())[:-1]))
         aux_model.eval()
         _in_features = aux_model(_in_features)
-        # print(_in_features.shape)
         _in_features = _in_features.size(0) * _in_features.size(1) * _in_features.size(2) * _in_features.size(3)
 
         # Create FC1 Layer for classification
@@ -494,9 +439,6 @@ def make_layers_cbam(cfg: List[Union[str, int]], batch_norm: bool = False) -> to
         else:
             v = cast(int, v)
             conv2d = torch.nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
-
-            # Create an SE Layer
-            # se_layer = SELayer(channel=v)
             
             if batch_norm:
                 layers += [conv2d, torch.nn.BatchNorm2d(v), torch.nn.ReLU(inplace=False)]

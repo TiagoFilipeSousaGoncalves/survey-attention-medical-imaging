@@ -155,7 +155,6 @@ class SEResNet50(torch.nn.Module):
         # Compute in_features
         _in_features = torch.rand(1, self.channels, self.height, self.width)
         _in_features = self.se_resnet50(_in_features)
-        # print(_in_features.shape)
         _in_features = _in_features.size(0) * _in_features.size(1) * _in_features.size(2) * _in_features.size(3)
 
         # Create FC1 Layer for classification
@@ -197,15 +196,13 @@ def make_layers_se(cfg: List[Union[str, int]], batch_norm: bool = False) -> torc
             v = cast(int, v)
             conv2d = torch.nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
 
-            # Create an SE Layer
-            # se_layer = SELayer(channel=v)
             
             if batch_norm:
                 layers += [conv2d, torch.nn.BatchNorm2d(v), torch.nn.ReLU(inplace=False)]
             
             else:
                 layers += [conv2d, torch.nn.ReLU(inplace=False)]
-                # layers += [conv2d, se_layer]
+
             
             in_channels = v
 
