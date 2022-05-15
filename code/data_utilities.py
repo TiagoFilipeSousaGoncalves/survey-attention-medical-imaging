@@ -39,35 +39,6 @@ def resize_images(datapath, newpath, newheight=512):
 
 
 
-# MIMIC-CXR
-# MIMIC-CXR: Get labels and paths from pickle
-def mimic_map_images_and_labels(base_data_path, pickle_path):
-    # Open pickle file
-    with open(pickle_path, "rb") as fp:
-        pickle_data = cPickle.load(fp)
-
-    # Split Images and Labels
-    images_path = list()
-    labels = list()
-
-    # Go through pickle file
-    for path, clf in zip(pickle_data[:, 0], pickle_data[:, 1]):
-        images_path.append(os.path.join(base_data_path, path+".jpg"))
-        labels.append(int(clf))
-    
-
-    # Assign variables to class variables
-    images_paths = images_path
-    images_labels = labels
-	
-	# Nr of Classes
-    nr_classes = len(np.unique(images_labels))
-
-
-    return images_paths, images_labels, nr_classes
-
-
-
 # MIMIC-CXR: Dataset Class
 class MIMICXRDataset(Dataset):
     def __init__(self, base_data_path, pickle_path, random_seed=42, resized=None, low_data_regimen=None, perc_train=None, transform=None):
@@ -80,7 +51,7 @@ class MIMICXRDataset(Dataset):
         """
         
         # Init variables
-        images_paths, images_labels, _ = mimic_map_images_and_labels(base_data_path, pickle_path)
+        images_paths, images_labels, nr_classes = self.mimic_map_images_and_labels(base_data_path, pickle_path)
 
         # Activate low data regimen training
         if low_data_regimen:
@@ -96,10 +67,38 @@ class MIMICXRDataset(Dataset):
         # Attribute variables
         self.images_paths = images_paths
         self.images_labels = images_labels
+        self.nr_classes = nr_classes
         self.transform = transform
 
 
-        return 
+        return
+
+
+    # MIMIC-CXR: Get labels and paths from pickle
+    def mimic_map_images_and_labels(self, base_data_path, pickle_path):
+        # Open pickle file
+        with open(pickle_path, "rb") as fp:
+            pickle_data = cPickle.load(fp)
+
+        # Split Images and Labels
+        images_path = list()
+        labels = list()
+
+        # Go through pickle file
+        for path, clf in zip(pickle_data[:, 0], pickle_data[:, 1]):
+            images_path.append(os.path.join(base_data_path, path+".jpg"))
+            labels.append(int(clf))
+        
+
+        # Assign variables to class variables
+        images_paths = images_path
+        images_labels = labels
+        
+        # Nr of Classes
+        nr_classes = len(np.unique(images_labels))
+
+
+        return images_paths, images_labels, nr_classes
 
 
     # Method: __len__
@@ -129,36 +128,22 @@ class MIMICXRDataset(Dataset):
 
 
 
-# ISIC2020
-# ISIC2020: Get data paths
-def isic_get_data_paths(base_data_path, resized=None):
-    
-    # Build data directories
-    data_dir = os.path.join(base_data_path, 'jpeg', 'train_resized') if resized else os.path.join(base_data_path, 'jpeg', 'train')
-    csv_fpath = os.path.join(base_data_path, 'train.csv')
-
-
-    # Get number of classes
-    nr_classes = 2
-
-
-    return data_dir, csv_fpath, nr_classes
-
-
-
 # ISIC2020: Dataset Class
 class ISIC2020Dataset(Dataset):
-    def __init__(self, base_data_path, csv_path, split, random_seed=42, resized=None, low_data_regimen=None, perc_train=None, transform=None):
+    def __init__(self, base_data_path, split, random_seed=42, resized=None, low_data_regimen=None, perc_train=None, transform=None):
         """
         Args:
             base_data_path (string): Data directory.
-            csv_path (string): Path for pickle with annotations.
             split (string): "train", "val", "test" splits.
             transform (callable, optional): Optional transform to be applied on a sample.
         """
         
         # Assure we have the right string in the split argument
         assert split in ["Train", "Validation", "Test"], "Please provide a valid split (i.e., 'Train', 'Validation' or 'Test')"
+
+
+        # Get correct paths
+        data_dir, csv_path, nr_classes = self.isic_get_data_paths(base_data_path=base_data_path, resized=resized)
 
         # Aux variables to obtain the correct data splits
         # Read CSV file with label information       
@@ -243,14 +228,26 @@ class ISIC2020Dataset(Dataset):
 
 
         # Init variables
-        self.base_data_path = base_data_path
-        # imgs_in_folder = os.listdir(self.base_data_path)
-        # imgs_in_folder = [i for i in imgs_in_folder if not i.startswith(".")]
-        # print(f"The folder has: {len(imgs_in_folder)} files.")
-
+        self.base_data_path = data_dir
+        self.nr_classes = nr_classes
         self.transform = transform
 
         return
+
+
+    # ISIC2020: Get data paths
+    def isic_get_data_paths(self, base_data_path, resized=None):
+        
+        # Build data directories
+        data_dir = os.path.join(base_data_path, 'jpeg', 'train_resized') if resized else os.path.join(base_data_path, 'jpeg', 'train')
+        csv_fpath = os.path.join(base_data_path, 'train.csv')
+
+
+        # Get number of classes
+        nr_classes = 2
+
+
+        return data_dir, csv_fpath, nr_classes
 
 
     # Method: __len__
@@ -280,56 +277,7 @@ class ISIC2020Dataset(Dataset):
 
 
 
-# APTOS2019
-# Function: Get labels and paths
-def aptos_map_images_and_labels(base_path, split='Train', resized=None, low_data_regimen=None, perc_train=None):
-
-    assert split in ["Train", "Validation", "Test"], f"Invalid split '{split}'. Please choose from ['Train', 'Validation', 'Test']."
-
-
-    df = pd.read_csv(os.path.join(base_path, 'train.csv'))
-    
-    if resized:
-        df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_resized", x + '.png'))
-    
-    else:
-        df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_images", x + '.png'))
-    
-    # Convert to binary classification
-    df["diagnosis"] = df["diagnosis"].apply(lambda x: 1 if x > 0 else 0)
-    nr_classes = len(np.unique(df["diagnosis"]))
-    # print(nr_classes)
-
-
-    # Regular train, validation and test split
-    X_train, X_test, y_train, y_test = train_test_split(df["id_code"].values, df["diagnosis"].values, train_size=0.85, stratify=df["diagnosis"], random_state=42)
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, train_size=0.75, stratify=y_train, random_state=42)
-
-
-    if low_data_regimen:
-        assert perc_train > 0.0 and perc_train <= 0.50, f" Invalid perc_train '{perc_train}'. Please be sure that perc_train > 0 and perc_train <= 50"
-
-
-        # Get the data percentage
-        X_train, _, y_train, _ = train_test_split(X_train, y_train, train_size=perc_train, stratify=y_train, random_state=42)
-
-        print(f"Low data regimen.\n% of train data: {perc_train}")
-
-
-
-    # Get splits
-    if split == "Train":
-        return X_train, y_train, nr_classes
-    
-    elif split == "Validation":
-        return X_val, y_val, nr_classes
-    
-    elif split == "Test":
-        return X_test, y_test, nr_classes
-
-
-
-# Class: Dataset Class
+# APTOS2019: Dataset Class
 class APTOSDataset(Dataset):
     def __init__(self, base_data_path, split='Train', resized=None, low_data_regimen=None, perc_train=None, transform=None):
         """
@@ -340,9 +288,57 @@ class APTOSDataset(Dataset):
         """
         
         # Init variables
-        self.images_paths, self.images_labels, _ = aptos_map_images_and_labels(base_data_path, split=split, resized=resized, low_data_regimen=low_data_regimen, perc_train=perc_train)
+        self.images_paths, self.images_labels, self.nr_classes = self.aptos_map_images_and_labels(base_data_path, split=split, resized=resized, low_data_regimen=low_data_regimen, perc_train=perc_train)
         self.transform = transform
 
+        return
+
+
+    # Method: Get labels and paths
+    def aptos_map_images_and_labels(self, base_path, split='Train', resized=None, low_data_regimen=None, perc_train=None):
+
+        assert split in ["Train", "Validation", "Test"], f"Invalid split '{split}'. Please choose from ['Train', 'Validation', 'Test']."
+
+
+        df = pd.read_csv(os.path.join(base_path, 'train.csv'))
+        
+        if resized:
+            df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_resized", x + '.png'))
+        
+        else:
+            df["id_code"] = df["id_code"].apply(lambda x: os.path.join(base_path, "train_images", x + '.png'))
+        
+        # Convert to binary classification
+        df["diagnosis"] = df["diagnosis"].apply(lambda x: 1 if x > 0 else 0)
+        nr_classes = len(np.unique(df["diagnosis"]))
+        # print(nr_classes)
+
+
+        # Regular train, validation and test split
+        X_train, X_test, y_train, y_test = train_test_split(df["id_code"].values, df["diagnosis"].values, train_size=0.85, stratify=df["diagnosis"], random_state=42)
+        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, train_size=0.75, stratify=y_train, random_state=42)
+
+
+        if low_data_regimen:
+            assert perc_train > 0.0 and perc_train <= 0.50, f" Invalid perc_train '{perc_train}'. Please be sure that perc_train > 0 and perc_train <= 50"
+
+
+            # Get the data percentage
+            X_train, _, y_train, _ = train_test_split(X_train, y_train, train_size=perc_train, stratify=y_train, random_state=42)
+
+            print(f"Low data regimen.\n% of train data: {perc_train}")
+
+
+
+        # Get splits
+        if split == "Train":
+            return X_train, y_train, nr_classes
+        
+        elif split == "Validation":
+            return X_val, y_val, nr_classes
+        
+        elif split == "Test":
+            return X_test, y_test, nr_classes
 
 
     # Method: __len__

@@ -27,7 +27,7 @@ np.random.seed(random_seed)
 from model_utilities_baseline import DenseNet121, ResNet50
 from model_utilities_se import SEDenseNet121, SEResNet50
 from model_utilities_cbam import CBAMDenseNet121, CBAMResNet50
-from data_utilities import aptos_map_images_and_labels, mimic_map_images_and_labels, isic_get_data_paths, APTOSDataset, MIMICXRDataset, ISIC2020Dataset
+from data_utilities import APTOSDataset, ISIC2020Dataset, MIMICXRDataset
 from transformers import DeiTFeatureExtractor
 from transformer_explainability_utils.ViT_LRP import deit_tiny_patch16_224 as DeiT_Tiny
 
@@ -155,9 +155,54 @@ with open(os.path.join(outdir, "train_params.txt"), "w") as f:
     f.write(str(args))
 
 
+
+# Load data
+# Mean and STD to Normalize the inputs into pretrained models
+MEAN = [0.485, 0.456, 0.406]
+STD = [0.229, 0.224, 0.225]
+
+
+# Input Data Dimensions
+img_nr_channels = 3
+img_height = IMG_SIZE
+img_width = IMG_SIZE
+
+# Feature extractor (for Transformers)
+feature_extractor = None
+
+
+# Train Transforms
+train_transforms = torchvision.transforms.Compose([
+    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(0.05, 0.1), scale=(0.95, 1.05), shear=0, resample=0, fillcolor=(0, 0, 0)),
+    torchvision.transforms.RandomHorizontalFlip(p=0.5),
+    torchvision.transforms.ToTensor(),
+    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
+])
+
+
+# Validation Transforms
+val_transforms = torchvision.transforms.Compose([
+    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.ToTensor(),
+    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
+])
+
+
 # APTOS2019
 if dataset == "APTOS":
-    _, _, nr_classes = aptos_map_images_and_labels(base_path=data_dir)
+    # Datasets
+    train_set = APTOSDataset(base_data_path=data_dir, split="Train", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    val_set = APTOSDataset(base_data_path=data_dir, split="Validation", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
+
+
+# ISIC2020
+elif dataset == "ISIC2020":
+    # Datasets
+    train_set = ISIC2020Dataset(base_data_path=data_dir, split='Train', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    val_set = ISIC2020Dataset(base_data_path=data_dir, split='Validation', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
 
 
 # MIMICXR
@@ -166,13 +211,10 @@ elif dataset == "MIMICCXR":
     train_dir = os.path.join(data_dir, "Train_images_AP_resized")
     val_dir = os.path.join(data_dir, "Val_images_AP_resized")
     test_dir = os.path.join(data_dir, "Test_images_AP_resized")
-    _, _, nr_classes = mimic_map_images_and_labels(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"))
 
-
-# ISIC2020
-elif dataset == "ISIC2020":
-    # Build data directories and get number of classes
-    data_dir, csv_fpath, nr_classes = isic_get_data_paths(base_data_path=data_dir, resized=True)
+    # Datasets
+    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
+    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
 
 
 
@@ -197,19 +239,8 @@ DEVICE = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {DEVICE}")
 
 
-# Mean and STD to Normalize the inputs into pretrained models
-MEAN = [0.485, 0.456, 0.406]
-STD = [0.229, 0.224, 0.225]
-
-
-# Input Data Dimensions
-img_nr_channels = 3
-img_height = IMG_SIZE
-img_width = IMG_SIZE
-
-# Feature extractor (for Transformers)
-feature_extractor = None
-
+# Number of classes for models
+nr_classes = train_set.nr_classes
 
 
 # DenseNet121
@@ -261,47 +292,6 @@ with open(os.path.join(outdir, "model_summary.txt"), 'w') as f:
 
 
 
-# Load data
-# Train
-# Transforms
-train_transforms = torchvision.transforms.Compose([
-    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
-    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
-    torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(0.05, 0.1), scale=(0.95, 1.05), shear=0, resample=0, fillcolor=(0, 0, 0)),
-    torchvision.transforms.RandomHorizontalFlip(p=0.5),
-    torchvision.transforms.ToTensor(),
-    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
-])
-
-# Validation
-# Transforms
-val_transforms = torchvision.transforms.Compose([
-    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
-    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
-    torchvision.transforms.ToTensor(),
-    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
-])
-
-
-# Datasets
-# APTOS2019
-if dataset == "APTOS":
-    train_set = APTOSDataset(base_data_path=data_dir, split="Train", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
-    val_set = APTOSDataset(base_data_path=data_dir, split="Validation", resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
-
-
-# ISIC2020
-elif dataset == "ISIC2020":
-    train_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Train', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
-    val_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split='Validation', random_seed=random_seed, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=val_transforms)
-
-
-# MIMCCXR
-elif dataset == "MIMICCXR":
-    train_set = MIMICXRDataset(base_data_path=train_dir, pickle_path=os.path.join(train_dir, "Annotations.pickle"), resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=train_transforms)
-    val_set = MIMICXRDataset(base_data_path=val_dir, pickle_path=os.path.join(val_dir, "Annotations.pickle"), transform=val_transforms)
-
-
 # Class weights for loss
 if args.classweights:
     classes = np.array(range(nr_classes))
@@ -310,6 +300,7 @@ if args.classweights:
     print(f"Using class weights {cw}")
 else:
     cw = None
+
 
 
 # Hyper-parameters

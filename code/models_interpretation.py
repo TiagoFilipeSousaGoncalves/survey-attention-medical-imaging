@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import torchvision
 
 # Project Imports
-from data_utilities import APTOSDataset, ISIC2020Dataset, MIMICXRDataset, mimic_map_images_and_labels
+from data_utilities import APTOSDataset, ISIC2020Dataset, MIMICXRDataset
 from model_utilities_baseline import DenseNet121, ResNet50
 from model_utilities_cbam import CBAMDenseNet121, CBAMResNet50
 from model_utilities_xai import generate_post_hoc_xmap, gen_transformer_att
@@ -102,76 +102,7 @@ resize_opt = args.resize
 
 
 
-# APTOS2019
-if dataset == "APTOS":
-    # Directories
-    # data_dir = "/BARRACUDA8T/DATASETS/APTOS2019/"
-    dataset_dir = os.path.join(data_dir, "APTOS2019")
-
-    # Number of classes is added manually
-    nr_classes = 2
-
-    # Weights directory
-    weights_dir = os.path.join(modelckpt, "weights")
-
-    # Post-hoc explanations
-    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
-    if not(os.path.isdir(xai_maps_dir)):
-        os.makedirs(xai_maps_dir)
-
-
-# ISIC2020
-elif dataset == "ISIC2020":
-    # Directories
-    dataset_dir = os.path.join(data_dir, "ISIC2020/jpeg/train")
-    csv_fpath = os.path.join(data_dir, "ISIC2020/train.csv")
-
-    # Number of classes is added manually
-    nr_classes = 2
-
-    # Weights directory
-    weights_dir = os.path.join(modelckpt, "weights")
-
-    # Post-hoc explanations
-    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
-    if not(os.path.isdir(xai_maps_dir)):
-        os.makedirs(xai_maps_dir)
-
-
-# MIMICXR
-elif dataset == "MIMICCXR":
-    # Directories
-    # data_dir = "/ctm-hdd-pool01/wjsilva19/MedIA"
-    dataset_dir = os.path.join(data_dir, "MedIA")
-
-    if data_split == "Train":    
-        eval_dir = os.path.join(dataset_dir, "Train_images_AP_resized")
-    
-    elif data_split == "Validation":
-        eval_dir = os.path.join(dataset_dir, "Val_images_AP_resized")
-    
-    elif data_split == "Test":
-        eval_dir = os.path.join(dataset_dir, "Test_images_AP_resized")
-    
-
-    # Get labels and number of classes
-    _, _, nr_classes = mimic_map_images_and_labels(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"))
-
-
-    # Weights directory
-    weights_dir = os.path.join(modelckpt, "weights")
-
-    # Post-hoc explanations
-    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
-    if not(os.path.isdir(xai_maps_dir)):
-        os.makedirs(xai_maps_dir)
-
-
-
-# Choose GPU
-DEVICE = f"cuda:{gpu_id}" if torch.cuda.is_available() else "cpu"
-
-
+# Load data
 # Mean and STD to Normalize the inputs into pretrained models
 MEAN = [0.485, 0.456, 0.406]
 STD = [0.229, 0.224, 0.225]
@@ -188,6 +119,89 @@ model = args.model
 model_name = model.lower()
 feature_extractor = None
 
+
+# Evaluation Transforms
+eval_transforms = torchvision.transforms.Compose([
+    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.ToTensor(),
+    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
+])
+
+
+
+# APTOS2019
+if dataset == "APTOS":
+    # Directories
+    dataset_dir = os.path.join(data_dir, "APTOS2019")
+
+    # Evaluation set
+    eval_set = APTOSDataset(base_data_path=dataset_dir, split=data_split, transform=eval_transforms)
+
+    # Weights directory
+    weights_dir = os.path.join(modelckpt, "weights")
+
+    # Post-hoc explanations
+    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
+    if not(os.path.isdir(xai_maps_dir)):
+        os.makedirs(xai_maps_dir)
+
+
+# ISIC2020
+elif dataset == "ISIC2020":
+    # Directories
+    dataset_dir = os.path.join(data_dir, "ISIC2020/jpeg/train")
+
+    # Evaluation set
+    eval_set = ISIC2020Dataset(base_data_path=dataset_dir, split=data_split, random_seed=random_seed, transform=eval_transforms)
+
+    # Weights directory
+    weights_dir = os.path.join(modelckpt, "weights")
+
+    # Post-hoc explanations
+    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
+    if not(os.path.isdir(xai_maps_dir)):
+        os.makedirs(xai_maps_dir)
+
+
+# MIMICXR
+elif dataset == "MIMICCXR":
+    # Directories
+    dataset_dir = os.path.join(data_dir, "MedIA")
+
+    if data_split == "Train":    
+        eval_dir = os.path.join(dataset_dir, "Train_images_AP_resized")
+    
+    elif data_split == "Validation":
+        eval_dir = os.path.join(dataset_dir, "Val_images_AP_resized")
+    
+    elif data_split == "Test":
+        eval_dir = os.path.join(dataset_dir, "Test_images_AP_resized")
+    
+
+    # Evaluation set
+    eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), transform=eval_transforms)
+
+
+    # Weights directory
+    weights_dir = os.path.join(modelckpt, "weights")
+
+    # Post-hoc explanations
+    xai_maps_dir = os.path.join(modelckpt, "xai_maps")
+    if not(os.path.isdir(xai_maps_dir)):
+        os.makedirs(xai_maps_dir)
+
+
+
+# Choose GPU
+DEVICE = f"cuda:{gpu_id}" if torch.cuda.is_available() else "cpu"
+
+
+# Dataloaders
+eval_loader = DataLoader(dataset=eval_set, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True, num_workers=workers)
+
+# Get number of classes
+nr_classes = eval_set.nr_classes
 
 
 # DenseNet121
@@ -274,33 +288,6 @@ model = model.to(DEVICE)
 
 # Put model in evaluation mode
 model.eval()
-
-
-# Validation
-# Transforms
-eval_transforms = torchvision.transforms.Compose([
-    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
-    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
-    torchvision.transforms.ToTensor(),
-    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
-])
-
-# Datasets
-# APTOS2019
-if dataset == "APTOS":
-    eval_set = APTOSDataset(base_data_path=dataset_dir, split=data_split, transform=eval_transforms)
-
-# MIMCCXR
-elif dataset == "MIMICCXR":
-    eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), transform=eval_transforms)
-
-# ISIC2020
-elif dataset == "ISIC2020":
-    eval_set = ISIC2020Dataset(base_data_path=dataset_dir, csv_path=csv_fpath, split=data_split, random_seed=random_seed, transform=eval_transforms)
-
-
-# Dataloaders
-eval_loader = DataLoader(dataset=eval_set, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True, num_workers=workers)
 
 
 

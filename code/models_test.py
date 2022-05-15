@@ -24,7 +24,7 @@ np.random.seed(random_seed)
 from model_utilities_baseline import DenseNet121, ResNet50
 from model_utilities_se import SEDenseNet121, SEResNet50
 from model_utilities_cbam import CBAMDenseNet121, CBAMResNet50
-from data_utilities import aptos_map_images_and_labels, mimic_map_images_and_labels, isic_get_data_paths, APTOSDataset, MIMICXRDataset, ISIC2020Dataset
+from data_utilities import APTOSDataset, ISIC2020Dataset, MIMICXRDataset
 from transformers import DeiTFeatureExtractor
 from transformer_explainability_utils.ViT_LRP import deit_tiny_patch16_224 as DeiT_Tiny 
 
@@ -113,39 +113,7 @@ perc_train = args.perc_train
 weights_dir = os.path.join(modelckpt, "weights")
 
 
-# APTOS
-if dataset == "APTOS":
-    _, _, nr_classes = aptos_map_images_and_labels(base_path=data_dir)
-
-
-# MIMICXR
-elif dataset == "MIMICCXR":
-    # Data splits
-    if data_split == "Train":
-        eval_dir = os.path.join(data_dir, "Train_images_AP_resized")
-    
-    elif data_split == "Validation":
-        eval_dir = os.path.join(data_dir, "Val_images_AP_resized")
-    
-    elif data_split == "Test":
-        eval_dir = os.path.join(data_dir, "Test_images_AP_resized")
-
-
-    _, _, nr_classes = mimic_map_images_and_labels(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"))
-
-
-# ISIC2020
-elif dataset == "ISIC2020":
-    # Build data directories and get number of classes
-    data_dir, csv_fpath, nr_classes = isic_get_data_paths(base_data_path=data_dir, resized=True)
-
-
-
-# Choose GPU
-DEVICE = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
-print(f"Using device: {DEVICE}")
-
-
+# Load data
 # Mean and STD to Normalize the inputs into pretrained models
 MEAN = [0.485, 0.456, 0.406]
 STD = [0.229, 0.224, 0.225]
@@ -161,6 +129,61 @@ img_width = IMG_SIZE
 model = args.model
 model_name = model.lower()
 feature_extractor = None
+
+
+# Evaluation Transforms
+eval_transforms = torchvision.transforms.Compose([
+    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
+    torchvision.transforms.ToTensor(),
+    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
+])
+
+
+# APTOS
+if dataset == "APTOS":
+    # Create evaluation dataset
+    eval_set = APTOSDataset(base_data_path=data_dir, split=data_split, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
+
+
+# ISIC2020
+elif dataset == "ISIC2020":
+    # Create evaluation dataset
+    eval_set = ISIC2020Dataset(base_data_path=data_dir, split=data_split, random_seed=random_seed, resized=None, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
+
+
+# MIMICXR
+elif dataset == "MIMICCXR":
+    # Get data splits
+    if data_split == "Train":
+        eval_dir = os.path.join(data_dir, "Train_images_AP_resized")
+    
+    elif data_split == "Validation":
+        eval_dir = os.path.join(data_dir, "Val_images_AP_resized")
+    
+    elif data_split == "Test":
+        eval_dir = os.path.join(data_dir, "Test_images_AP_resized")
+
+
+    # Create evaluation dataset
+    if data_split == "Train":
+        eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), resized=None, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
+    else:
+        eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), transform=eval_transforms)
+
+
+
+# Get number of classes for model
+nr_classes = eval_set.nr_classes
+
+# Create DataLoader
+eval_loader = DataLoader(dataset=eval_set, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True, num_workers=workers)
+
+
+# Choose GPU
+DEVICE = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {DEVICE}")
+
 
 
 # DenseNet-121
@@ -241,39 +264,6 @@ model = model.to(DEVICE)
 
 # Put model in evaluation mode
 model.eval()
-
-
-# Validation
-# Transforms
-eval_transforms = torchvision.transforms.Compose([
-    torchvision.transforms.Resize(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
-    torchvision.transforms.RandomCrop(IMG_SIZE if resize_opt == 'resizeshortest_randomcrop' else (IMG_SIZE, IMG_SIZE)),
-    torchvision.transforms.ToTensor(),
-    torchvision.transforms.Normalize(mean=feature_extractor.image_mean if feature_extractor else MEAN, std=feature_extractor.image_std if feature_extractor else STD)
-])
-
-# Datasets
-# APTOS2019
-if dataset == "APTOS":
-    eval_set = APTOSDataset(base_data_path=data_dir, split=data_split, resized=True, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
-
-
-# ISIC2020
-elif dataset == "ISIC2020":
-    eval_set = ISIC2020Dataset(base_data_path=data_dir, csv_path=csv_fpath, split=data_split, random_seed=random_seed, resized=None, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
-
-
-# MIMCCXR
-elif dataset == "MIMICCXR":
-    if data_split == "Train":
-        eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), resized=None, low_data_regimen=low_data_regimen, perc_train=perc_train, transform=eval_transforms)
-    else:
-        eval_set = MIMICXRDataset(base_data_path=eval_dir, pickle_path=os.path.join(eval_dir, "Annotations.pickle"), transform=eval_transforms)
-
-
-
-# Dataloaders
-eval_loader = DataLoader(dataset=eval_set, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True, num_workers=workers)
 
 
 # Loss function
