@@ -31,7 +31,7 @@ To know more about the data used in this paper, please send an e-mail to  [**tia
 ### Train Models
 To train the models:
 ```bash
-$ python {command line arguments} code/models_train.py
+$ python code/models_train.py {command line arguments}
 ```
 This script accepts the following command line arguments:
 ```
@@ -59,7 +59,7 @@ This script accepts the following command line arguments:
 ### Test Models
 To test the models:
 ```bash
-$ python {command line arguments} code/models_test.py
+$ python code/models_test.py {command line arguments}
 ```
 This script accepts the following command line arguments:
 ```
@@ -82,7 +82,7 @@ This script accepts the following command line arguments:
 ### Generate Post-hoc Explanations (Saliency Maps)
 To generate post-hoc explanations (saliency maps):
 ```bash
-$ python {command line arguments} code/models_interpretation.py
+$ python code/models_interpretation.py {command line arguments}
 ```
 This script accepts the following command line arguments:
 ```
@@ -103,7 +103,7 @@ This script accepts the following command line arguments:
 ### Generate Figures from Post-hoc Explanations (Saliency Maps)
 To generate figures from post-hoc explanations (saliency maps):
 ```bash
-$ python {command line arguments} code/generate_xai_figures.py
+$ python code/generate_xai_figures.py {command line arguments}
 ```
 This script accepts the following command line arguments:
 ```
